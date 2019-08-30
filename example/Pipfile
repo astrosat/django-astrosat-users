@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pytest-django = "*"
+pytest-sugar = "*"
+factory-boy = "*"
+django-debug-toolbar = "*"
+
+[packages]
+django = "==2.2"
+django-environ = "*"
+djangorestframework = "*"
+django-rest-swagger = "*"
+django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
+django-astrosat-users = {editable = true,path = "./.."}
+
+[requires]
+python_version = "3.7"
