@@ -22,7 +22,7 @@ admin.site.site_header = "Admin for Example Project for Django-Astrosat-Users"
 handler400 = "astrosat.views.handler400"
 handler403 = "astrosat.views.handler403"
 handler404 = "astrosat.views.handler404"
-handler500 = "astrosat.views.handler400"
+handler500 = "astrosat.views.handler500"
 
 
 ##############
