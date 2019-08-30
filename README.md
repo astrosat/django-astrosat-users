@@ -53,9 +53,12 @@ django-astrosat-users comes w/ an example project to help w/ developing/testing
 7. `pytest` and enjoy
 8. `python manage.py runserver` goto "http://localhost:8000" and enjoy
 
-note that "django-astrosat-users/examples/Pipfile" was created using `pipenv install -e ..`; this uses a pointer to "django-astrosat-users/setup.py" in the virtual environment and creates a entry like [packages.ed0a5ba]; if the distribution changes just run `pipenv update ed0a5ba`, otherwise code changes should just be picked up b/c  of the `-e` flag.
+note that the reference to django-astrosat-core in the Pipfile was created with: `pipenv install -e git+git@github.com/astrosat/django-astrosat-core.git@1.0.1#egg=django-astrosat-core`.  This uses SSH to connect to github.  Appropriate security settings should be used in your project.
 
-note note that django-astrosat-users requires django-astrosat-core; to enable this I ran `pipenv install -e git+https://github.com/astrosat/django-astrosat-core.git@master#egg=django-astrosat-core`
+note that the reference to django-astrosat-users in the Pipfile was created with:  `pipenv install -e ..`.  This looks for the "setup.py" file in the parent directory.  If the distribution changes just run `pipenv update django-astrosat-users`, otherwise code changes should just be picked up b/c of the "-e" flat.
+
+<!-- django-astrosat-core = {editable = true,git = "git@github.com/astrosat/django-astrosat-core.git",ref = "1.0.1"} -->
+
 
 note note note that when things go wrong, I tend to get this error: "LookupError: No installed app with label 'admin'."
 
