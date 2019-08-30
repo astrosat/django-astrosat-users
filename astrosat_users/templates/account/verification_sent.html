@@ -1,0 +1,23 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans "Verify Your E-mail Address" %}</h1>
+
+<!-- THIS HAS CHANGED -->
+   {% blocktrans with email_recipient=request.session.email_recipient %}
+	    <p>
+		We have sent an e-mail to {{ email_recipient }} for verification.
+	    </p>
+	    <p>
+		Follow the link provided to finalize the signup process. 
+	    </p>
+	    <p>
+		Please contact us if you do not receive it within a few minutes.
+	    </p>
+    {% endblocktrans %}
+<!-- END THIS HAS CHANGED -->
+{% endblock %}

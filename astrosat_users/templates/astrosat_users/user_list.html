@@ -1,0 +1,18 @@
+{% extends "astrosat/base.html" %}
+
+{% load i18n %}
+{% load astrosat_users_tags %}
+
+{% block head_title %}Users{% endblock %}
+
+{% block content %}
+
+    <h2>Active Users</h2>
+
+    <ul>
+        {% for object in object_list %}
+            <li><a href="{% url 'user-detail' username=object.username %}">{{ object.username }}</a></li>
+        {% endfor %}
+    </ul>
+
+{% endblock content %}

@@ -17,7 +17,7 @@
  ```
 	 path("", include("astrosat_users.urls")
  ```
- 4. you may also want to override the backend templates:
+ 4. you may also want to override the templates:
  ```
  TEMPLATES = [
     {
@@ -39,6 +39,7 @@
 
  6. profit!
 
+
 ## developing
 
 django-astrosat-users comes w/ an example project to help w/ developing/testing
@@ -49,7 +50,8 @@ django-astrosat-users comes w/ an example project to help w/ developing/testing
 4. `pipenv install`
 5. `python manage.py makemigrations && python manage.py migrate` as needed
 6. `python manage.py collectstatic --noinput` as needed
-7. `python manage.py runserver` goto "http://localhost:8000" and enjoy
+7. `pytest` and enjoy
+8. `python manage.py runserver` goto "http://localhost:8000" and enjoy
 
 note that "django-astrosat-users/examples/Pipfile" was created using `pipenv install -e ..`; this uses a pointer to "django-astrosat-users/setup.py" in the virtual environment and creates a entry like [packages.ed0a5ba]; if the distribution changes just run `pipenv update ed0a5ba`, otherwise code changes should just be picked up b/c  of the `-e` flag.
 
@@ -58,3 +60,5 @@ note note that django-astrosat-users requires django-astrosat-core; to enable th
 note note note that when things go wrong, I tend to get this error: "LookupError: No installed app with label 'admin'."
 
 FYI - deployments may care about https://docs.pipenv.org/en/latest/advanced/#injecting-credentials-into-pipfiles-via-environment-variables
+
+FYI - sometimes pipenv waits for pip to get input from stdin (like w/ github repos); to get around this set `PIPENV_NOSPIN=1` as per https://github.com/pypa/pipenv/issues/3770

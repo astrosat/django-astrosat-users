@@ -1,0 +1,43 @@
+{% extends "astrosat/base.html" %}
+
+{% load i18n %}
+{% load astrosat_users_tags %}
+
+{% block head_title %}{{ object.key }}{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <style>
+        a.button {
+            -webkit-appearance: button;
+            -moz-appearance: button;
+            appearance: button;
+            text-decoration: none;
+            color: initial;
+            margin: 4px 2px;
+            padding: 2px 20px;
+            text-align: center;
+            display: block;
+        }
+    </style>
+{% endblock style %}
+
+{% block content %}
+
+    <h2>{{ object.key }} for {{ object.user }}</h2>
+
+    <div>
+        <!-- readonly stuff -->
+    </div>
+
+    {% if request.user.is_authenticated %}
+        {% if request.user == object.user %}
+            <!-- user actions -->
+        {% endif %}
+        {% if request.user == object.user or request.user.is_superuser %}
+            <!-- user/admin actions -->
+            <a class="button" href="{% url 'profile-update' username=object.user.username profile_key=object.key %}">update profile</a>
+        {% endif %}
+    {% endif %}
+
+{% endblock content %}

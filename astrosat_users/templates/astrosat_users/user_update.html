@@ -1,0 +1,22 @@
+{% extends "astrosat/base.html" %}
+
+{% load i18n %}
+{% load astrosat_users_tags %}
+
+{% block head_title %}{{ object.username }}{% endblock %}
+
+{% block content %}
+
+    <h2>Update {{ object }}</h2>
+
+    <form method="post" action="{% url 'user-update' username=object.username %}">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Update</button>
+
+    </form>
+
+{% endblock content %}
