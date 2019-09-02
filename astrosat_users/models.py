@@ -53,12 +53,15 @@ class UserSettings(SingletonMixin, models.Model):
 
 class User(AbstractUser):
 
-    objects = UserManager()  # see the note above explaining why I'm not just using "UserQuerySet.as_manager()" here
+    objects = UserManager()  # see the note in "managers.py" explaining why I'm not just using "UserQuerySet.as_manager()" here
 
     profile_keys = []
 
     @property
     def profiles(self):
+        """
+        Returns all profiles associated w/ this user.
+        """
         return {
             profile_key: getattr(self, profile_key, None)
             for profile_key in self.profile_keys

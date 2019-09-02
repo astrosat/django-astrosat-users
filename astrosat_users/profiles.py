@@ -81,30 +81,3 @@ class UserProfileField(OneToOneField):
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)
-
-
-# class AbstractUserProfile(models.Model):
-
-#     class Meta:
-#         abstract =  True
-
-#     @property
-#     def key(self):
-#         """
-#         Returns a unique key to identify the profile; This is the same string used as related_name.
-#         see: https://docs.djangoproject.com/en/dev/topics/db/models/#be-careful-with-related-name-and-related-query-name
-#         """
-#         return f"{self._meta.app_label}_{self._meta.model_name}"
-
-#     user = OneToOneField(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="%(app_label)s_%(class)s",
-#     )
-
-#     def __init__(self, *args, **kwargs):
-#         user = self.user
-#         user_profiles = getattr(user, "barfoo", {})
-#         user_profiles[self.key] = self
-#         setattr(user, "barfoo", user_profiles)
-#         super().__init__(*args, **kwargs)
