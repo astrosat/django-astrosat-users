@@ -14,6 +14,7 @@ APP_DEPENDENCIES = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_auth',
+    'rest_auth.registration',
     'rest_framework.authtoken',   # required for rest_auth !
 
 ]
@@ -96,36 +97,38 @@ def check_rest_auth_settings(app_configs):
             )
         )
 
-    USER_DETAILS_SERIALIZER = f"{APP_NAME}.serializers.UserSerializer"
-    if rest_auth_serializers.get("USER_DETAILS_SERIALIZER") != USER_DETAILS_SERIALIZER:
-        errors.append(
-            Error(
-                f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[USER_DETAILS_SERIALIZER] to '{USER_DETAILS_SERIALIZER}'."
-            )
-        )
+    if rest_auth_serializers is not None:
 
-    PASSWORD_RESET_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetSerializer"
-    if rest_auth_serializers.get("PASSWORD_RESET_SERIALIZER") != PASSWORD_RESET_SERIALIZER:
-        errors.append(
-            Error(
-                f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_SERIALIZER] to '{PASSWORD_RESET_SERIALIZER}'."
+        USER_DETAILS_SERIALIZER = f"{APP_NAME}.serializers.UserSerializer"
+        if rest_auth_serializers.get("USER_DETAILS_SERIALIZER") != USER_DETAILS_SERIALIZER:
+            errors.append(
+                Error(
+                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[USER_DETAILS_SERIALIZER] to '{USER_DETAILS_SERIALIZER}'."
+                )
             )
-        )
 
-    PASSWORD_RESET_CONFIRM_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetConfirmSerializer"
-    if rest_auth_serializers.get("PASSWORD_RESET_CONFIRM_SERIALIZER") != PASSWORD_RESET_CONFIRM_SERIALIZER:
-        errors.append(
-            Error(
-                f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_CONFIRM_SERIALIZER] to '{PASSWORD_RESET_CONFIRM_SERIALIZER}'."
+        PASSWORD_RESET_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetSerializer"
+        if rest_auth_serializers.get("PASSWORD_RESET_SERIALIZER") != PASSWORD_RESET_SERIALIZER:
+            errors.append(
+                Error(
+                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_SERIALIZER] to '{PASSWORD_RESET_SERIALIZER}'."
+                )
             )
-        )
 
-    PASSWORD_CHANGE_SERIALIZER = f"{APP_NAME}.serializers.PasswordChangeSerializer"
-    if rest_auth_serializers.get("PASSWORD_CHANGE_SERIALIZER") != PASSWORD_CHANGE_SERIALIZER:
-        errors.append(
-            Error(
-                f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_CHANGE_SERIALIZER] to '{PASSWORD_CHANGE_SERIALIZER}'."
+        PASSWORD_RESET_CONFIRM_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetConfirmSerializer"
+        if rest_auth_serializers.get("PASSWORD_RESET_CONFIRM_SERIALIZER") != PASSWORD_RESET_CONFIRM_SERIALIZER:
+            errors.append(
+                Error(
+                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_CONFIRM_SERIALIZER] to '{PASSWORD_RESET_CONFIRM_SERIALIZER}'."
+                )
             )
-        )
+
+        PASSWORD_CHANGE_SERIALIZER = f"{APP_NAME}.serializers.PasswordChangeSerializer"
+        if rest_auth_serializers.get("PASSWORD_CHANGE_SERIALIZER") != PASSWORD_CHANGE_SERIALIZER:
+            errors.append(
+                Error(
+                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_CHANGE_SERIALIZER] to '{PASSWORD_CHANGE_SERIALIZER}'."
+                )
+            )
 
     return errors
