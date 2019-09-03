@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "028d9bd0ee8f44932fc62aaa0c2ce04905b0b19bdf328b58fee6d36edb491c83"
+            "sha256": "e59819cc2ac5e8afec1cc93295b0df60cddf07f1285a34cf7478e0c02e71e835"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,10 @@
         ]
     },
     "default": {
+        "9afb19e": {
+            "editable": true,
+            "path": "./../src/django-astrosat-core"
+        },
         "attrs": {
             "hashes": [
                 "sha256:69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79",
@@ -85,11 +89,6 @@
                 "sha256:6a189fc4d3ee23596c3fd6e9f49c59b5b15618980118171a50675dd6a27cc589"
             ],
             "version": "==0.40.0"
-        },
-        "django-astrosat-core": {
-            "editable": true,
-            "git": "https://github.com/astrosat/django-astrosat-core",
-            "ref": "c945ae77b7beac7dff60a27af1381bb989ec4944"
         },
         "django-astrosat-users": {
             "editable": true,
