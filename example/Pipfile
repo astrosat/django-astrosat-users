@@ -16,7 +16,7 @@ django-environ = "*"
 djangorestframework = "*"
 django-rest-swagger = "*"
 django-astrosat-users = {editable = true,path = "./.."}
-9afb19e = {editable = true,path = "./../src/django-astrosat-core"}
+django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
 
 [requires]
 python_version = "3.7"

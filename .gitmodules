@@ -1,3 +1,0 @@
-[submodule "src/django-astrosat-core"]
-	path = src/django-astrosat-core
-	url = https://github.com/astrosat/django-astrosat-core.git
