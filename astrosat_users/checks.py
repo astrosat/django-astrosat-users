@@ -93,7 +93,7 @@ def check_rest_auth_settings(app_configs):
     if not isinstance(rest_auth_serializers, dict):
         errors.append(
             Error(
-                f"You are using {APP_NAME} which requires you to set REST_AUTH_SETTINGS."
+                f"You are using {APP_NAME} which requires you to set REST_AUTH_SERIALIZERS."
             )
         )
 

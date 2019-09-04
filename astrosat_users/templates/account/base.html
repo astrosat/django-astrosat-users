@@ -4,4 +4,10 @@
 
 {% extends "astrosat/base.html" %}
 
+{% load static %}
 {% load astrosat_users_tags %}
+
+{% block style %}
+    {{ block.super }}
+    <link href="{% static 'astrosat_users/css/base.css' %}" rel="stylesheet">
+{% endblock style %}
