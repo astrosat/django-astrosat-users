@@ -11,7 +11,7 @@ factory-boy = "*"
 django-debug-toolbar = "*"
 
 [packages]
-django = "==2.2"
+django = ">=2.2.0"
 django-environ = "*"
 djangorestframework = "*"
 django-rest-swagger = "*"
