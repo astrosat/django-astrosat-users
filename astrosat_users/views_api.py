@@ -190,3 +190,15 @@ class UserViewSet(ModelViewSet):
             "managed_profiles": managed_profiles
         })
         return context
+
+    def get_object(self, *args, **kwargs):
+        """
+        If you ask for the RESERVED_USERNAME "current",
+        return the user making the request.
+
+        """
+        username = self.kwargs.get(self.lookup_field)
+        if username.upper() == "CURRENT":
+            return self.request.user
+
+        return super().get_object(*args, **kwargs)

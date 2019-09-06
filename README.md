@@ -57,11 +57,6 @@ note that the reference to django-astrosat-core in the Pipfile was created with:
 
 note that the reference to django-astrosat-users in the Pipfile was created with:  `pipenv install -e ..`.  This looks for the "setup.py" file in the parent directory.  If the distribution changes just run `pipenv update django-astrosat-users`, otherwise code changes should just be picked up b/c of the "-e" flat.
 
-<!-- django-astrosat-core = {editable = true,git = "git@github.com/astrosat/django-astrosat-core.git",ref = "1.0.1"} -->
-
-
-note note note that when things go wrong, I tend to get this error: "LookupError: No installed app with label 'admin'."
-
 FYI - deployments may care about https://docs.pipenv.org/en/latest/advanced/#injecting-credentials-into-pipfiles-via-environment-variables
 
 FYI - sometimes pipenv waits for pip to get input from stdin (like w/ github repos); to get around this set `PIPENV_NOSPIN=1` as per https://github.com/pypa/pipenv/issues/3770
