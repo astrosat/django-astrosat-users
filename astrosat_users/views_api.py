@@ -26,8 +26,8 @@ from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 
 from astrosat.decorators import conditional_redirect
 
-from .models import User
-from .serializers import UserSerializer, RestRegisterSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
+from .models import User, UserRole, UserPermission
+from .serializers import UserSerializer, UserRoleSerializer, UserPermissionSerializer, RegisterSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
 from .conf import app_settings
 
 
@@ -83,7 +83,7 @@ def rest_confirm_email(request, key):
 @method_decorator(conditional_redirect(lambda: not app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION, redirect_name="rest_disabled"), name="dispatch")
 class RegisterView(RestAuthRegsiterView):
 
-    serializer_class = RestRegisterSerializer
+    serializer_class = RegisterSerializer
 
     def get_response_data(self, user):
         # need to make sure that
@@ -173,7 +173,10 @@ class LoginView(RestAuthLoginView):
 class UserViewSet(ModelViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrOwner]
-    queryset = User.objects.active()
+    # using prefetch_related optimizes the querysets used by this view's serializer
+    # and all nested serializers; I could also have overridden "to_representation"
+    # on the nested list_serializer_class as per https://stackoverflow.com/a/28354281/1060339
+    queryset = User.objects.active().prefetch_related("roles", "roles__permissions")
     serializer_class = UserSerializer
     lookup_field = "username"
 
@@ -190,3 +193,17 @@ class UserViewSet(ModelViewSet):
             "managed_profiles": managed_profiles
         })
         return context
+
+
+class UserRoleViewSet(ModelViewSet):
+
+    permission_classes = [IsAuthenticated]
+    queryset = UserRole.objects.all()
+    serializer_class = UserRoleSerializer
+
+
+class UserPermissionViewSet(ModelViewSet):
+
+    permission_classes = [IsAuthenticated]
+    queryset = UserPermission.objects.all()
+    serializer_class = UserPermissionSerializer

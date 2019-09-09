@@ -45,7 +45,13 @@
             </tr>
             <tr>
                 <td>roles:</td>
-                <td>TODO</td>
+                <td>
+                    <ul>
+                        {% for role in object.roles.all %}
+                            <li>{{ role.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
             </tr>
         </table>
     </div>
@@ -58,7 +64,7 @@
         {% endif %}
         {% if request.user == object or request.user.is_superuser %}
             <!-- user/admin actions -->
-            <a class="button" href="{% url 'user-update' username=object.username %}">update details</a>
+            <a class="button" href="{% url 'user-update' username=object.username %}">update details<br/>(including roles)</a>
         {% endif %}
     {% endif %}
 

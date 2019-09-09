@@ -24,6 +24,8 @@ from .views_api import (
     RegisterView,
     LoginView,
     UserViewSet,
+    UserRoleViewSet,
+    UserPermissionViewSet,
 )
 from .conf import app_settings
 
@@ -35,6 +37,8 @@ from .conf import app_settings
 
 api_router = SimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
+api_router.register("roles", UserRoleViewSet, basename="roles")
+api_router.register("permissions", UserPermissionViewSet, basename="permissions")
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path("rest-auth/disabled/", rest_disabled, name="rest_disabled"),

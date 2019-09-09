@@ -15,12 +15,17 @@ from rest_auth.registration.serializers import (
     RegisterSerializer as RestAuthRegisterSerializer,
 )
 
+from astrosat.serializers import WritableNestedListSerializer
+
 from .forms import PasswordResetForm
-from .models import User
+from .models import User, UserRole, UserPermission
 from .profiles import PROFILES, get_profile_qs
 from .tokens import default_token_generator
 
 
+###############################
+# generic profile serializers #
+###############################
 
 class GenericProfileListSerializer(serializers.ListSerializer):
 
@@ -39,14 +44,64 @@ class GenericProfileSerializer(serializers.ModelSerializer):
         cls.Meta.model = PROFILES[profile_key]
         return cls
 
+#####################################
+# roles and permissions serializers #
+#####################################
+
+class UserPermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserPermission
+        fields = ("id", "name", "description")
+        list_serializer_class = WritableNestedListSerializer
+
+
+class UserRoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserRole
+        fields = ("id", "name", "description", "permissions")
+        list_serializer_class = WritableNestedListSerializer
+
+    permissions = UserPermissionSerializer(many=True, required=False)
+
+    def create(self, validated_data):
+        return self.crud(instance=None, validated_data=validated_data)
+
+    def update(self, instance, validated_data):
+        return self.crud(instance=instance, validated_data=validated_data)
+
+    def crud(self, instance=None, validated_data={}, delete_missing=False):
+
+        permissions_serializer = self.fields["permissions"]
+        permissions_data = validated_data.pop(permissions_serializer.source)
+        permissions = permissions_serializer.crud(
+            instances=instance.permissions.all(),
+            validated_data=permissions_data,
+        )
+
+        if instance:
+            instance = super().update(instance, validated_data)
+        else:
+            instance = super().create(validated_data)
+
+        instance.permissions.clear()
+        instance.permissions.add(*permissions)
+
+        return instance
+
+####################
+# user serializers #
+####################
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "name", "description", "is_verified", "is_approved", "profiles",)
+        fields = ("id", "username", "email", "name", "description", "is_verified", "is_approved", "profiles", "roles",)
 
     profiles = serializers.SerializerMethodField()
+    roles = UserRoleSerializer(many=True, required=False)
 
     def get_profiles(self, obj):
         profiles = {}
@@ -60,36 +115,59 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         """
-        Puts back any non-model fields as needed,
+        Puts back any non-model and non-writeable fields as needed,
         so that their data is available in validated_data for create/update below.
         """
-        internal_value = super().to_internal_value(data)
 
         profiles_internal_value = {}
         for profile_key, profile_data in data["profiles"].items():
             profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
             profiles_internal_value[profile_key] = profile_serializer().to_internal_value(profile_data)
 
+        role_serializer = self.fields["roles"]
+        roles_internal_value = data.pop(role_serializer.source)
+
+        internal_value = super().to_internal_value(data)
+
         internal_value.update({
-            "profiles": profiles_internal_value
+            "profiles": profiles_internal_value,
+            "roles": roles_internal_value,
         })
+
         return internal_value
+
+
 
     def update(self, instance, validated_data):
 
-        profiles_validated_data = validated_data.pop("profiles")
-        if profiles_validated_data:
-            for profile_key, profile_data in profiles_validated_data.items():
+        profiles_data = validated_data.pop("profiles")
+        if profiles_data:
+            for profile_key, profile_data in profiles_data.items():
                 profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
-                # profile_instance = PROFILES[profile_key].objects.get(user=instance)
                 profile_instance = getattr(instance, profile_key)
                 profile_serializer().update(profile_instance, profile_data)
 
+        roles_serializer = self.fields["roles"]
+        roles_data = validated_data.pop(roles_serializer.source)
+        roles = roles_serializer.crud(
+            instances=instance.roles.all(),
+            validated_data=roles_data,
+        )
+
         updated_instance = super().update(instance, validated_data)
+
+        updated_instance.roles.clear()
+        updated_instance.roles.add(*roles)
+
         return updated_instance
 
 
-class RestRegisterSerializer(RestAuthRegisterSerializer):
+##############################
+# authentication serializers #
+##############################
+
+
+class RegisterSerializer(RestAuthRegisterSerializer):
 
     # just a bit more security...
     password1 = serializers.CharField(write_only=True, style={"input_type": "password"})

@@ -62,7 +62,7 @@ class UserUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("name", "description")
+        fields = ("name", "description", "roles")
 
 
 ########################################
