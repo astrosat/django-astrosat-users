@@ -1,6 +1,4 @@
-import inspect
-
-from django.core.exceptions import ValidationError, ImproperlyConfigured
+from django.core.exceptions import ValidationError
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 
@@ -19,7 +17,7 @@ from astrosat.serializers import WritableNestedListSerializer
 
 from .forms import PasswordResetForm
 from .models import User, UserRole, UserPermission
-from .profiles import PROFILES, get_profile_qs
+from .profiles import PROFILES
 from .tokens import default_token_generator
 
 
@@ -41,12 +39,15 @@ class GenericProfileSerializer(serializers.ModelSerializer):
 
     @classmethod
     def wrap_profile(cls, profile_key):
+        # wraps this _generic_ serializer around a _specific_ model
         cls.Meta.model = PROFILES[profile_key]
         return cls
+
 
 #####################################
 # roles and permissions serializers #
 #####################################
+
 
 class UserPermissionSerializer(serializers.ModelSerializer):
 
@@ -90,9 +91,11 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 ####################
 # user serializers #
 ####################
+
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -112,6 +115,23 @@ class UserSerializer(serializers.ModelSerializer):
                 profiles[profile_key] = profile_serializer(profile).data
         return profiles
 
+    def to_representation(self, instance):
+
+        profiles_representation = {}
+        for profile_key, profile in instance.profiles.items():
+            profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
+            profiles_representation[profile_key] = profile_serializer().to_representation(profile)
+
+        role_serializer = self.fields["roles"]
+        roles_representation = role_serializer.to_representation(instance.roles)
+
+        representation = super().to_representation(instance)
+        representation.update({
+            "profiles": profiles_representation,
+            "roles": roles_representation,
+        })
+
+        return representation
 
     def to_internal_value(self, data):
         """
@@ -135,8 +155,6 @@ class UserSerializer(serializers.ModelSerializer):
         })
 
         return internal_value
-
-
 
     def update(self, instance, validated_data):
 
