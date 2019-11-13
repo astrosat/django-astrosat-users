@@ -175,17 +175,7 @@ class UserSerializer(serializers.ModelSerializer):
                 profile_instance = getattr(instance, profile_key)
                 profile_serializer().update(profile_instance, profile_data)
 
-        # roles_serializer = self.fields["roles"]
-        # roles_data = validated_data.pop(roles_serializer.source)
-        # roles = roles_serializer.crud(
-        #     instances=instance.roles.all(),
-        #     validated_data=roles_data,
-        # )
-
         updated_instance = super().update(instance, validated_data)
-
-        # updated_instance.roles.clear()
-        # updated_instance.roles.add(*roles)
 
         return updated_instance
 
