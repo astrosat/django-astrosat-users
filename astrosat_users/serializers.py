@@ -25,13 +25,13 @@ from .tokens import default_token_generator
 # generic profile serializers #
 ###############################
 
+
 class GenericProfileListSerializer(serializers.ListSerializer):
 
     pass
 
 
 class GenericProfileSerializer(serializers.ModelSerializer):
-
     class Meta:
         list_serializer_class = GenericProfileListSerializer
         model = None
@@ -50,7 +50,6 @@ class GenericProfileSerializer(serializers.ModelSerializer):
 
 
 class UserPermissionSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserPermission
         fields = ("id", "name", "description")
@@ -58,7 +57,6 @@ class UserPermissionSerializer(serializers.ModelSerializer):
 
 
 class UserRoleSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserRole
         fields = ("id", "name", "description", "permissions")
@@ -77,8 +75,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         permissions_serializer = self.fields["permissions"]
         permissions_data = validated_data.pop(permissions_serializer.source)
         permissions = permissions_serializer.crud(
-            instances=instance.permissions.all(),
-            validated_data=permissions_data,
+            instances=instance.permissions.all(), validated_data=permissions_data
         )
 
         if instance:
@@ -98,20 +95,39 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields = ("id", "username", "email", "name", "description", "is_verified", "is_approved", "profiles", "roles",)
+        fields = (
+            "id",
+            "username",
+            "email",
+            "name",
+            "description",
+            "is_verified",
+            "is_approved",
+            "profiles",
+            "roles",
+            "permissions",
+        )
 
     profiles = serializers.SerializerMethodField()
-    roles = UserRoleSerializer(many=True, required=False)
+    roles = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+    permissions = serializers.SerializerMethodField()
+
+    def get_permissions(self, obj):
+        distinct_permission_names = obj.roles.values_list(
+            "permissions__name", flat=True
+        ).distinct()
+        return distinct_permission_names
 
     def get_profiles(self, obj):
         profiles = {}
         managed_profiles = self.context.get("managed_profiles", [])
         for profile_key, profile in obj.profiles.items():
             if profile_key in managed_profiles:
-                profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
+                profile_serializer = GenericProfileSerializer().wrap_profile(
+                    profile_key
+                )
                 profiles[profile_key] = profile_serializer(profile).data
         return profiles
 
@@ -120,39 +136,31 @@ class UserSerializer(serializers.ModelSerializer):
         profiles_representation = {}
         for profile_key, profile in instance.profiles.items():
             profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
-            profiles_representation[profile_key] = profile_serializer().to_representation(profile)
-
-        role_serializer = self.fields["roles"]
-        roles_representation = role_serializer.to_representation(instance.roles)
+            profiles_representation[
+                profile_key
+            ] = profile_serializer().to_representation(profile)
 
         representation = super().to_representation(instance)
-        representation.update({
-            "profiles": profiles_representation,
-            "roles": roles_representation,
-        })
+        representation.update({"profiles": profiles_representation})
 
         return representation
 
     def to_internal_value(self, data):
         """
-        Puts back any non-model and non-writeable fields as needed,
+        Puts back any non-model and/or non-writeable fields as needed,
         so that their data is available in validated_data for create/update below.
         """
 
         profiles_internal_value = {}
         for profile_key, profile_data in data["profiles"].items():
             profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
-            profiles_internal_value[profile_key] = profile_serializer().to_internal_value(profile_data)
-
-        role_serializer = self.fields["roles"]
-        roles_internal_value = data.pop(role_serializer.source)
+            profiles_internal_value[
+                profile_key
+            ] = profile_serializer().to_internal_value(profile_data)
 
         internal_value = super().to_internal_value(data)
 
-        internal_value.update({
-            "profiles": profiles_internal_value,
-            "roles": roles_internal_value,
-        })
+        internal_value.update({"profiles": profiles_internal_value})
 
         return internal_value
 
@@ -161,21 +169,23 @@ class UserSerializer(serializers.ModelSerializer):
         profiles_data = validated_data.pop("profiles")
         if profiles_data:
             for profile_key, profile_data in profiles_data.items():
-                profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
+                profile_serializer = GenericProfileSerializer().wrap_profile(
+                    profile_key
+                )
                 profile_instance = getattr(instance, profile_key)
                 profile_serializer().update(profile_instance, profile_data)
 
-        roles_serializer = self.fields["roles"]
-        roles_data = validated_data.pop(roles_serializer.source)
-        roles = roles_serializer.crud(
-            instances=instance.roles.all(),
-            validated_data=roles_data,
-        )
+        # roles_serializer = self.fields["roles"]
+        # roles_data = validated_data.pop(roles_serializer.source)
+        # roles = roles_serializer.crud(
+        #     instances=instance.roles.all(),
+        #     validated_data=roles_data,
+        # )
 
         updated_instance = super().update(instance, validated_data)
 
-        updated_instance.roles.clear()
-        updated_instance.roles.add(*roles)
+        # updated_instance.roles.clear()
+        # updated_instance.roles.add(*roles)
 
         return updated_instance
 
@@ -195,8 +205,12 @@ class RegisterSerializer(RestAuthRegisterSerializer):
 class PasswordChangeSerializer(RestAuthPasswordChangeSerializer):
 
     # just a bit more security...
-    new_password1 = serializers.CharField(write_only=True, style={"input_type": "password"})
-    new_password2 = serializers.CharField(write_only=True, style={"input_type": "password"})
+    new_password1 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
+    new_password2 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
 
 
 class PasswordResetSerializer(RestAuthPasswordResetSerializer):
@@ -209,8 +223,12 @@ class PasswordResetSerializer(RestAuthPasswordResetSerializer):
 class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
 
     # just a bit more security...
-    new_password1 = serializers.CharField(write_only=True, style={"input_type": "password"})
-    new_password2 = serializers.CharField(write_only=True, style={"input_type": "password"})
+    new_password1 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
+    new_password2 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
 
     # TODO: I WOULD PREFER TO SET DEFAULT VALUES LIKE THIS RATHER THAN IN __init__ BELOW
     # uid = serializers.CharField(default=SimpleLazyObject(lambda serializer_field: serializer_field.context.get("view").kwargs.get("uid")))
@@ -236,10 +254,10 @@ class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
         self._errors = {}
 
         try:
-            uid = force_text(urlsafe_base64_decode(attrs['uid']))
+            uid = force_text(urlsafe_base64_decode(attrs["uid"]))
             self.user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            raise ValidationError({'uid': ['Invalid value']})
+            raise ValidationError({"uid": ["Invalid value"]})
 
         self.custom_validation(attrs)
 
@@ -248,7 +266,7 @@ class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
         )
         if not self.set_password_form.is_valid():
             raise serializers.ValidationError(self.set_password_form.errors)
-        if not default_token_generator.check_token(self.user, attrs['token']):
-            raise ValidationError({'token': ['Invalid value']})
+        if not default_token_generator.check_token(self.user, attrs["token"]):
+            raise ValidationError({"token": ["Invalid value"]})
 
         return attrs

@@ -1,6 +1,8 @@
 import pytest
 import factory
-from factory.faker import Faker as FactoryFaker  # note I use FactoryBoy's wrapper of Faker
+from factory.faker import (
+    Faker as FactoryFaker,
+)  # note I use FactoryBoy's wrapper of Faker
 from django.test import Client
 
 from django.contrib.auth import get_user_model
@@ -20,10 +22,16 @@ def user_data():
     """
     Provides a dictionary of user data.
     """
-    user = UserFactory.build()
+
+    # rather than use `.build()`, I actually create and then delete the model
+    # this is so that the related profile can be created as well
+
+    user = UserFactory()
     serializer = UserSerializer(user)
     data = serializer.data
     data["password"] = user.raw_password
+
+    user.delete()
 
     # TODO: overwrite any supplied data...
 
@@ -45,6 +53,7 @@ def client():
     client = Client(enforce_csrf_checks=False)
     client.force_login(AnonymousUser())
     return client
+
 
 @pytest.fixture
 def api_client(user):
