@@ -8,14 +8,16 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('example', '0004_delete_anotherexampleprofile'),
-    ]
+    dependencies = [("example", "0004_delete_anotherexampleprofile")]
 
     operations = [
         migrations.AlterField(
-            model_name='exampleprofile',
-            name='user',
-            field=astrosat_users.profiles.UserProfileField(on_delete=django.db.models.deletion.CASCADE, related_name='example_profile', to=settings.AUTH_USER_MODEL),
-        ),
+            model_name="exampleprofile",
+            name="user",
+            field=astrosat_users.profiles.UserProfileField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="example_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        )
     ]

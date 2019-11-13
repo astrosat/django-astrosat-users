@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -24,24 +23,40 @@ def get_deleted_user():
     Returns a special "deleted" user to use in objects
     w/ a foreign_key to User where that user has been deleted.
     """
-    deleted_user, _ = User.objects.get_or_create(username='DELETED')
+    deleted_user, _ = User.objects.get_or_create(username="DELETED")
     return deleted_user
+
 
 ############
 # settings #
 ############
 
-class UserSettings(SingletonMixin, models.Model):
 
+class UserSettings(SingletonMixin, models.Model):
     class Meta:
         verbose_name = "User Settings"
         verbose_name_plural = "User Settings"
 
-    allow_registration = models.BooleanField(default=True, help_text=_("Allow users to register via the 'sign up' view."))
-    enable_backend_access = models.BooleanField(default=True, help_text=_("Enable user management via the backend views (as opposed to only the API)."))
-    notify_signups = models.BooleanField(default=False, help_text=_("Send an email to the admin when a user signs up."))
-    require_approval = models.BooleanField(default=False, help_text=_("Require a formal approval step to the sign up process."))
-    require_verification = models.BooleanField(default=True, help_text=_("Require an email verification step to the sign up process."))
+    allow_registration = models.BooleanField(
+        default=True, help_text=_("Allow users to register via the 'sign up' view.")
+    )
+    enable_backend_access = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Enable user management via the backend views (as opposed to only the API)."
+        ),
+    )
+    notify_signups = models.BooleanField(
+        default=False, help_text=_("Send an email to the admin when a user signs up.")
+    )
+    require_approval = models.BooleanField(
+        default=False,
+        help_text=_("Require a formal approval step to the sign up process."),
+    )
+    require_verification = models.BooleanField(
+        default=True,
+        help_text=_("Require an email verification step to the sign up process."),
+    )
 
     def __str__(self):
         return "User Settings"
@@ -55,6 +70,7 @@ class UserSettings(SingletonMixin, models.Model):
 # R3 = R2 + R1 (means Role3 inherits Role2's permissions & Role1's permissions, plus any of its own)
 # ?
 
+
 class UserRole(models.Model):
 
     """
@@ -66,14 +82,12 @@ class UserRole(models.Model):
         verbose_name = "User Role"
         verbose_name_plural = "User Roles"
 
-
-    name = models.CharField(
-        unique=True, blank=False, null=False,
-        max_length=255,
-    )
+    name = models.CharField(unique=True, blank=False, null=False, max_length=255)
     description = models.TextField(blank=True, null=True)
 
-    permissions = models.ManyToManyField("UserPermission", related_name="roles", blank=True)
+    permissions = models.ManyToManyField(
+        "UserPermission", related_name="roles", blank=True
+    )
 
     def __str__(self):
         permissions = ", ".join([p.name for p in self.permissions.all()])
@@ -81,7 +95,6 @@ class UserRole(models.Model):
 
 
 class UserPermission(models.Model):
-
     class Meta:
         verbose_name = "User Permission"
         verbose_name_plural = "User Permissions"
@@ -94,13 +107,16 @@ class UserPermission(models.Model):
                 code="invalid_name",
             )
         ],
-        unique=True, blank=False, null=False,
+        unique=True,
+        blank=False,
+        null=False,
         max_length=255,
     )
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
+
 
 ####################
 # the actual model #
@@ -109,7 +125,9 @@ class UserPermission(models.Model):
 
 class User(AbstractUser):
 
-    objects = UserManager()  # see the note in "managers.py" explaining why I'm not just using "UserQuerySet.as_manager()" here
+    objects = (
+        UserManager()
+    )  # see the note in "managers.py" explaining why I'm not just using "UserQuerySet.as_manager()" here
 
     profile_keys = []
 
@@ -125,11 +143,24 @@ class User(AbstractUser):
 
     roles = models.ManyToManyField(UserRole, related_name="users", blank=True)
 
-    name = models.CharField(validators=[validate_no_tags], blank=True, null=True, max_length=255)
+    name = models.CharField(
+        validators=[validate_no_tags], blank=True, null=True, max_length=255
+    )
     description = models.TextField(validators=[validate_no_tags], blank=True, null=True)
-    change_password = models.BooleanField(default=False, help_text=_("Force user to change password at next login."))
-    is_approved = models.BooleanField(default=False, help_text=_("Has this user been approved?"))
-    latest_confirmation_key = models.CharField(blank=True, null=True, max_length=64, help_text=_("A record of the most recent key used to verify the user's email address."))
+    change_password = models.BooleanField(
+        default=False, help_text=_("Force user to change password at next login.")
+    )
+    is_approved = models.BooleanField(
+        default=False, help_text=_("Has this user been approved?")
+    )
+    latest_confirmation_key = models.CharField(
+        blank=True,
+        null=True,
+        max_length=64,
+        help_text=_(
+            "A record of the most recent key used to verify the user's email address."
+        ),
+    )
 
     def clean_username(self):
         """
@@ -144,7 +175,9 @@ class User(AbstractUser):
 
         if self.username.upper() in RESERVED_USERNAMES:
             errors = {
-                "username": "username cannot be one of {0}.".format(", ".join(map("'{0}'".format, RESERVED_USERNAMES)))
+                "username": "username cannot be one of {0}.".format(
+                    ", ".join(map("'{0}'".format, RESERVED_USERNAMES))
+                )
             }
             raise ValidationError(errors)
 
@@ -157,7 +190,11 @@ class User(AbstractUser):
         Checks if the primary email address belonging to this user has been verified.
         """
         # TODO: THIS IS A BIT INNEFFICIENT ISNT IT
-        return self.emailaddress_set.only("verified", "primary").filter(primary=True, verified=True).exists()
+        return (
+            self.emailaddress_set.only("verified", "primary")
+            .filter(primary=True, verified=True)
+            .exists()
+        )
 
     def generate_token(self, token_generator=default_token_generator):
         return token_generator.make_token(self)
@@ -173,8 +210,7 @@ class User(AbstractUser):
             primary_emailaddress = emailaddresses.get(primary=True)
         except EmailAddress.DoesNotExist:
             primary_emailaddress, _ = EmailAddress.objects.get_or_create(
-                user=self,
-                email=self.email,
+                user=self, email=self.email
             )
             primary_emailaddress.set_as_primary(conditional=True)
 

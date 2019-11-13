@@ -9,14 +9,13 @@ from . import APP_NAME
 
 # apps required by astrosat
 APP_DEPENDENCIES = [
-    'astrosat',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'rest_auth',
-    'rest_auth.registration',
-    'rest_framework.authtoken',   # required for rest_auth !
-
+    "astrosat",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "rest_auth",
+    "rest_auth.registration",
+    "rest_framework.authtoken",  # required for rest_auth !
 ]
 
 
@@ -56,7 +55,10 @@ def check_allauth_settings(app_configs):
 
     account_adapter = getattr(settings, "ACCOUNT_ADAPTER", None)
     socialaccount_adapter = getattr(settings, "SOCIALACCOUNT_ADAPTER", None)
-    if account_adapter != f"{APP_NAME}.adapters.AccountAdapter" or socialaccount_adapter != f"{APP_NAME}.adapters.SocialAccountAdapter":
+    if (
+        account_adapter != f"{APP_NAME}.adapters.AccountAdapter"
+        or socialaccount_adapter != f"{APP_NAME}.adapters.SocialAccountAdapter"
+    ):
         errors.append(
             Error(
                 f"You are using {APP_NAME} which requires specifying appropriate account_adapters in settings.py"
@@ -65,19 +67,28 @@ def check_allauth_settings(app_configs):
 
     # there can be multiple template engines defined, which may-or-may-not set "OPTIONS" and/or "context_processors"
     # one of them must include "django.template.context_processors.request"
-    template_context_processors = functools.reduce(operator.add, map(lambda x: x.get("OPTIONS", {}).get("context_processors", []), settings.TEMPLATES))
+    template_context_processors = functools.reduce(
+        operator.add,
+        map(
+            lambda x: x.get("OPTIONS", {}).get("context_processors", []),
+            settings.TEMPLATES,
+        ),
+    )
     if "django.template.context_processors.request" not in template_context_processors:
         errors.append(
             Error(
-                f"You are using {APP_NAME} which requires TEMPLATES to be set as per https://django-allauth.readthedocs.io/en/latest/installation.html",
+                f"You are using {APP_NAME} which requires TEMPLATES to be set as per https://django-allauth.readthedocs.io/en/latest/installation.html"
             )
         )
 
     authentication_backends = settings.AUTHENTICATION_BACKENDS
-    if "allauth.account.auth_backends.AuthenticationBackend" not in authentication_backends:
+    if (
+        "allauth.account.auth_backends.AuthenticationBackend"
+        not in authentication_backends
+    ):
         errors.append(
             Error(
-                f"You are using {APP_NAME} which requires AUTHENTICATION_BACKENDS to be set as per https://django-allauth.readthedocs.io/en/latest/installation.html",
+                f"You are using {APP_NAME} which requires AUTHENTICATION_BACKENDS to be set as per https://django-allauth.readthedocs.io/en/latest/installation.html"
             )
         )
 
@@ -100,7 +111,10 @@ def check_rest_auth_settings(app_configs):
     if rest_auth_serializers is not None:
 
         USER_DETAILS_SERIALIZER = f"{APP_NAME}.serializers.UserSerializer"
-        if rest_auth_serializers.get("USER_DETAILS_SERIALIZER") != USER_DETAILS_SERIALIZER:
+        if (
+            rest_auth_serializers.get("USER_DETAILS_SERIALIZER")
+            != USER_DETAILS_SERIALIZER
+        ):
             errors.append(
                 Error(
                     f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[USER_DETAILS_SERIALIZER] to '{USER_DETAILS_SERIALIZER}'."
@@ -108,15 +122,23 @@ def check_rest_auth_settings(app_configs):
             )
 
         PASSWORD_RESET_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetSerializer"
-        if rest_auth_serializers.get("PASSWORD_RESET_SERIALIZER") != PASSWORD_RESET_SERIALIZER:
+        if (
+            rest_auth_serializers.get("PASSWORD_RESET_SERIALIZER")
+            != PASSWORD_RESET_SERIALIZER
+        ):
             errors.append(
                 Error(
                     f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_SERIALIZER] to '{PASSWORD_RESET_SERIALIZER}'."
                 )
             )
 
-        PASSWORD_RESET_CONFIRM_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetConfirmSerializer"
-        if rest_auth_serializers.get("PASSWORD_RESET_CONFIRM_SERIALIZER") != PASSWORD_RESET_CONFIRM_SERIALIZER:
+        PASSWORD_RESET_CONFIRM_SERIALIZER = (
+            f"{APP_NAME}.serializers.PasswordResetConfirmSerializer"
+        )
+        if (
+            rest_auth_serializers.get("PASSWORD_RESET_CONFIRM_SERIALIZER")
+            != PASSWORD_RESET_CONFIRM_SERIALIZER
+        ):
             errors.append(
                 Error(
                     f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_CONFIRM_SERIALIZER] to '{PASSWORD_RESET_CONFIRM_SERIALIZER}'."
@@ -124,7 +146,10 @@ def check_rest_auth_settings(app_configs):
             )
 
         PASSWORD_CHANGE_SERIALIZER = f"{APP_NAME}.serializers.PasswordChangeSerializer"
-        if rest_auth_serializers.get("PASSWORD_CHANGE_SERIALIZER") != PASSWORD_CHANGE_SERIALIZER:
+        if (
+            rest_auth_serializers.get("PASSWORD_CHANGE_SERIALIZER")
+            != PASSWORD_CHANGE_SERIALIZER
+        ):
             errors.append(
                 Error(
                     f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_CHANGE_SERIALIZER] to '{PASSWORD_CHANGE_SERIALIZER}'."

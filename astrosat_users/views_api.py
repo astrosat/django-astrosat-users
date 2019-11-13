@@ -14,7 +14,11 @@ from rest_framework.viewsets import ModelViewSet
 from allauth.account import app_settings as allauth_settings
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.account.adapter import get_adapter
-from allauth.account.models import EmailAddress, EmailConfirmation, EmailConfirmationHMAC
+from allauth.account.models import (
+    EmailAddress,
+    EmailConfirmation,
+    EmailConfirmationHMAC,
+)
 from allauth.account.utils import complete_signup, send_email_confirmation
 from allauth.account.views import ConfirmEmailView
 
@@ -27,12 +31,18 @@ from rest_auth.app_settings import TokenSerializer, JWTSerializer, create_token
 from astrosat.decorators import conditional_redirect
 
 from .models import User, UserRole, UserPermission
-from .serializers import UserSerializer, UserRoleSerializer, UserPermissionSerializer, RegisterSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
+from .serializers import (
+    UserSerializer,
+    UserRoleSerializer,
+    UserPermissionSerializer,
+    RegisterSerializer,
+    PasswordResetSerializer,
+    PasswordResetConfirmSerializer,
+)
 from .conf import app_settings
 
 
 class IsAdminOrOwner(BasePermission):
-
     def has_object_permission(self, request, view, obj):
         # anybody can do GET, HEAD, or OPTIONS
         if request.method in SAFE_METHODS:
@@ -52,9 +62,7 @@ class IsAdminOrOwner(BasePermission):
 @api_view(["GET", "POST"])
 def rest_disabled(request, *args, **kwargs):
 
-    return Response({
-        "detail": "We are sorry, but the sign up is currently closed."
-    })
+    return Response({"detail": "We are sorry, but the sign up is currently closed."})
 
 
 @api_view(["GET"])
@@ -80,7 +88,13 @@ def rest_confirm_email(request, key):
 
 
 @method_decorator(sensitive_post_parameters("password1", "password2"), name="dispatch")
-@method_decorator(conditional_redirect(lambda: not app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION, redirect_name="rest_disabled"), name="dispatch")
+@method_decorator(
+    conditional_redirect(
+        lambda: not app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION,
+        redirect_name="rest_disabled",
+    ),
+    name="dispatch",
+)
 class RegisterView(RestAuthRegsiterView):
 
     serializer_class = RegisterSerializer
@@ -90,11 +104,8 @@ class RegisterView(RestAuthRegsiterView):
         if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION:
             return {"detail": _("Verification e-mail sent.")}
 
-        if getattr(settings, 'REST_USE_JWT', False):
-            data = {
-                'user': user,
-                'token': self.token
-            }
+        if getattr(settings, "REST_USE_JWT", False):
+            data = {"user": user, "token": self.token}
             return JWTSerializer(data).data
         else:
             return TokenSerializer(user.auth_token).data
@@ -102,7 +113,7 @@ class RegisterView(RestAuthRegsiterView):
     def perform_create(self, serializer):
 
         user = serializer.save(self.request)
-        if getattr(settings, 'REST_USE_JWT', False):
+        if getattr(settings, "REST_USE_JWT", False):
             self.token = jwt_encode(user)
         else:
             create_token(self.token_model, user, serializer)
@@ -118,21 +129,23 @@ class RegisterView(RestAuthRegsiterView):
 
 
 class LoginView(RestAuthLoginView):
-
     def login(self):
 
-        self.user = self.serializer.validated_data['user']
+        self.user = self.serializer.validated_data["user"]
 
         primary_user_emailaddress = self.user.emailaddress_set.get(primary=True)
 
-        if getattr(settings, 'REST_USE_JWT', False):
+        if getattr(settings, "REST_USE_JWT", False):
             self.token = jwt_encode(self.user)
         else:
             self.token = create_token(self.token_model, self.user, self.serializer)
 
         # just like the login adapter, I need to add some checks here
         # TODO: MOVE THIS INTO A GENERIC ADAPTER METHOD (THAT CHECKS @is_api)
-        if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not self.user.is_verified:
+        if (
+            app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION
+            and not self.user.is_verified
+        ):
             send_email_confirmation(self.request, self.user, signup=False)
             response = Response(
                 {
@@ -140,26 +153,26 @@ class LoginView(RestAuthLoginView):
 		                Follow the link provided to finalize the signup process.
 		                Please contact us if you do not receive it within a few minutes."""
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
             raise ImmediateHttpResponse(response)
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not self.user.is_approved:
             response = Response(
-                {
-                    "detail": f"The account {self.user} has not yet been approved."
-                },
-                status=status.HTTP_200_OK
+                {"detail": f"The account {self.user} has not yet been approved."},
+                status=status.HTTP_200_OK,
             )
             raise ImmediateHttpResponse(response)
 
-        if getattr(settings, 'REST_SESSION_LOGIN', True):
+        if getattr(settings, "REST_SESSION_LOGIN", True):
             self.process_login()
 
     def post(self, request, *args, **kwargs):
 
         self.request = request
-        self.serializer = self.get_serializer(data=self.request.data, context={'request': request})
+        self.serializer = self.get_serializer(
+            data=self.request.data, context={"request": request}
+        )
         self.serializer.is_valid(raise_exception=True)
 
         try:
@@ -184,14 +197,9 @@ class UserViewSet(ModelViewSet):
         context = super().get_serializer_context()
         # TODO: ADD SOME LOGIC HERE TO RESTRICT WHICH PROFILES WE CAN SERIALIZE
         # TODO: (NOT ALL USERS CAN MODIFY ALL PROFILES)
-        managed_profiles = [
-            profile_key
-            for profile_key in User.profile_keys
-        ]
+        managed_profiles = [profile_key for profile_key in User.profile_keys]
 
-        context.update({
-            "managed_profiles": managed_profiles
-        })
+        context.update({"managed_profiles": managed_profiles})
         return context
 
     def get_object(self, *args, **kwargs):

@@ -2,7 +2,7 @@ from itertools import chain
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView,  DetailView, UpdateView
+from django.views.generic import ListView, DetailView, UpdateView
 from django.views.generic.base import TemplateView
 
 from .conf import app_settings
@@ -14,6 +14,7 @@ from .profiles import PROFILES, get_profile_qs
 #################
 # special views #
 #################
+
 
 class DisabledView(TemplateView):
 
@@ -29,6 +30,7 @@ class DisapprovedView(TemplateView):
 # user views #
 ##############
 
+
 class UserListView(ListView):
 
     model = User
@@ -38,7 +40,9 @@ class UserListView(ListView):
         return queryset.active()
 
 
-@method_decorator(login_required(login_url=reverse_lazy("account_login")), name="dispatch")
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
 class UserDetailView(DetailView):
 
     model = User
@@ -47,7 +51,9 @@ class UserDetailView(DetailView):
 
 
 # TODO: MAKE THIS JUST A NORMAL MODELVIEW?
-@method_decorator(login_required(login_url=reverse_lazy("account_login")), name="dispatch")
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
 class UserUpdateView(UpdateView):
 
     model = User
@@ -55,7 +61,9 @@ class UserUpdateView(UpdateView):
     slug_url_kwarg = "username"
     # (UpdateView is based on ModelFormMixin, so I could just specify "fields" here instead of "form_class")
     form_class = UserUpdateForm
-    template_name_suffix = '_update'  # override stupid default template_name_suffix of "_form"
+    template_name_suffix = (
+        "_update"
+    )  # override stupid default template_name_suffix of "_form"
 
     def get_object(self, queryset=None):
 
@@ -79,14 +87,18 @@ class UserUpdateView(UpdateView):
 
         # If none of those are defined, it's an error.
         if pk is None and slug is None:
-            raise AttributeError("UserUpdateView must be called w/ either pk or slug in URLConf")
+            raise AttributeError(
+                "UserUpdateView must be called w/ either pk or slug in URLConf"
+            )
 
         try:
             # Get the single item from the filtered queryset
             obj = queryset.get()
         except queryset.model.DoesNotExist:
-            raise Http404(_("No %(verbose_name)s found matching the query") %
-                          {'verbose_name': queryset.model._meta.verbose_name})
+            raise Http404(
+                _("No %(verbose_name)s found matching the query")
+                % {"verbose_name": queryset.model._meta.verbose_name}
+            )
         return obj
 
     def get_success_url(self):
@@ -100,6 +112,7 @@ class UserUpdateView(UpdateView):
 
 # TODO: ABSTRACT THE COMMON FEATURES INTO A BASE CLASS/MIXIN
 
+
 class GenericProfileListView(ListView):
 
     template_name = "astrosat_users/profile_list.html"
@@ -108,7 +121,9 @@ class GenericProfileListView(ListView):
         return get_profile_qs()
 
 
-@method_decorator(login_required(login_url=reverse_lazy("account_login")), name="dispatch")
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
 class GenericProfileDetailView(DetailView):
 
     template_name = "astrosat_users/profile_detail.html"
@@ -130,7 +145,9 @@ class GenericProfileDetailView(DetailView):
         return obj
 
 
-@method_decorator(login_required(login_url=reverse_lazy("account_login")), name="dispatch")
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
 class GenericProfileUpdateView(UpdateView):
 
     fields = "__all__"
@@ -154,4 +171,7 @@ class GenericProfileUpdateView(UpdateView):
 
     def get_success_url(self):
         obj = self.get_object()
-        return reverse_lazy("profile-detail", kwargs={"username": obj.user.username, "profile_key": obj.key})
+        return reverse_lazy(
+            "profile-detail",
+            kwargs={"username": obj.user.username, "profile_key": obj.key},
+        )

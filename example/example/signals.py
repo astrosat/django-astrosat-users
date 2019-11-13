@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 
 from .models import ExampleProfile
 
+
 def post_save_user_hander(sender, *args, **kwargs):
     """
     If a User has just been created,

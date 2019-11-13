@@ -19,7 +19,6 @@ UserModel = get_user_model()
 
 @pytest.mark.django_db
 class TestUserViewSet:
-
     def test_get_current_user(self, user):
         """
         Tests that using the reserved username "current"
@@ -34,4 +33,4 @@ class TestUserViewSet:
         response = client.get(url)
         content = response.json()
         assert status.is_success(response.status_code)
-        assert content["username"]  == user.username
+        assert content["username"] == user.username

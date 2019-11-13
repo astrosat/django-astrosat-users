@@ -10,26 +10,58 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('example', '0002_auto_20190822_1509'),
+        ("example", "0002_auto_20190822_1509"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='exampleprofile',
-            name='user',
-            field=astrosat_users.profiles.UserProfileField(on_delete=django.db.models.deletion.CASCADE, related_name='example_profilex', to=settings.AUTH_USER_MODEL),
+            model_name="exampleprofile",
+            name="user",
+            field=astrosat_users.profiles.UserProfileField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="example_profilex",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
-            name='AnotherExampleProfile',
+            name="AnotherExampleProfile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('age', models.IntegerField(blank=True, help_text='Age in years.', null=True)),
-                ('height', models.FloatField(blank=True, help_text='Height in centimeters.', null=True)),
-                ('weight', models.FloatField(blank=True, help_text='Weight in kilograms.', null=True)),
-                ('user', astrosat_users.profiles.UserProfileField(on_delete=django.db.models.deletion.CASCADE, related_name='example_profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "age",
+                    models.IntegerField(
+                        blank=True, help_text="Age in years.", null=True
+                    ),
+                ),
+                (
+                    "height",
+                    models.FloatField(
+                        blank=True, help_text="Height in centimeters.", null=True
+                    ),
+                ),
+                (
+                    "weight",
+                    models.FloatField(
+                        blank=True, help_text="Weight in kilograms.", null=True
+                    ),
+                ),
+                (
+                    "user",
+                    astrosat_users.profiles.UserProfileField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="example_profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
     ]

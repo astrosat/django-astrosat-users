@@ -1,7 +1,9 @@
 from typing import Any, Sequence
 
 import factory
-from factory.faker import Faker as FactoryFaker  # note I use FactoryBoy's wrapper of Faker
+from factory.faker import (
+    Faker as FactoryFaker,
+)  # note I use FactoryBoy's wrapper of Faker
 
 from astrosat.tests.providers import GeometryProvider, ValidatedProvider
 from astrosat.tests.utils import optional_declaration
@@ -15,7 +17,6 @@ FactoryFaker.add_provider(ValidatedProvider)
 
 
 class UserFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = User
         django_get_or_create = ["username"]
@@ -23,10 +24,7 @@ class UserFactory(factory.DjangoModelFactory):
     username = FactoryFaker("user_name")
     email = FactoryFaker("email")
     name = FactoryFaker("name")
-    description = optional_declaration(
-        FactoryFaker("sentence", nb_words=10),
-        chance=50
-    )
+    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
     is_approved = False
 
     # change_password =
@@ -41,7 +39,9 @@ class UserFactory(factory.DjangoModelFactory):
             upper_case=True,
             lower_case=True,
         ).generate(extra_kwargs={})
-        self.raw_password = password  # the instance has a "raw_password" object for me to use in tests
+        self.raw_password = (
+            password
+        )  # the instance has a "raw_password" object for me to use in tests
         self.set_password(password)
 
     @factory.post_generation
@@ -55,7 +55,9 @@ class UserFactory(factory.DjangoModelFactory):
             for emailaddress in extracted:
                 self.emailaddress_set.add(emailaddress)
         else:
-            emailaddress = EmailAddressFactory(user=self, email=self.email, primary=True, verified=False)
+            emailaddress = EmailAddressFactory(
+                user=self, email=self.email, primary=True, verified=False
+            )
 
 
 class EmailAddressFactory(factory.DjangoModelFactory):
@@ -65,9 +67,9 @@ class EmailAddressFactory(factory.DjangoModelFactory):
     I still need an EmailAddress instance to exist.
     (see for example: "example.tests.test_integration.py#TestAPIViews.test_login_unverified")
     """
+
     class Meta:
         model = EmailAddress
-
 
     verified = False
     primary = True

@@ -8,10 +8,10 @@ from django.forms import ModelChoiceField
 
 PROFILES = {}
 
+
 def get_profile_qs():
     profile_querysets = [
-        profile_class.objects.all()
-        for profile_class in PROFILES.values()
+        profile_class.objects.all() for profile_class in PROFILES.values()
     ]
     # clever way of combining multiple querysets
     return chain(*profile_querysets)
@@ -36,13 +36,17 @@ class UserProfileField(OneToOneField):
     def __init__(self, *args, **kwargs):
 
         self.key = kwargs.get("related_name", None)
-        assert self.key is not None, "'related_name' must be specified for UserProfileField."
+        assert (
+            self.key is not None
+        ), "'related_name' must be specified for UserProfileField."
 
-        kwargs.update({
-            "unique": True,
-            "on_delete": models.CASCADE,
-            "to": settings.AUTH_USER_MODEL
-        })
+        kwargs.update(
+            {
+                "unique": True,
+                "on_delete": models.CASCADE,
+                "to": settings.AUTH_USER_MODEL,
+            }
+        )
         super().__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name, **kwargs):
@@ -75,9 +79,6 @@ class UserProfileField(OneToOneField):
         Makes sure we can't change the User a Profile is linked to.
         """
 
-        defaults = {
-            "form_class": ModelChoiceField,
-            "disabled": True,
-        }
+        defaults = {"form_class": ModelChoiceField, "disabled": True}
         defaults.update(kwargs)
         return super().formfield(**defaults)

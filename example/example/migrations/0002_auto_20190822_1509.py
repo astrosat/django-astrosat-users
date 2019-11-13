@@ -5,24 +5,26 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('example', '0001_initial'),
-    ]
+    dependencies = [("example", "0001_initial")]
 
     operations = [
         migrations.AlterField(
-            model_name='exampleprofile',
-            name='age',
-            field=models.IntegerField(blank=True, help_text='Age in years.', null=True),
+            model_name="exampleprofile",
+            name="age",
+            field=models.IntegerField(blank=True, help_text="Age in years.", null=True),
         ),
         migrations.AlterField(
-            model_name='exampleprofile',
-            name='height',
-            field=models.FloatField(blank=True, help_text='Height in centimeters.', null=True),
+            model_name="exampleprofile",
+            name="height",
+            field=models.FloatField(
+                blank=True, help_text="Height in centimeters.", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='exampleprofile',
-            name='weight',
-            field=models.FloatField(blank=True, help_text='Weight in kilograms.', null=True),
+            model_name="exampleprofile",
+            name="weight",
+            field=models.FloatField(
+                blank=True, help_text="Weight in kilograms.", null=True
+            ),
         ),
     ]

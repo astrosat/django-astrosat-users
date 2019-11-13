@@ -5,14 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('astrosat_users', '0001_initial'),
-    ]
+    dependencies = [("astrosat_users", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='latest_confirmation_key',
-            field=models.CharField(blank=True, help_text="A record of the most recent key used to verify the user's email address.", max_length=64, null=True),
-        ),
+            model_name="user",
+            name="latest_confirmation_key",
+            field=models.CharField(
+                blank=True,
+                help_text="A record of the most recent key used to verify the user's email address.",
+                max_length=64,
+                null=True,
+            ),
+        )
     ]

@@ -8,9 +8,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
 from allauth.account import app_settings as allauth_app_settings
-from allauth.account.forms import (
-    ResetPasswordForm as AllauthResetPasswordForm,
-)
+from allauth.account.forms import ResetPasswordForm as AllauthResetPasswordForm
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import user_pk_to_url_str, url_str_to_user_pk, user_username
 from allauth.utils import build_absolute_uri
@@ -25,7 +23,6 @@ from .tokens import default_token_generator
 
 
 class UserAdminChangeForm(auth_forms.UserChangeForm):
-
     class Meta(auth_forms.UserChangeForm.Meta):
         model = User
 
@@ -33,9 +30,7 @@ class UserAdminChangeForm(auth_forms.UserChangeForm):
 class UserAdminCreationForm(auth_forms.UserCreationForm):
 
     error_message = auth_forms.UserCreationForm.error_messages.update(
-        {
-            "duplicate_username": _("This username has already been taken.")
-        }
+        {"duplicate_username": _("This username has already been taken.")}
     )
 
     class Meta(auth_forms.UserCreationForm.Meta):
@@ -59,7 +54,6 @@ class UserAdminCreationForm(auth_forms.UserCreationForm):
 
 
 class UserUpdateForm(forms.ModelForm):
-
     class Meta:
         model = User
         fields = ("name", "description", "roles")
@@ -112,8 +106,11 @@ class PasswordResetForm(AllauthResetPasswordForm):
                 "request": request,
             }
 
-            if allauth_app_settings.AUTHENTICATION_METHOD != allauth_app_settings.AuthenticationMethod.EMAIL:
-                context['username'] = user_username(user)
-            adapter.send_mail('account/email/password_reset_key', email, context)
+            if (
+                allauth_app_settings.AUTHENTICATION_METHOD
+                != allauth_app_settings.AuthenticationMethod.EMAIL
+            ):
+                context["username"] = user_username(user)
+            adapter.send_mail("account/email/password_reset_key", email, context)
 
         return self.cleaned_data["email"]

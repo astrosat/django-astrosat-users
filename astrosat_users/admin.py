@@ -29,7 +29,7 @@ class UserPermissionAdmin(admin.ModelAdmin):
 
 @admin.register(UserRole)
 class UserRoleAdmin(admin.ModelAdmin):
-    filter_horizontal = ('permissions',)
+    filter_horizontal = ("permissions",)
 
 
 @admin.register(User)
@@ -39,7 +39,8 @@ class UserAdmin(auth_admin.UserAdmin):
     add_form = UserAdminCreationForm
     fieldsets = (
         (
-            "User", {
+            "User",
+            {
                 "fields": (
                     "name",
                     "description",
@@ -47,10 +48,19 @@ class UserAdmin(auth_admin.UserAdmin):
                     "is_approved",
                     "roles",
                 )
-            }
+            },
         ),
     ) + auth_admin.UserAdmin.fieldsets
-    list_display = ["username", "name", "is_superuser", "is_verified", "is_approved", "is_active"]
+    list_display = [
+        "username",
+        "name",
+        "is_superuser",
+        "is_verified",
+        "is_approved",
+        "is_active",
+    ]
     search_fields = ["username", "name", "email"]
 
-    filter_horizontal = ('roles',)  # makes a pretty widget; the same one as used by "groups"
+    filter_horizontal = (
+        "roles",
+    )  # makes a pretty widget; the same one as used by "groups"

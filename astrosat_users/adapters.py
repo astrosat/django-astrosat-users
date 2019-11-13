@@ -16,7 +16,6 @@ from .conf import app_settings
 
 
 class AccountAdapter(DefaultAccountAdapter):
-
     @property
     def is_api(self):
         return re.match("^/api/", self.request.path) is not None
@@ -74,9 +73,7 @@ class AccountAdapter(DefaultAccountAdapter):
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
             request.session["username"] = user.username
-            response = HttpResponseRedirect(
-                reverse("disapproved")
-            )
+            response = HttpResponseRedirect(reverse("disapproved"))
             raise ImmediateHttpResponse(response)
 
         # if all of the checks passed, then just call the base class login
@@ -138,7 +135,6 @@ class AccountAdapter(DefaultAccountAdapter):
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-
     def is_open_for_signup(self, request: HttpRequest, sociallogin: Any):
         return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
 

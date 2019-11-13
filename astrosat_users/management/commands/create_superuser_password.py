@@ -24,10 +24,12 @@ class Command(createsuperuser.Command):
 
     def handle(self, *args, **options):
 
-        options['interactive'] = False  # this command is not interactive (wouldn't be much point)
+        options[
+            "interactive"
+        ] = False  # this command is not interactive (wouldn't be much point)
 
-        password = options.get('password')
-        username = options.get('username')
+        password = options.get("password")
+        username = options.get("username")
 
         if password and not username:
             raise CommandError("--username is required if specifying --password")

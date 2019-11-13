@@ -1,5 +1,7 @@
 import factory
-from factory.faker import Faker as FactoryFaker  # note I use FactoryBoy's wrapper of Faker
+from factory.faker import (
+    Faker as FactoryFaker,
+)  # note I use FactoryBoy's wrapper of Faker
 
 from django.db.models.signals import post_save
 
@@ -8,9 +10,7 @@ from astrosat.tests.utils import optional_declaration
 
 from astrosat_users.tests.factories import UserFactory as AstrosatUserFactory
 
-from example.models import (
-    ExampleProfile,
-)
+from example.models import ExampleProfile
 
 
 FactoryFaker.add_provider(GeometryProvider)
@@ -27,10 +27,14 @@ class ExampleProfileFactory(factory.DjangoModelFactory):
 
     # "example_profile=None" means that if I create an ExampleProfile explicitly, another profile won't be created
     # (it disables the RelatedFactory below)
-    user = factory.SubFactory("example.tests.factories.UserFactory", example_profile=None)
+    user = factory.SubFactory(
+        "example.tests.factories.UserFactory", example_profile=None
+    )
 
 
-@factory.django.mute_signals(post_save)  # prevent signals from trying to create a profile outside of this factory
+@factory.django.mute_signals(
+    post_save
+)  # prevent signals from trying to create a profile outside of this factory
 class UserFactory(AstrosatUserFactory):
 
     # "user" means that if I create a UserFactory explicitly, another user won't be created
