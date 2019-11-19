@@ -191,6 +191,9 @@ class UserViewSet(ModelViewSet):
     # on the nested list_serializer_class as per https://stackoverflow.com/a/28354281/1060339
     queryset = User.objects.active().prefetch_related("roles", "roles__permissions")
     serializer_class = UserSerializer
+    lookup_value_regex = (
+        "[^/]+"
+    )  # the default regex was "[^/.]+" which wasn't matching email addresses
     lookup_field = "username"
 
     def get_serializer_context(self):

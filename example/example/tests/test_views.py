@@ -34,3 +34,23 @@ class TestUserViewSet:
         content = response.json()
         assert status.is_success(response.status_code)
         assert content["username"] == user.username
+
+    def test_get_named_user(self):
+        """
+        Tests that we can get a user
+        even if the username has special characters in it
+        (using an email-address as a username _had_ been causing problems)
+        """
+
+        test_user = UserFactory(username="testy@mctestface.com")
+
+        client = APIClient()
+        client.force_login(test_user)
+
+        url = reverse("users-detail", kwargs={"username": test_user.username})
+
+        response = client.get(url)
+        content = response.json()
+
+        assert status.is_success(response.status_code)
+        assert content["username"] == test_user.username
