@@ -11,7 +11,7 @@
 
     <ul>
         {% for object in object_list %}
-            <li><a href="{% url 'profile-detail' username=object.user.username profile_key=object.key %}">{{ object.key }}</a> ({{ object.user }})</li>
+            <li><a href="{% url 'profile-detail' email=object.user.email profile_key=object.key %}">{{ object.key }}</a> ({{ object.user }})</li>
         {% endfor %}
     </ul>
 

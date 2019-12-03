@@ -1,3 +1,3 @@
 APP_NAME = "example"
 
-default_app_config = "example.apps.ExampleConfig"
+default_app_config = "example.apps.ExampleAppConfig"

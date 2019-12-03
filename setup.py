@@ -21,6 +21,10 @@ install_requires = [
     "django-allauth>=0.39",
     # api-users
     "django-rest-auth>=0.9",
+    # tokens
+    "django-rest-knox",
+    # passwords
+    "zxcvbn",
 ]
 
 

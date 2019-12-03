@@ -16,6 +16,7 @@
             .footer { border-top: 1px solid #999; font-style: italic; }
             .logo { height: 3rem; padding: 0.5rem; vertical-align: middle; }
             .user { background-color: #ffff90; padding: 2px; }
+            pre { display: inline; background-color: #eee; }
         </style>
     </head>
     <body>
@@ -36,45 +37,50 @@
                 <ul>
                     <li>admin:&nbsp;<a href="{% url 'admin:index' %}">{% url 'admin:index' %}</a></li>
                     <li>API Documentation:&nbsp;<a href="{% url 'swagger' %}">{% url 'swagger' %}</a></li>
-                    <li>API Access:
+                    <li>
+                        <strong>api access:</strong>
                         <ul>
-                            <li>/api</li>
-                            <li><a href="{% url 'rest_register' %}">{% url 'rest_register' %}</a></li>
-                            <li><a href="{% url 'rest_login' %}">{% url 'rest_login' %}</a></li>
-                            <li><a href="{% url 'rest_logout' %}">{% url 'rest_logout' %}</a><em>(POST only)</em></li>
-                            <li><a href="{% url 'rest_password_reset' %}">{% url 'rest_password_reset' %}</a></li>
-                            <li><a href="{% url 'users-list' %}">{% url 'users-list' %}</a>
+                            <li><a href="{% url 'rest_register' %}">register</a></li>
+                            <li><i>registering a user sends an email w/ a URL to the client; the client then posts to "verify email"</i></li>
+                            <li><a href="{% url 'rest_verify_email' %}">verify email</a></li>
+                            <li><a href="{% url 'rest_login' %}">login</a></li>
+                            <li><a href="{% url 'rest_logout' %}">logout</a></li>
+                            <li><a href="{% url 'rest_password_change' %}">password change</a></li>
+                            <li><a href="{% url 'rest_password_reset' %}">password reset</a></li>
+                            <li><i>resetting the password sends an email w/ a URL to the client; the client then posts to "password reset confirm"</i></li>
+                            <li><a href="{% url 'rest_password_reset_confirm' %}">password reset confirm</a></li>
+                            <li><a href="{% url 'users-list' %}">users-list</a>
                                 <ul>
                                 {% for user in active_users %}
-                                    <li><a href="{% url 'users-detail' username=user.username %}">{% url 'users-detail' username=user.username %}</a></li>
+                                    <li><a href="{% url 'users-detail' email=user.email %}">users-detail: {{user.email}}</a></li>
                                 {% endfor %}
                                 </ul>
                             </li>
                         </ul>
                     </li>
-                    <li>Backend Access:
+                    <li>
+                        <strong>backend access:</strong>
                         <ul>
-                            <li><a href="{% url 'account_signup' %}">{% url 'account_signup' %}</a></li>
-                            <li><a href="{% url 'account_login' %}">{% url 'account_login' %}</a></li>
-                            <li><a href="{% url 'account_logout' %}">{% url 'account_logout' %}</a></li>
-                            <li><a href="{% url 'account_change_password' %}">{% url 'account_change_password' %}</a></li>
-
-                            <li><a href="{% url 'account_reset_password' %}">{% url 'account_reset_password' %}</a></li>
+                            <li><a href="{% url 'account_signup' %}">signup</a>&nbsp;<pre>url(r"^signup/$", views.signup, name="account_signup"),</pre></li>
+                            <li><a href="{% url 'account_login' %}">login</a>&nbsp;<pre>url(r"^login/$", views.login, name="account_login"),</pre></li>
+                            <li><a href="{% url 'account_logout' %}">logout</a>&nbsp;<pre>url(r"^logout/$", views.logout, name="account_logout"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/change/$", views.password_change, name="account_change_password"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/set/$", views.password_set, name="account_set_password"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^inactive/$", views.account_inactive, name="account_inactive"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^email/$", views.email, name="account_email"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^confirm-email/$", views.email_verification_sent, name="account_email_verification_sent"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^confirm-email/(?P<key>[-:\w]+)/$", views.confirm_email, name="account_confirm_email"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/reset/$", views.password_reset, name="account_reset_password"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/reset/done/$", views.password_reset_done, name="account_reset_password_done"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/reset/key/(?P<uidb36>[0-9A-Za-z]+)-(?P<key>.+)/$", views.password_reset_from_key, name="account_reset_password_from_key"),</pre></li>
+                            <li>&nbsp;<pre>url(r"^password/reset/key/done/$", views.password_reset_from_key_done, name="account_reset_password_from_key_done"),</pre></li>
                             <li><a href="{% url 'user-list' %}">{% url 'user-list' %}</a>
                                 <ul>
-                                {% for user in active_users %}
-                                    <li><a href="{% url 'user-detail' username=user.username %}">{{ user.username }}</a></li>
-                                {% endfor %}
+                                    {% for user in active_users %}
+                                        <li><a href="{% url 'user-detail' email=user.email %}">{{ user.email }}</a></li>
+                                    {% endfor %}
                                 </ul>
-                            </li>
                             <li><a href="{% url 'profile-list' %}">{% url 'profile-list' %}</a>
-                                <ul>
-                                {% for profile in active_profiles %}
-                                    <li><a href="{% url 'profile-detail' username=profile.user.username profile_key=profile.key %}">{{ profile.key }} ({{ profile.user }})</a></li>
-
-                                {% endfor %}
-                                </ul>
-                            </li>
                         </ul>
                     </li>
                     <li>errors <em>(exposed just for testing)</em>:

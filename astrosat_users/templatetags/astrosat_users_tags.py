@@ -2,8 +2,7 @@ from django import template
 from django.utils.html import mark_safe
 
 import astrosat_users
-from astrosat_users.models import User
-from astrosat_users.profiles import get_profile_qs
+from astrosat_users.models import User, get_profile_qs
 
 
 register = template.Library()

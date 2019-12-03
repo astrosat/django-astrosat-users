@@ -36,7 +36,7 @@
         {% endif %}
         {% if request.user == object.user or request.user.is_superuser %}
             <!-- user/admin actions -->
-            <a class="button" href="{% url 'profile-update' username=object.user.username profile_key=object.key %}">update profile</a>
+            <a class="button" href="{% url 'profile-update' email=object.user.email profile_key=object.key %}">update profile</a>
         {% endif %}
     {% endif %}
 

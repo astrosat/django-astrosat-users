@@ -1,10 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
 
 from rest_framework.routers import SimpleRouter
-from rest_framework_swagger.views import get_swagger_view
 
 from astrosat.urls import (
     urlpatterns as astrosat_urlpatterns,
@@ -16,7 +14,7 @@ from astrosat_users.urls import (
     api_urlpatterns as astrosat_users_api_urlpatterns,
 )
 
-from .views import index_view
+from .views import index_view, api_schema_views
 
 
 admin.site.site_header = "Admin for Example Project for Django-Astrosat-Users"
@@ -34,13 +32,10 @@ handler500 = "astrosat.views.handler500"
 api_router = SimpleRouter()
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path(
-        "swagger/", get_swagger_view(title="Django-Astrosat-Users API"), name="swagger"
-    ),
+    path("", include(api_schema_views)),
 ]
-api_urlpatterns += astrosat_api_urlpatterns
 api_urlpatterns += astrosat_users_api_urlpatterns
-
+api_urlpatterns += astrosat_api_urlpatterns
 
 #################
 # normal routes #

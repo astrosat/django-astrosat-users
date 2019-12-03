@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from astrosat_users.profiles import UserProfileField
+from astrosat_users.models import UserProfileField
 
 
 class ExampleProfile(models.Model):
