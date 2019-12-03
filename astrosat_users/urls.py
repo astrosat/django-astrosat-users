@@ -1,11 +1,13 @@
 from django.urls import include, path, re_path
 from django.utils.decorators import method_decorator
+from django.views.defaults import page_not_found
+
+from rest_framework.exceptions import bad_request
 from rest_framework.routers import SimpleRouter
 
 from allauth.urls import urlpatterns as allauth_urlpatterns
-from rest_auth.views import PasswordResetConfirmView
 
-from astrosat.decorators import conditional_redirect
+# Backend views...
 
 from .views import (
     DisabledView,
@@ -18,17 +20,23 @@ from .views import (
     GenericProfileUpdateView,
 )
 
-from .views_api import (
-    rest_confirm_email,
-    rest_disabled,
-    RegisterView,
+# API views...
+from .views import (
+    api_disabled,
     LoginView,
+    LogoutView,
+    RegisterView,
+    VerifyEmailView,
+    PasswordChangeView,
+    PasswordResetView,
+    PasswordResetConfirmView,
     UserViewSet,
     UserRoleViewSet,
     UserPermissionViewSet,
 )
-from .conf import app_settings
 
+from astrosat.decorators import conditional_redirect
+from .conf import app_settings
 
 ##############
 # API routes #
@@ -41,23 +49,20 @@ api_router.register("roles", UserRoleViewSet, basename="roles")
 api_router.register("permissions", UserPermissionViewSet, basename="permissions")
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path("rest-auth/disabled/", rest_disabled, name="rest_disabled"),
-    # overwrite some of the rest_auth.urls to cope w/ the idiosyncrasies of astrosat_users
-    path("rest-auth/login/", LoginView.as_view(), name="rest_login"),
-    path("rest-auth/registration/", RegisterView.as_view(), name="rest_register"),
-    re_path(
-        r"^rest-auth/password/reset/(?P<uid>[0-9A-Za-z]+)-(?P<token>.+)/$",
-        PasswordResetConfirmView.as_view(),
-        name="rest_password_reset_confirm",
-    ),
-    # # path("rest-auth/verify-email/", RestVerifyEmailView.as_view(), name='rest_verify_email'),
-    path(
-        "rest-auth/confirm-email/<key>/", rest_confirm_email, name="rest_confirm_email"
-    ),
-    # and now include the built-in urls
-    path("rest-auth/", include("rest_auth.urls")),
-    path("rest-auth/registration/", include("rest_auth.registration.urls")),
+    path("disabled", api_disabled, name="rest_disabled"),
+    # overwrite the rest_auth.urls to cope w/ the idiosyncracies of astrosat_users
+    # (and to exclude the built-in user ViewSets)
+    # path("authentication/", include("rest_auth.urls")),
+    # path("authentication/registration/", include("rest_auth.registration.urls")),
+    path("authentication/login/", LoginView.as_view(), name="rest_login"),
+    path("authentication/logout/", LogoutView.as_view(), name="rest_logout"),
+    path("authentication/password/change/", PasswordChangeView.as_view(), name="rest_password_change"),
+    path("authentication/password/reset/", PasswordResetView.as_view(), name="rest_password_reset"),
+    path("authentication/password/verify-reset/", PasswordResetConfirmView.as_view(), name="rest_password_reset_confirm"),
+    path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
+    path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email",),
 ]
+
 
 #################
 # normal routes #
@@ -85,42 +90,34 @@ conditional_backend_url_patterns = [
 
 
 urlpatterns = [
-    path("accounts/disabled/", DisabledView.as_view(), name="disabled"),
     # allauth stuff...
-    path("accounts/", include(conditional_backend_url_patterns)),
-    path(
-        "accounts/disapproved/",
-        check_backend_access(DisapprovedView.as_view()),
-        name="disapproved",
-    ),
+    path("authentication/", include(conditional_backend_url_patterns)),
     # custom stuff...
+    path("authentication/disabled/", DisabledView.as_view(), name="disabled"),
+    path("authentication/disapproved/", DisabledView.as_view(), name="disapproved"),
+    path("users/", check_backend_access(UserListView.as_view()), name="user-list"),
     path(
-        "accounts/users/",
-        check_backend_access(UserListView.as_view()),
-        name="user-list",
-    ),
-    path(
-        "accounts/users/<str:username>/",
+        "users/<str:email>/",
         check_backend_access(UserDetailView.as_view()),
         name="user-detail",
     ),
     path(
-        "accounts/users/<str:username>/update/",
+        "users/<str:email>/update/",
         check_backend_access(UserUpdateView.as_view()),
         name="user-update",
     ),
     path(
-        "accounts/profiles/",
+        "profiles/",
         check_backend_access(GenericProfileListView.as_view()),
         name="profile-list",
     ),
     path(
-        "accounts/users/<str:username>/profiles/<slug:profile_key>",
+        "users/<str:email>/profiles/<slug:profile_key>",
         check_backend_access(GenericProfileDetailView.as_view()),
         name="profile-detail",
     ),
     path(
-        "accounts/users/<str:username>/profiles/<slug:profile_key>/update/",
+        "users/<str:email>/profiles/<slug:profile_key>/update/",
         check_backend_access(GenericProfileUpdateView.as_view()),
         name="profile-update",
     ),

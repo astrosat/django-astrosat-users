@@ -3,69 +3,71 @@
 {% load i18n %}
 {% load astrosat_users_tags %}
 
-{% block head_title %}{{ object.username }}{% endblock %}
+{% block head_title %} {{ object.email }} {% endblock %}
 
 {% block style %}
-    {{ block.super }}
-    <style>
-        a.button {
-            -webkit-appearance: button;
-            -moz-appearance: button;
-            appearance: button;
-            text-decoration: none;
-            color: initial;
-            margin: 4px 2px;
-            padding: 2px 20px;
-            text-align: center;
-            display: block;
-        }
-    </style>
+
+{{ block.super }}
+
+<style>
+  a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    text-decoration: none;
+    color: initial;
+    margin: 4px 2px;
+    padding: 2px 20px;
+    text-align: center;
+    display: block;
+  }
+</style>
+
 {% endblock style %}
 
 {% block content %}
 
-    <h2>{{ object.username }}</h2>
+<h2>{{ object.email }}</h2>
 
-    <div>
-        <!-- readonly stuff -->
-        <table>
-            <tr>
-                <td>name:</td>
-                <td>{{ object.name}}</td>
-            </tr>
-            <tr>
-                <td>profiles:</td>
-                <td>
-                    <ul>
-                        {% for key, profile in object.profiles.items %}
-                            <li><a href="{% url 'profile-detail' username=object.username profile_key=key %}">{{ key }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>roles:</td>
-                <td>
-                    <ul>
-                        {% for role in object.roles.all %}
-                            <li>{{ role.name }}</li>
-                        {% endfor %}
-                    </ul>
-                </td>
-            </tr>
-        </table>
-    </div>
+<div>
+  <!-- readonly stuff -->
+  <table>
+    <tr>
+      <td>name:</td>
+      <td>{{ object.name}}</td>
+    </tr>
+    <tr>
+      <td>profiles:</td>
+      <td>
+        <ul>
+          {% for key, profile in object.profiles.items %}
+          <li>
+            <a href="{% url 'profile-detail' email=object.email profile_key=key %}">{{ key }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>roles:</td>
+      <td>
+        <ul>
+          {% for role in object.roles.all %}
+          <li>{{ role.name }}</li>
+          {% endfor %}
+        </ul>
+      </td>
+    </tr>
+  </table>
+</div>
 
-    {% if request.user.is_authenticated %}
-        {% if request.user == object %}
-            <!-- user actions -->
-            <a class="button" href="{% url 'account_change_password' %}">change password</a>
-            <a class="button" href="{% url 'account_email' %}">change email</a>
-        {% endif %}
-        {% if request.user == object or request.user.is_superuser %}
-            <!-- user/admin actions -->
-            <a class="button" href="{% url 'user-update' username=object.username %}">update details<br/>(including roles)</a>
-        {% endif %}
-    {% endif %}
-
-{% endblock content %}
+{% if request.user.is_authenticated %} {% if request.user == object %}
+<!-- user actions -->
+<a class="button" href="{% url 'account_change_password' %}">change password</a>
+<a class="button" href="{% url 'account_email' %}">change email</a>
+{% endif %} {% if request.user == object or request.user.is_superuser %}
+<!-- user/admin actions -->
+<a class="button" href="{% url 'user-update' email=object.email %}"
+  >update details<br />(including roles)</a
+>
+{% endif %} {% endif %} {% endblock content %}

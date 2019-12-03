@@ -9,7 +9,7 @@
 
     <h2>Update {{ object.key }} ({{ object.user }})</h2>
 
-    <form method="post" action="{% url 'profile-update' username=object.user.username profile_key=object.key %}">
+    <form method="post" action="{% url 'profile-update' email=object.user.email profile_key=object.key %}">
 
         {% csrf_token %}
 

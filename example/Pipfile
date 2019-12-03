@@ -11,12 +11,14 @@ factory-boy = "*"
 django-debug-toolbar = "*"
 
 [packages]
-django = ">=2.2.0"
-django-environ = "*"
-djangorestframework = "*"
-django-rest-swagger = "*"
-django-astrosat-users = {editable = true,path = "./.."}
+django = ">=2.2.0"  # django, duh
+django-environ = "*"  # better env handling
+djangorestframework = "*"  # api
+django-rest-knox = "*"  # secure tokens
+zxcvbn = "*"  # secure passwords
+drf-yasg = "*"  # api documentation (swagger)
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
+django-astrosat-users = {editable = true,path = "./.."}
 
 [requires]
 python_version = "3.7"

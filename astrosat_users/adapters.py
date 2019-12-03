@@ -5,53 +5,39 @@ from django.core.mail import mail_managers
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode as uid_encode
 
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.utils import build_absolute_uri
 from allauth.account.adapter import DefaultAccountAdapter
+from allauth.account.forms import default_token_generator
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.account.utils import complete_signup, send_email_confirmation
+from allauth.account.utils import (
+    complete_signup,
+    send_email_confirmation,
+    user_pk_to_url_str,
+    url_str_to_user_pk,
+    user_username,
+)
 
 from .conf import app_settings
+from .utils import rest_encode_user_pk
 
 
 class AccountAdapter(DefaultAccountAdapter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.default_token_generator = default_token_generator
+
     @property
     def is_api(self):
         return re.match("^/api/", self.request.path) is not None
 
-    def get_login_redirect_url(self, request):
-        """
-        Returns the default URL to redirect to after logging in.  Note
-        that URLs passed explicitly (e.g. by passing along a `next`
-        GET parameter) take precedence over the value returned here.
-        """
-        assert request.user.is_authenticated
-        url = app_settings.LOGIN_REDIRECT_URL
-        return resolve_url(url)
-
-    def get_logout_redirect_url(self, request):
-        """
-        Returns the URL to redirect to after the user logs out. Note that
-        this method is also invoked if you attempt to log out while no users
-        is logged in. Therefore, request.user is not guaranteed to be an
-        authenticated user.
-        """
-        return resolve_url(app_settings.LOGOUT_REDIRECT_URL)
-
-    def get_email_confirmation_redirect_url(self, request):
-        """
-        The URL to return to after successful e-mail confirmation.
-        """
-        if request.user.is_authenticated:
-            # return app_settings.VERIFICATION_REDIRECT_URL
-            return self.get_login_redirect_url(request)
-        else:
-            return app_settings.VERIFICATION_REDIRECT_URL
-
     def is_open_for_signup(self, request: HttpRequest):
         return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
 
+    # TODO: MOVE THIS LOGIC TO THE LoginForm, WHERE IT BELONGS !
     def login(self, request, user):
         """
         Adds some checks into the login procedure.
@@ -76,7 +62,6 @@ class AccountAdapter(DefaultAccountAdapter):
             response = HttpResponseRedirect(reverse("disapproved"))
             raise ImmediateHttpResponse(response)
 
-        # if all of the checks passed, then just call the base class login
         super().login(request, user)
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):
@@ -97,13 +82,38 @@ class AccountAdapter(DefaultAccountAdapter):
         can be `None` here.
         """
         if self.is_api:
-            view_name = "rest_confirm_email"
+            # TODO: ASK MARK WHAT THIS SHOULD BE?!?
+            path = app_settings.ACCOUNT_CONFIRM_EMAIL_CLIENT_URL.format(
+                key=emailconfirmation.key
+            )
         else:
-            view_name = "account_confirm_email"
+            path = reverse("account_confirm_email", args=[emailconfirmation.key])
 
-        url = reverse(view_name, args=[emailconfirmation.key])
-        ret = build_absolute_uri(request, url)
-        return ret
+        url = build_absolute_uri(request, path)
+        return url
+
+    def get_password_confirmation_url(self, request, user, token=None):
+        """Constructs the password confirmation (reset) url.
+        """
+
+        token_key = (
+            self.default_token_generator.make_token(user) if token is None else token
+        )
+
+        if self.is_api:
+            # TODO: ASK MARK WHAT THIS SHOULD BE?!?
+            path = app_settings.ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL.format(
+                key=token_key, uid=rest_encode_user_pk(user)
+            )
+
+        else:
+            path = reverse(
+                "account_reset_password_from_key",
+                kwargs={"key": token_key, "uidb36": user_pk_to_url_str(user)},
+            )
+
+        url = build_absolute_uri(request, path)
+        return url
 
     def respond_email_verification_sent(self, request, user):
         """
@@ -118,18 +128,24 @@ class AccountAdapter(DefaultAccountAdapter):
 
         return super().respond_email_verification_sent(request, user)
 
+    # def clean_password(self, password, user=None):
+    # no need to overload this fn
+    # django-allauth just hooks into the defined Django Password Validators.
+    # astrosat_users must use LengthPasswordValidator & StrengthPasswordValidators.
+    # super().clean_password(password, user=user)
+
     def save_user(self, request, user, form, commit=True):
         """
         Saves a new User instance from the signup form.
         Overriding to send a notification email to the managers.
         Overriding this Adapter method instead of using signals,
         so that the notification is only sent when a user is added
-        by the form (as opposed to directly on the server or via the admin).
+        by the form/serializer (as opposed to in the shell or via the admin).
         """
         saved_user = super().save_user(request, user, form, commit=commit)
         if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
             subject = super().format_email_subject(f"new user signup: {saved_user}")
-            message = f"User {saved_user} signed up for an account."
+            message = f"User {saved_user.email} signed up for an account."
             mail_managers(subject, message, fail_silently=True)
         return saved_user
 
@@ -137,5 +153,3 @@ class AccountAdapter(DefaultAccountAdapter):
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def is_open_for_signup(self, request: HttpRequest, sociallogin: Any):
         return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
-
-    # def get_connect_redirect_url(self, request, socialaccount):

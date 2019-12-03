@@ -1,10 +1,12 @@
 import functools
 import operator
+from itertools import chain
 
 from django.conf import settings
 from django.core.checks import register, Error, Tags
 
 from . import APP_NAME
+from .conf import app_settings
 
 
 # apps required by astrosat
@@ -15,7 +17,8 @@ APP_DEPENDENCIES = [
     "allauth.socialaccount",
     "rest_auth",
     "rest_auth.registration",
-    "rest_framework.authtoken",  # required for rest_auth !
+    "knox",
+    # "rest_framework.authtoken",
 ]
 
 
@@ -41,10 +44,14 @@ def check_dependencies(app_configs, **kwargs):
 
 
 @register(Tags.compatibility)
-def check_allauth_settings(app_configs):
+def check_settings(app_configs):
+    """
+    Makes sure that some required settings are set as expected.
+    """
 
     errors = []
 
+    # obviously, a project that uses astrosat_users should use the astrosat_user User.
     user_model = settings.AUTH_USER_MODEL
     if user_model != f"{APP_NAME}.User":
         errors.append(
@@ -53,15 +60,21 @@ def check_allauth_settings(app_configs):
             )
         )
 
-    account_adapter = getattr(settings, "ACCOUNT_ADAPTER", None)
-    socialaccount_adapter = getattr(settings, "SOCIALACCOUNT_ADAPTER", None)
-    if (
-        account_adapter != f"{APP_NAME}.adapters.AccountAdapter"
-        or socialaccount_adapter != f"{APP_NAME}.adapters.SocialAccountAdapter"
+    # there can be multiple password validators defined;
+    # they must include LengthPasswordValidator & StrongPasswordValidator
+    password_validators = [
+        validator["NAME"] for validator in settings.AUTH_PASSWORD_VALIDATORS
+    ]
+    if not all(
+        validator in password_validators
+        for validator in [
+            "astrosat_users.utils.LengthPasswordValidator",
+            "astrosat_users.utils.StrengthPasswordValidator",
+        ]
     ):
         errors.append(
             Error(
-                f"You are using {APP_NAME} which requires specifying appropriate account_adapters in settings.py"
+                f"You are using {APP_NAME} which requires AUTH_PASSWORD_VALIDATORS to include LengthPasswordValidator & StrengthPasswordValidator"
             )
         )
 
@@ -96,64 +109,19 @@ def check_allauth_settings(app_configs):
 
 
 @register(Tags.compatibility)
-def check_rest_auth_settings(app_configs):
+def check_third_party_settings(app_configs):
 
     errors = []
 
-    rest_auth_serializers = getattr(settings, "REST_AUTH_SERIALIZERS", None)
-    if not isinstance(rest_auth_serializers, dict):
-        errors.append(
+    third_party_settings = [
+        app_settings.ALLAUTH_SETTINGS,
+        app_settings.REST_AUTH_SETTINGS,
+    ]
+
+    for key, value in chain(*map(lambda x: x.items(), third_party_settings)):
+        setting = getattr(settings, key, None)
+        if setting != value:
             Error(
-                f"You are using {APP_NAME} which requires you to set REST_AUTH_SERIALIZERS."
+                f"You are using {APP_NAME} which requires {key} to be set to {value}."
             )
-        )
-
-    if rest_auth_serializers is not None:
-
-        USER_DETAILS_SERIALIZER = f"{APP_NAME}.serializers.UserSerializer"
-        if (
-            rest_auth_serializers.get("USER_DETAILS_SERIALIZER")
-            != USER_DETAILS_SERIALIZER
-        ):
-            errors.append(
-                Error(
-                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[USER_DETAILS_SERIALIZER] to '{USER_DETAILS_SERIALIZER}'."
-                )
-            )
-
-        PASSWORD_RESET_SERIALIZER = f"{APP_NAME}.serializers.PasswordResetSerializer"
-        if (
-            rest_auth_serializers.get("PASSWORD_RESET_SERIALIZER")
-            != PASSWORD_RESET_SERIALIZER
-        ):
-            errors.append(
-                Error(
-                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_SERIALIZER] to '{PASSWORD_RESET_SERIALIZER}'."
-                )
-            )
-
-        PASSWORD_RESET_CONFIRM_SERIALIZER = (
-            f"{APP_NAME}.serializers.PasswordResetConfirmSerializer"
-        )
-        if (
-            rest_auth_serializers.get("PASSWORD_RESET_CONFIRM_SERIALIZER")
-            != PASSWORD_RESET_CONFIRM_SERIALIZER
-        ):
-            errors.append(
-                Error(
-                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_RESET_CONFIRM_SERIALIZER] to '{PASSWORD_RESET_CONFIRM_SERIALIZER}'."
-                )
-            )
-
-        PASSWORD_CHANGE_SERIALIZER = f"{APP_NAME}.serializers.PasswordChangeSerializer"
-        if (
-            rest_auth_serializers.get("PASSWORD_CHANGE_SERIALIZER")
-            != PASSWORD_CHANGE_SERIALIZER
-        ):
-            errors.append(
-                Error(
-                    f"You are using {APP_NAME} which requirs you to set REST_AUTH_SETTINGS[PASSWORD_CHANGE_SERIALIZER] to '{PASSWORD_CHANGE_SERIALIZER}'."
-                )
-            )
-
     return errors

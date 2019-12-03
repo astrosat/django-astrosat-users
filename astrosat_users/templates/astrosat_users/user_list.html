@@ -7,12 +7,16 @@
 
 {% block content %}
 
-    <h2>Active Users</h2>
+<h2>Active Users</h2>
 
-    <ul>
-        {% for object in object_list %}
-            <li><a href="{% url 'user-detail' username=object.username %}">{{ object.username }}</a></li>
-        {% endfor %}
-    </ul>
+<ul>
+  {% for object in object_list %}
+  <li>
+    <a href="{% url 'user-detail' email=object.email %}"
+      ><strong>{{ object.email }}</strong> [{{ object.username }}]</a
+    >
+  </li>
+  {% endfor %}
+</ul>
 
 {% endblock content %}

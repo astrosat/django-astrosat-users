@@ -103,6 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+### django stuff
+example/static
+
 ### in-progress files
 *.bak
 *.orig

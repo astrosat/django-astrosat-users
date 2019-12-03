@@ -3,7 +3,6 @@ import factory
 from factory.faker import (
     Faker as FactoryFaker,
 )  # note I use FactoryBoy's wrapper of Faker
-from django.test import Client
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -13,6 +12,7 @@ from rest_framework.test import APIClient
 
 from astrosat_users.models import UserSettings
 from astrosat_users.serializers import UserSerializer
+from astrosat_users.tests.utils import *
 
 from .factories import UserFactory
 
@@ -33,9 +33,15 @@ def user_data():
 
     user.delete()
 
-    # TODO: overwrite any supplied data...
-
     return data
+
+
+@pytest.fixture
+def admin():
+    UserModel = get_user_model()
+    admin = UserModel.objects.create_superuser("admin", "admin@admin.com", "password")
+    admin.verify()
+    return admin
 
 
 @pytest.fixture
@@ -59,10 +65,13 @@ def client():
 def api_client(user):
     """
     a client to use w/ the API
+    w/ an already logged-in user
+    and a valid token & key
     """
+    token, key = create_auth_token(user)
     client = APIClient()
-    client.force_authenticate(user)
-    return client
+    client.force_authenticate(user=user, token=token)
+    return (client, user, token, key)
 
 
 @pytest.fixture
