@@ -15,13 +15,15 @@
     ]
 ```
 
-3.  include the astrosat URLconf in your project "urls.py" like this:
+3.  add lots of settings; look at "astrosat_users/conf/settings.py" to see what to add
+
+4.  include the astrosat URLconf in your project "urls.py" like this:
 
 ```
  path("", include("astrosat_users.urls")
 ```
 
-4.  you may also want to override the templates:
+5.  you may also want to override the templates:
 
 ```
 TEMPLATES = [
@@ -41,9 +43,9 @@ TEMPLATES = [
 
 (to use the built-in astrosat templates, use something like `os.path.join(os.path.dirname(importlib.import_module("astrosat_users").__file__), "templates")`)
 
-5.  run `python manage.py migrate` to create the astrosat models.
+6.  run `python manage.py migrate` to create the astrosat models.
 
-6.  profit!
+7.  profit!
 
 ## developing
 
