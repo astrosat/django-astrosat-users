@@ -16,7 +16,7 @@
 
 APP_NAME = "astrosat_users"
 
-VERSION = (1, 0, 1)
+VERSION = (1, 1, 0)
 
 __title__ = "django-astrosat-users"
 __author__ = "Allyn Treshansky"
