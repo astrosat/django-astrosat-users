@@ -121,7 +121,9 @@ def check_third_party_settings(app_configs):
     for key, value in chain(*map(lambda x: x.items(), third_party_settings)):
         setting = getattr(settings, key, None)
         if setting != value:
-            Error(
-                f"You are using {APP_NAME} which requires {key} to be set to {value}."
+            errors.append(
+                Error(
+                    f"You are using {APP_NAME} which requires {key} to be set to {value}."
+                )
             )
     return errors

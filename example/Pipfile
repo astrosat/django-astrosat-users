@@ -11,7 +11,7 @@ factory-boy = "*"
 django-debug-toolbar = "*"
 
 [packages]
-django = ">=2.2.0"  # django, duh
+django = "~=2.2"  # django, duh
 django-environ = "*"  # better env handling
 djangorestframework = "*"  # api
 django-rest-knox = "*"  # secure tokens

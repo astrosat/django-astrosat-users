@@ -82,13 +82,13 @@ APPROVAL_REDIRECT_URL = getattr(settings, "APPROVAL_REDIRECT_URL", "/")
 
 ALLAUTH_SETTINGS = {
     "ACCOUNT_ADAPTER": f"{APP_NAME}.adapters.AccountAdapter",
-    "SOCIAL_ACCOUNT_ADAPTER": f"{APP_NAME}.adapters.SocialAccountAdapter",
+    "SOCIALACCOUNT_ADAPTER": f"{APP_NAME}.adapters.SocialAccountAdapter",
     "ACCOUNT_AUTHENTICATION_METHOD": "email",
     "ACCOUNT_USERNAME_REQUIRED": False,
     "ACCOUNT_EMAIL_REQUIRED": True,
     "ACCOUNT_LOGIN_ATTEMPTS_LIMIT": 5,
     "ACCOUNT_LOGOUT_ON_GET": False,
-    "ACCOUNT_USERNAME_BLACKLIST": ["admin"],
+    "ACCOUNT_USERNAME_BLACKLIST": ["admin", "sentinel"],
     "ACCOUNT_FORMS": {
         # "add_email": "allauth.account.forms.AddEmailForm",
         # "change_password": "allauth.account.forms.ChangePasswordForm",

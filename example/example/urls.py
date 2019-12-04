@@ -4,6 +4,8 @@ from django.urls import include, path
 
 from rest_framework.routers import SimpleRouter
 
+from astrosat.views import api_schema_views
+
 from astrosat.urls import (
     urlpatterns as astrosat_urlpatterns,
     api_urlpatterns as astrosat_api_urlpatterns,
@@ -14,7 +16,7 @@ from astrosat_users.urls import (
     api_urlpatterns as astrosat_users_api_urlpatterns,
 )
 
-from .views import index_view, api_schema_views
+from .views import index_view
 
 
 admin.site.site_header = "Admin for Example Project for Django-Astrosat-Users"
@@ -30,12 +32,14 @@ handler500 = "astrosat.views.handler500"
 ##############
 
 api_router = SimpleRouter()
+# (if I had apps that used ViewSets (instead of CBVs or fns), I would register them here)
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path("", include(api_schema_views)),
 ]
-api_urlpatterns += astrosat_users_api_urlpatterns
 api_urlpatterns += astrosat_api_urlpatterns
+api_urlpatterns += astrosat_users_api_urlpatterns
+
 
 #################
 # normal routes #

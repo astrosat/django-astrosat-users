@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     # api...
     "rest_framework",
-    "knox",
     "drf_yasg",
+    "knox",
     # users...
     "allauth",
     "allauth.account",
