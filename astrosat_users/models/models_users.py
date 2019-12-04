@@ -12,6 +12,15 @@ from astrosat.mixins import SingletonMixin
 from astrosat.utils import validate_no_tags
 
 
+def get_sentinel_user():
+    """
+    returns a "sentinel" object: the User to use as a placeholder
+    for FKs if the original User gets deleted.
+    """
+    user, _ = User.objects.get_or_create(username="sentinel")
+    return user
+
+
 class User(AbstractUser):
 
     # objects = (
