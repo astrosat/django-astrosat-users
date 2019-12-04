@@ -14,7 +14,7 @@ version = __import__("astrosat_users").__version__
 
 install_requires = [
     # django, duh
-    "django>=2.2",
+    "django~=2.2",
     # api
     "djangorestframework>=3.9",
     # users
