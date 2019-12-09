@@ -1,5 +1,6 @@
 from .serializers_auth import (
     RegisterSerializer,
+    SendEmailVerificationSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
     PasswordResetSerializer,

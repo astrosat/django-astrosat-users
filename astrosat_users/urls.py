@@ -26,6 +26,7 @@ from .views import (
     LoginView,
     LogoutView,
     RegisterView,
+    SendEmailVerificationView,
     VerifyEmailView,
     PasswordChangeView,
     PasswordResetView,
@@ -61,6 +62,7 @@ api_urlpatterns = [
     path("authentication/password/verify-reset/", PasswordResetConfirmView.as_view(), name="rest_password_reset_confirm"),
     path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
     path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email",),
+    path("authentication/send-email-verification/", SendEmailVerificationView.as_view(), name="rest_send_email_verification"),
 ]
 
 

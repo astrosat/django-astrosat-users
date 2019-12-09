@@ -53,7 +53,8 @@ class AccountAdapter(DefaultAccountAdapter):
         # is caught.  So, if a check fails I just raise an ImmediateHttpResponse w/ the correct response.
 
         if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not user.is_verified:
-            send_email_confirmation(request, user)
+            # don't automatically send another verification email
+            # send_email_confirmation(request, user)
             response = self.respond_email_verification_sent(request, user)
             raise ImmediateHttpResponse(response)
 

@@ -20,6 +20,19 @@ from astrosat_users.models import User
 from astrosat_users.utils import rest_decode_user_pk
 
 
+class UserSerializerLite(serializers.ModelSerializer):
+    """
+    A lightweight read-only serializer used for passing the bare minimum amount
+    of information about a user to the client; currently only used for login errors
+    in-case the client needs that information to submit a POST (for example, to resend
+    the verification email)
+    """
+    class Meta:
+        model = User
+        fields = ("email", "name")
+        read_only_fields = ("email", "name")
+
+
 class LoginSerializer(RestAuthLoginSerializer):
 
     # just a bit more security...
@@ -40,15 +53,25 @@ class LoginSerializer(RestAuthLoginSerializer):
         """
 
         instance = super().validate(attrs)
-        user = instance["user"]
 
-        # TODO: ISSUE #11 SHOULD BE ADDRESSED HERE
+        user = instance["user"]
+        user_serializer = UserSerializerLite(user)
+
         if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not user.is_verified:
+            # do not automatically re-send the verification email
             # send_email_confirmation(request, user)
-            raise ValidationError(f"{user} is not verified.")
+            msg = {
+                "user": user_serializer.data,
+                "detail": f"{user} is not verified",
+            }
+            raise ValidationError(msg)
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
-            raise ValidationError(f"{user} is not approved.")
+            msg = {
+                "user": user_serializer.data,
+                "detail": f"{user} is not approved",
+            }
+            raise ValidationError(msg)
 
         return instance
 
@@ -62,6 +85,11 @@ class RegisterSerializer(RestAuthRegisterSerializer):
     # no need to overwrite serializers/forms to use zxcvbn;
     # both of those hook into the allauth adapter
     # which uses settings.AUTH_PASSWORD_VALIDATORS which includes zxcvbn
+
+
+class SendEmailVerificationSerializer(serializers.Serializer):
+
+    email = serializers.EmailField()
 
 
 class PasswordChangeSerializer(RestAuthPasswordChangeSerializer):
