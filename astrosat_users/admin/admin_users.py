@@ -42,12 +42,20 @@ def logout_all(model_admin, request, queryset):
 logout_all.short_description = "Logs the selected users out of all active sessions"
 
 
+def verify(model_admin, request, queryset):
+    for obj in queryset:
+        obj.verify()
+
+
+verify.short_description = "Sets the selected users' primary email address to 'verified'"
+
+
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
 
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
-    actions = (logout_all,)
+    actions = (logout_all, verify)
     fieldsets = (
         (
             "User",

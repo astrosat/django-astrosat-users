@@ -2,11 +2,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.translation import ugettext_lazy as _
 
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 
-from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import complete_signup, send_email_confirmation
 
 from rest_auth.views import (
     LoginView as RestAuthLoginView,
@@ -20,10 +23,11 @@ from rest_auth.registration.views import (
     VerifyEmailView as RestAuthVerifyEmailView,
 )
 
-from astrosat_users.serializers import KnoxTokenSerializer
-from astrosat_users.utils import create_knox_token
-from astrosat_users.conf import app_settings as astrosat_users_settings
 from astrosat.decorators import conditional_redirect
+from astrosat_users.conf import app_settings as astrosat_users_settings
+from astrosat_users.models import User
+from astrosat_users.serializers import KnoxTokenSerializer, SendEmailVerificationSerializer
+from astrosat_users.utils import create_knox_token
 
 
 class IsNotAuthenticated(BasePermission):
@@ -95,6 +99,34 @@ class RegisterView(RestAuthRegisterView):
             self.request._request, user, allauth_settings.EMAIL_VERIFICATION, None
         )
         return user
+
+
+class SendEmailVerificationView(GenericAPIView):
+    """
+    An endpoint which re-sends the confirmation email to the
+    provided email address (no longer doing it automatically
+    upon a failed login)
+    """
+    serializer_class = SendEmailVerificationSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email_data = serializer.data["email"]
+
+        try:
+            user = User.objects.get(email=email_data)
+        except User.DoesNotExist:
+            raise ValidationError(f"Unable to find user with '{email_data}' address.")
+
+        if not user.is_verified:
+            send_email_confirmation(request, user)
+            msg = _("Verification email sent.")
+        else:
+            msg = _(f"No verification email sent; {user} is already verified.")
+
+        return Response({"detail": msg})
 
 
 class VerifyEmailView(RestAuthVerifyEmailView):

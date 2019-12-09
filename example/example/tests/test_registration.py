@@ -73,7 +73,7 @@ class TestApiRegistration:
 
     def test_registration_sends_confirmation_email(self, user_data):
         """
-        Tests that registering a user sends an email
+        Tests that registering a user sends a single email
         """
 
         client = APIClient()
@@ -95,6 +95,7 @@ class TestApiRegistration:
                 key=user.latest_confirmation_key
             ),
         )
+        assert len(mail.outbox) == 1
         email = mail.outbox[0]
 
         assert test_data["email"] in email.to
@@ -155,6 +156,33 @@ class TestApiRegistration:
         response = client.post(verification_url, {"key": valid_user_key})
         assert status.is_success(response.status_code)
         assert user.is_verified is True
+
+    def test_resend_verify_email(self, user):
+
+        assert user.is_verified is False
+
+        valid_email = user.email
+        invalid_email = shuffle_string(user.username) + "@" + valid_email.split("@")[1]
+
+        client = APIClient()
+        url = reverse("rest_send_email_verification")
+
+        # an invalid email raises an error...
+        response = client.post(url, {"email":  invalid_email})
+        assert status.is_client_error(response.status_code)
+        assert len(mail.outbox) == 0
+
+        # a valid email sends a message...
+        response = client.post(url, {"email":  valid_email})
+        assert status.is_success(response.status_code)
+        assert len(mail.outbox) == 1
+
+        # a verified user does nothing...
+        user.verify()
+        user.save()
+        response = client.post(url, {"email": valid_email})
+        assert status.is_success(response.status_code)
+        assert len(mail.outbox) == 1
 
 
 @pytest.mark.django_db

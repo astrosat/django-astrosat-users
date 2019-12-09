@@ -18,4 +18,5 @@ from .views_api_auth import (
     PasswordResetConfirmView,
     RegisterView,
     VerifyEmailView,
+    SendEmailVerificationView,
 )
