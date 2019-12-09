@@ -55,7 +55,7 @@ class UserAdmin(auth_admin.UserAdmin):
 
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
-    actions = (logout_all,)
+    actions = (logout_all, verify)
     fieldsets = (
         (
             "User",
