@@ -66,11 +66,11 @@ class UserFilterSet(filters.FilterSet):
         try:
             field = BetterBooleanFilterField()
             cleaned_value = field.clean(value)
-            if cleaned_value:
+            if cleaned_value is not None:
                 # Django cannot efficiently filter querysets by property
                 # so this basically recreates the logic of the @is_verified User property
                 queryset = queryset.filter(
-                    emailaddress__primary=True, emailaddress__verified=True
+                    emailaddress__primary=True, emailaddress__verified=cleaned_value
                 )
         except ValidationError as e:
             raise APIException({name: e.messages})
