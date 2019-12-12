@@ -15,6 +15,8 @@ django = "~=2.2"  # django, duh
 django-environ = "*"  # better env handling
 djangorestframework = "*"  # api
 django-rest-knox = "*"  # secure tokens
+# richer api filters
+django-filter = "*"
 zxcvbn = "*"  # secure passwords
 drf-yasg = "*"  # api documentation (swagger)
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}

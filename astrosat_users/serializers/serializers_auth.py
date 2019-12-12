@@ -27,6 +27,7 @@ class UserSerializerLite(serializers.ModelSerializer):
     in-case the client needs that information to submit a POST (for example, to resend
     the verification email)
     """
+
     class Meta:
         model = User
         fields = ("email", "name")
@@ -60,17 +61,11 @@ class LoginSerializer(RestAuthLoginSerializer):
         if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not user.is_verified:
             # do not automatically re-send the verification email
             # send_email_confirmation(request, user)
-            msg = {
-                "user": user_serializer.data,
-                "detail": f"{user} is not verified",
-            }
+            msg = {"user": user_serializer.data, "detail": f"{user} is not verified"}
             raise ValidationError(msg)
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
-            msg = {
-                "user": user_serializer.data,
-                "detail": f"{user} is not approved",
-            }
+            msg = {"user": user_serializer.data, "detail": f"{user} is not approved"}
             raise ValidationError(msg)
 
         return instance

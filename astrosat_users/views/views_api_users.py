@@ -1,3 +1,6 @@
+from django.core.exceptions import ValidationError
+from django.db.models import Count
+
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
@@ -5,6 +8,11 @@ from rest_framework.permissions import (
     SAFE_METHODS,
 )
 from rest_framework import mixins, viewsets
+from rest_framework.exceptions import APIException
+
+from django_filters import rest_framework as filters
+
+from astrosat.views import BetterBooleanFilter, BetterBooleanFilterField
 
 from astrosat_users.models import User, UserRole, UserPermission
 from astrosat_users.serializers import (
@@ -41,13 +49,71 @@ class ListRetrieveViewSet(
     pass
 
 
+class UserFilterSet(filters.FilterSet):
+    class Meta:
+        model = User
+        fields = ["is_active", "is_approved", "is_verified", "roles"]
+
+    is_active = BetterBooleanFilter()
+    is_approved = BetterBooleanFilter()
+    is_verified = filters.Filter(method="filter_is_verified")
+    roles__any = filters.Filter(method="filter_roles_or")
+    roles__all = filters.Filter(method="filter_roles_and")
+    permissions__any = filters.Filter(method="filter_permissions_or")
+    permissions__all = filters.Filter(method="filter_permissions_and")
+
+    def filter_is_verified(self, queryset, name, value):
+        try:
+            field = BetterBooleanFilterField()
+            cleaned_value = field.clean(value)
+            if cleaned_value:
+                # Django cannot efficiently filter querysets by property
+                # so this basically recreates the logic of the @is_verified User property
+                queryset = queryset.filter(
+                    emailaddress__primary=True, emailaddress__verified=True
+                )
+        except ValidationError as e:
+            raise APIException({name: e.messages})
+        return queryset
+
+    def filter_roles_or(self, queryset, name, value):
+        # this is the default behavior of the "__in" lookup; it's pretty straightforward
+        role_names = value.split(",")
+        return queryset.filter(roles__name__in=role_names).distinct()
+
+    def filter_roles_and(self, queryset, name, value):
+        # this uses annotations to match users w/ the same number of roles as the values
+        # I'm not sure why I can't do something clever w/ Q objects like:
+        # return queryset.filter(reduce(and_, map(lambda x: Q(roles__name=x), role_names)))
+        role_names = value.split(",")
+        return (
+            queryset.filter(roles__name__in=role_names)
+            .annotate(num_roles=Count("roles"))
+            .filter(num_roles=len(role_names))
+        )
+
+    def filter_permissions_or(self, queryset, name, value):
+        permission_names = value.split(",")
+        return queryset.filter(roles__permissions__name__in=permission_names).distinct()
+
+    def filter_permissions_and(self, queryset, name, value):
+        permission_names = value.split(",")
+        return (
+            queryset.filter(roles__permissions__name__in=permission_names)
+            .annotate(num_permissions=Count("roles__permissions"))
+            .filter(num_permissions=len(permission_names))
+        )
+
+
 class UserViewSet(ListRetrieveViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
     serializer_class = UserSerializer
-    queryset = User.objects.filter(is_active=True).prefetch_related(
-        "roles", "roles__permissions"
-    )
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = UserFilterSet
+
+    queryset = User.objects.all().prefetch_related("roles", "roles__permissions")
+
     lookup_field = "email"
     lookup_value_regex = (
         "[^/]+"

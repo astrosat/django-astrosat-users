@@ -9,6 +9,7 @@ from astrosat.tests.providers import ValidatedProvider
 from astrosat.tests.utils import optional_declaration
 
 from astrosat_users.tests.factories import UserFactory as AstrosatUserFactory
+from astrosat_users.tests.factories import UserRoleFactory, UserPermissionFactory
 
 from example.models import ExampleProfile
 

@@ -77,7 +77,6 @@ class User(AbstractUser):
         """
         Checks if the primary email address belonging to this user has been verified.
         """
-        # TODO: THIS IS A BIT INNEFFICIENT ISNT IT
         return (
             self.emailaddress_set.only("verified", "primary")
             .filter(primary=True, verified=True)
