@@ -71,6 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "description",
+            "is_active",
             "is_verified",
             "is_approved",
             "profiles",

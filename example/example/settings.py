@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     # api...
     "rest_framework",
+    "django_filters",
     "drf_yasg",
     "knox",
     # users...

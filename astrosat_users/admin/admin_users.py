@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
 
 from django.contrib.auth.models import Group, Permission
@@ -34,20 +34,51 @@ class UserRoleAdmin(admin.ModelAdmin):
     filter_horizontal = ("permissions",)
 
 
+def toggle_approval(model_admin, request, queryset):
+    # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/17186)
+    # queryset.update(is_approved=not(F("is_approved")))
+    for obj in queryset:
+        obj.is_approved = not obj.is_approved
+        obj.save()
+
+        msg = f"{obj} {'not' if not obj.is_approved else ''} approved."
+        messages.add_message(request, messages.INFO, msg)
+
+
+toggle_approval.short_description = "Toggles the approval of the selected users"
+
+
+def toggle_verication(model_admin, request, queryset):
+
+    for obj in queryset:
+
+        emailaddress, created = obj.emailaddress_set.get_or_create(
+            user=obj, email=obj.email
+        )
+        if not emailaddress.primary:
+            emailaddress.set_as_primary(conditional=True)
+
+        emailaddress.verified = not emailaddress.verified
+        emailaddress.save()
+
+        msg = f"{emailaddress} {'created and' if created else ''} {'not' if not emailaddress.verified else ''} verified."
+        messages.add_message(request, messages.INFO, msg)
+
+
+toggle_verication.short_description = (
+    "Toggles the verification of the selected users' primary email addresses"
+)
+
+
 def logout_all(model_admin, request, queryset):
     for obj in queryset:
         obj.logout_all()
 
+        msg = f"logged {obj} out of all sessions."
+        messages.add_message(reqeust, messages.INFO, msg)
+
 
 logout_all.short_description = "Logs the selected users out of all active sessions"
-
-
-def verify(model_admin, request, queryset):
-    for obj in queryset:
-        obj.verify()
-
-
-verify.short_description = "Sets the selected users' primary email address to 'verified'"
 
 
 @admin.register(User)
@@ -55,7 +86,7 @@ class UserAdmin(auth_admin.UserAdmin):
 
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
-    actions = (logout_all, verify)
+    actions = (toggle_approval, toggle_verication, logout_all)
     fieldsets = (
         (
             "User",

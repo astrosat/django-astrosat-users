@@ -9,7 +9,7 @@ from astrosat.tests.providers import ValidatedProvider
 from astrosat.tests.utils import optional_declaration
 
 from allauth.account.models import EmailAddress
-from astrosat_users.models import User
+from astrosat_users.models import User, UserRole, UserPermission
 
 
 FactoryFaker.add_provider(ValidatedProvider)
@@ -74,3 +74,41 @@ class EmailAddressFactory(factory.DjangoModelFactory):
     primary = True
     email = FactoryFaker("email")
     user = factory.SubFactory(UserFactory, emailaddress_set=None)
+
+
+class UserRoleFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = UserRole
+
+    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+
+    @factory.lazy_attribute
+    def name(self):
+        word = FactoryFaker("word").generate(extra_kwargs={})
+        return f"{word.title()}Role"
+
+    @factory.post_generation
+    def permissions(self, create: bool, extracted: Sequence[Any], **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for permission in extracted:
+                self.permissions.add(permission)
+
+        else:
+            for _ in range(2):
+                permission = UserPermissionFactory()
+                self.permissions.add(permission)
+
+
+class UserPermissionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = UserPermission
+
+    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+
+    @factory.lazy_attribute
+    def name(self):
+        words = FactoryFaker("words", nb=2).generate(extra_kwargs={})
+        return f"can_{'_'.join(words)}"
