@@ -1,4 +1,5 @@
 from django.urls import include, path, re_path
+from django.urls.resolvers import RegexPattern, RoutePattern
 from django.utils.decorators import method_decorator
 from django.views.defaults import page_not_found
 
@@ -61,7 +62,7 @@ api_urlpatterns = [
     path("authentication/password/reset/", PasswordResetView.as_view(), name="rest_password_reset"),
     path("authentication/password/verify-reset/", PasswordResetConfirmView.as_view(), name="rest_password_reset_confirm"),
     path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
-    path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email",),
+    path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email"),
     path("authentication/send-email-verification/", SendEmailVerificationView.as_view(), name="rest_send_email_verification"),
 ]
 
@@ -79,17 +80,25 @@ check_backend_access = method_decorator(
     name="dispatch",
 )
 
-conditional_backend_url_patterns = [
-    # ensures that all the urlpatterns provided by allauth use the "check_backend_access" decorator defined in "astrosat_users.views"
-    re_path(
-        urlpattern.pattern,
-        check_backend_access(urlpattern.callback),
-        name=urlpattern.name,
-    )
-    for urlresolver in allauth_urlpatterns
-    for urlpattern in urlresolver.url_patterns
-]
+# ensure that all the urlpatterns provided by allauth use the "check_backend_access" decorator
+conditional_backend_url_patterns = []
+for urlresolver in allauth_urlpatterns:
+    for urlpattern in urlresolver.url_patterns:
 
+        if isinstance(urlpattern.pattern, RegexPattern):
+            pattern_fn = re_path
+        elif isinstance(urlpattern.pattern, RoutePattern):
+            pattern_fn = path
+        else:
+            raise NotImplementedError(f"unable to decode pattern {urlpattern.pattern}")
+
+        conditional_backend_url_patterns.append(
+            pattern_fn(
+                str(urlpattern.pattern),
+                check_backend_access(urlpattern.callback),
+                name=urlpattern.name,
+            )
+        )
 
 urlpatterns = [
     # allauth stuff...
