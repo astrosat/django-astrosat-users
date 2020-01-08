@@ -18,7 +18,6 @@ APP_DEPENDENCIES = [
     "rest_auth",
     "rest_auth.registration",
     "knox",
-    # "rest_framework.authtoken",
 ]
 
 

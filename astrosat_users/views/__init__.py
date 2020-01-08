@@ -20,3 +20,4 @@ from .views_api_auth import (
     VerifyEmailView,
     SendEmailVerificationView,
 )
+from .views_tokens import token_view
