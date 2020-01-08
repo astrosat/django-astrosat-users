@@ -9,7 +9,6 @@ from rest_framework.routers import SimpleRouter
 from allauth.urls import urlpatterns as allauth_urlpatterns
 
 # Backend views...
-
 from .views import (
     DisabledView,
     DisapprovedView,
@@ -35,6 +34,11 @@ from .views import (
     UserViewSet,
     UserRoleViewSet,
     UserPermissionViewSet,
+)
+
+# API views that still authenticate w/ backend...
+from .views import (
+    token_view,
 )
 
 from astrosat.decorators import conditional_redirect
@@ -64,6 +68,9 @@ api_urlpatterns = [
     path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
     path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email"),
     path("authentication/send-email-verification/", SendEmailVerificationView.as_view(), name="rest_send_email_verification"),
+    # a "special" api_urlpattern that authenticates using django-allauth NOT django-rest-auth
+    path("token", token_view, name="token"),
+
 ]
 
 
