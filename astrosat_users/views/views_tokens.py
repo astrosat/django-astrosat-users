@@ -35,4 +35,4 @@ def token_view(request):
     except Exception as e:
         raise APIException(e)
 
-    return Response({"token": token_key})
+    return Response(token_key)
