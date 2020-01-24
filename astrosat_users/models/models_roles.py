@@ -7,6 +7,15 @@ from django.utils.translation import ugettext_lazy as _
 # R3 = R2 + R1 (means Role3 inherits Role2's permissions & Role1's permissions, plus any of its own)
 # ?
 
+class UserRoleManager(models.Manager):
+    """
+    This manager lets me deserialize using natural_keys
+    (this allows me to use fixtures w/out having to hard-code pks)
+    """
+
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
 
 class UserRole(models.Model):
 
@@ -19,6 +28,8 @@ class UserRole(models.Model):
         verbose_name = "User Role"
         verbose_name_plural = "User Roles"
 
+    objects = UserRoleManager()
+
     name = models.CharField(unique=True, blank=False, null=False, max_length=255)
     description = models.TextField(blank=True, null=True)
 
@@ -30,11 +41,26 @@ class UserRole(models.Model):
         permissions = ", ".join([p.name for p in self.permissions.all()])
         return f"{self.name}: [{permissions}]"
 
+    def natural_key(self):
+        return (self.name,)
+
+
+class UserPermissionManager(models.Manager):
+    """
+    This manager lets me deserialize using natural_keys
+    (this allows me to use fixtures w/out having to hard-code pks)
+    """
+
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
 
 class UserPermission(models.Model):
     class Meta:
         verbose_name = "User Permission"
         verbose_name_plural = "User Permissions"
+
+    objects = UserPermissionManager()
 
     name = models.CharField(
         validators=[
@@ -53,3 +79,6 @@ class UserPermission(models.Model):
 
     def __str__(self):
         return self.name
+
+    def natural_key(self):
+        return (self.name,)
