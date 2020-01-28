@@ -57,7 +57,7 @@ _login_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties=OrderedDict((
         # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
-        ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, example="allyn.treshansky@astrosat.net")),
+        ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, example="admin@astrosat.net")),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="password")),
     ))
 )
