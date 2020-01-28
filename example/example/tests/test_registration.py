@@ -168,12 +168,12 @@ class TestApiRegistration:
         url = reverse("rest_send_email_verification")
 
         # an invalid email raises an error...
-        response = client.post(url, {"email":  invalid_email})
+        response = client.post(url, {"email": invalid_email})
         assert status.is_client_error(response.status_code)
         assert len(mail.outbox) == 0
 
         # a valid email sends a message...
-        response = client.post(url, {"email":  valid_email})
+        response = client.post(url, {"email": valid_email})
         assert status.is_success(response.status_code)
         assert len(mail.outbox) == 1
 

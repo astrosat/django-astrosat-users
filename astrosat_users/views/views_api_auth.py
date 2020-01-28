@@ -1,11 +1,17 @@
+from collections import OrderedDict
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.translation import ugettext_lazy as _
 
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import get_adapter
@@ -26,7 +32,10 @@ from rest_auth.registration.views import (
 from astrosat.decorators import conditional_redirect
 from astrosat_users.conf import app_settings as astrosat_users_settings
 from astrosat_users.models import User
-from astrosat_users.serializers import KnoxTokenSerializer, SendEmailVerificationSerializer
+from astrosat_users.serializers import (
+    KnoxTokenSerializer,
+    SendEmailVerificationSerializer,
+)
 from astrosat_users.utils import create_knox_token
 
 
@@ -41,6 +50,25 @@ class IsNotAuthenticated(BasePermission):
         return not user.is_authenticated
 
 
+ # b/c ACCOUNT_USERNAME_REQURED is False and ACCOUNT_EMAIL_REQUIRED is True,
+ # not all fields from the LoginSerializer are used in the LoginView
+ # therefore, I overide the swagger documentation w/ the following schema
+_login_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
+        ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, example="allyn.treshansky@astrosat.net")),
+        ("password", openapi.Schema(type=openapi.TYPE_STRING, example="password")),
+    ))
+)
+
+
+@method_decorator(
+    swagger_auto_schema(
+        request_body=_login_schema, responses={status.HTTP_200_OK: KnoxTokenSerializer}
+    ),
+    name="post",
+)
 @method_decorator(sensitive_post_parameters("password"), name="dispatch")
 class LoginView(RestAuthLoginView):
     """
@@ -107,6 +135,7 @@ class SendEmailVerificationView(GenericAPIView):
     provided email address (no longer doing it automatically
     upon a failed login)
     """
+
     serializer_class = SendEmailVerificationSerializer
 
     def post(self, request, *args, **kwargs):
