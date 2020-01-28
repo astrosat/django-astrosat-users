@@ -3,6 +3,8 @@ from django.contrib.auth import admin as auth_admin
 
 from django.contrib.auth.models import Group, Permission
 
+from astrosat.admin import get_clickable_m2m_list_display
+
 from astrosat_users.forms import UserAdminChangeForm, UserAdminCreationForm
 from astrosat_users.models import User, UserSettings, UserRole, UserPermission
 
@@ -75,7 +77,7 @@ def logout_all(model_admin, request, queryset):
         obj.logout_all()
 
         msg = f"logged {obj} out of all sessions."
-        messages.add_message(reqeust, messages.INFO, msg)
+        messages.add_message(request, messages.INFO, msg)
 
 
 logout_all.short_description = "Logs the selected users out of all active sessions"
@@ -103,7 +105,9 @@ class UserAdmin(auth_admin.UserAdmin):
     ) + auth_admin.UserAdmin.fieldsets
     list_display = [
         "username",
+        "email",
         "name",
+        "get_roles_for_list_display",
         "is_superuser",
         "is_verified_pretty",
         "is_approved",
@@ -114,6 +118,11 @@ class UserAdmin(auth_admin.UserAdmin):
     filter_horizontal = (
         "roles",
     )  # makes a pretty widget; the same one as used by "groups"
+
+    def get_roles_for_list_display(self, obj):
+        return get_clickable_m2m_list_display(UserRole, obj.roles.all())
+
+    get_roles_for_list_display.short_description = "roles"
 
     def is_verified_pretty(self, instance):
         # makes the "is_verified" property look pretty in list_display
