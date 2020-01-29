@@ -33,8 +33,10 @@ from astrosat.decorators import conditional_redirect
 from astrosat_users.conf import app_settings as astrosat_users_settings
 from astrosat_users.models import User
 from astrosat_users.serializers import (
+    UserSerializerLite,
     KnoxTokenSerializer,
     SendEmailVerificationSerializer,
+    LoginSerializer,
 )
 from astrosat_users.utils import create_knox_token
 
@@ -51,14 +53,26 @@ class IsNotAuthenticated(BasePermission):
 
 
  # b/c ACCOUNT_USERNAME_REQURED is False and ACCOUNT_EMAIL_REQUIRED is True,
- # not all fields from the LoginSerializer are used in the LoginView
- # therefore, I overide the swagger documentation w/ the following schema
+ # not all fields from the LoginSerializer/RegisterSerializer are used in the LoginView/RegisterView
+ # therefore, I overide the swagger documentation w/ the following schemas...
+
 _login_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties=OrderedDict((
         # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
         ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, example="admin@astrosat.net")),
         ("password", openapi.Schema(type=openapi.TYPE_STRING, example="password")),
+    ))
+)
+
+
+_register_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties=OrderedDict((
+        # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
+        ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL)),
+        ("password1", openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23")),
+        ("password2", openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23")),
     ))
 )
 
@@ -113,12 +127,21 @@ class LogoutView(RestAuthLogoutView):
     ),
     name="dispatch",
 )
+@method_decorator(
+    swagger_auto_schema(
+        request_body=_register_schema, responses={status.HTTP_200_OK: UserSerializerLite}
+    ),
+    name="post",
+)
 class RegisterView(RestAuthRegisterView):
 
     permission_classes = [IsNotAuthenticated]
 
     def get_response_data(self, user):
-        return KnoxTokenSerializer({"user": user, "token": self.token}).data
+        # just return a lightweight representation of the user
+        # no need to get private details or tokens at this point
+        serializer = UserSerializerLite(instance=user)
+        return serializer.data
 
     def perform_create(self, serializer):
         user = serializer.save(self.request)

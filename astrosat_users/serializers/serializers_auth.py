@@ -19,19 +19,7 @@ from astrosat_users.forms import PasswordResetForm
 from astrosat_users.models import User
 from astrosat_users.utils import rest_decode_user_pk
 
-
-class UserSerializerLite(serializers.ModelSerializer):
-    """
-    A lightweight read-only serializer used for passing the bare minimum amount
-    of information about a user to the client; currently only used for login errors
-    in-case the client needs that information to submit a POST (for example, to resend
-    the verification email)
-    """
-
-    class Meta:
-        model = User
-        fields = ("email", "name")
-        read_only_fields = ("email", "name")
+from .serializers_users import UserSerializerLite
 
 
 class LoginSerializer(RestAuthLoginSerializer):

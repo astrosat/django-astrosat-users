@@ -5,6 +5,20 @@ from astrosat.serializers import WritableNestedListSerializer
 from astrosat_users.models import User, UserRole, UserPermission, PROFILES
 
 
+class UserSerializerLite(serializers.ModelSerializer):
+    """
+    A lightweight read-only serializer used for passing the bare minimum amount
+    of information about a user to the client; currently only used for login errors
+    in-case the client needs that information to submit a POST (for example, to resend
+    the verification email, and for the RegisterView)
+    """
+
+    class Meta:
+        model = User
+        fields = ("email", "name", "username")
+        read_only_fields = ("email", "name", "username")
+
+
 class GenericProfileListSerializer(serializers.ListSerializer):
 
     pass

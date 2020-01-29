@@ -113,6 +113,8 @@ class UserAdmin(auth_admin.UserAdmin):
         "is_approved",
         "is_active",
     ]
+    list_filter = auth_admin.UserAdmin.list_filter + ("roles",)
+
     search_fields = ["username", "name", "email"]
 
     filter_horizontal = (
