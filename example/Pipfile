@@ -4,21 +4,22 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
+django-debug-toolbar = "*"
+factory-boy = "*"
+pytest = "==5.3.5"
 pytest-django = "*"
 pytest-sugar = "*"
-factory-boy = "*"
-django-debug-toolbar = "*"
 
 [packages]
-django = "~=2.2"  # django, duh
-django-environ = "*"  # better env handling
-djangorestframework = "*"  # api
-django-rest-knox = "*"  # secure tokens
-django-filter = "*"  # richer api filters
-zxcvbn = "*"  # secure passwords
-drf-yasg = "*"  # api documentation (swagger)
+django = "~=3.0"  # django, duh
 django-allauth = "*"  # user authentication
+django-environ = "*"  # better env handling
+django-filter = "*"  # richer api filters
+django-rest-auth = "*"  # API user authentication
+django-rest-knox = "*"  # secure tokens
+djangorestframework = "*"  # API
+drf-yasg = "*"  # api documentation (swagger)
+zxcvbn = "*"  # secure passwords
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
 django-astrosat-users = {editable = true,path = "./.."}
 
