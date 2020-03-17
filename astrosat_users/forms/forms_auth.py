@@ -1,7 +1,7 @@
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from allauth.account import app_settings as allauth_app_settings
 from allauth.account.adapter import get_adapter
