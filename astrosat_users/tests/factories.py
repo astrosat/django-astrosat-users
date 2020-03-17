@@ -40,8 +40,8 @@ class UserFactory(factory.DjangoModelFactory):
             lower_case=True,
         ).generate(extra_kwargs={})
         self.raw_password = (
-            password
-        )  # the instance has a "raw_password" variable to use in tests
+            password  # the instance has a "raw_password" variable to use in tests
+        )
         self.set_password(password)
 
     @factory.post_generation

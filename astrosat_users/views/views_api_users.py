@@ -116,8 +116,8 @@ class UserViewSet(ListRetrieveViewSet):
 
     lookup_field = "email"
     lookup_value_regex = (
-        "[^/]+"
-    )  # the default regex was "[^/.]+" which wasn't matching email addresses
+        "[^/]+"  # the default regex was "[^/.]+" which wasn't matching email addresses
+    )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

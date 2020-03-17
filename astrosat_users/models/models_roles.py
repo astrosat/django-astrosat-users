@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 # R3 = R2 + R1 (means Role3 inherits Role2's permissions & Role1's permissions, plus any of its own)
 # ?
 
+
 class UserRoleManager(models.Manager):
     """
     This manager lets me deserialize using natural_keys

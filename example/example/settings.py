@@ -191,12 +191,8 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "astrosat_users.serializers.RegisterSerializer"
 }
 
-REST_AUTH_TOKEN_MODEL = (
-    "knox.models.AuthToken"
-)  # model class for tokens, default value rest_framework.authtoken.models
-REST_AUTH_TOKEN_CREATOR = (
-    "astrosat_users.utils.create_knox_token"
-)  # - callable to create tokens, default value rest_auth.utils.default_create_token.
+REST_AUTH_TOKEN_MODEL = "knox.models.AuthToken"  # model class for tokens, default value rest_framework.authtoken.models
+REST_AUTH_TOKEN_CREATOR = "astrosat_users.utils.create_knox_token"  # - callable to create tokens, default value rest_auth.utils.default_create_token.
 # REST_SESSION_LOGIN - Enable session login in Login API view (default: True)
 # REST_USE_JWT - Enable JWT Authentication instead of Token/Session based. This is built on top of django-rest-framework-jwt (default: False)
 # OLD_PASSWORD_FIELD_ENABLED - set it to True if you want to have old password verification on password change enpoint (default: False)
