@@ -39,8 +39,7 @@ class UserRole(models.Model):
     )
 
     def __str__(self):
-        permissions = ", ".join([p.name for p in self.permissions.all()])
-        return f"{self.name}: [{permissions}]"
+        return self.name
 
     def natural_key(self):
         return (self.name,)
