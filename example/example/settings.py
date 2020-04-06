@@ -175,8 +175,8 @@ ACCOUNT_FORMS = {
     "reset_password": "astrosat_users.forms.PasswordResetForm",
     # "reset_password_from_key": "allauth.account.forms.ResetPasswordKeyForm",
     # "set_password": "allauth.account.forms.SetPasswordForm",
-    # "signup": "allauth.account.forms.SignupForm",
-    # "signup": "allauth.socialaccount.forms.SignupForm",
+    "signup": "astrosat_users.forms.RegistrationForm",
+
 }
 
 REST_AUTH_SERIALIZERS = {

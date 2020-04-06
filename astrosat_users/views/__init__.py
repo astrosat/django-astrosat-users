@@ -1,6 +1,7 @@
 from .views_backend import (
     DisabledView,
     DisapprovedView,
+    UnacceptedView,
     UserListView,
     UserDetailView,
     UserUpdateView,

@@ -73,6 +73,7 @@ _register_schema = openapi.Schema(
         ("email", openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL)),
         ("password1", openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23")),
         ("password2", openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23")),
+        ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
     ))
 )
 

@@ -12,6 +12,7 @@ from allauth.urls import urlpatterns as allauth_urlpatterns
 from .views import (
     DisabledView,
     DisapprovedView,
+    UnacceptedView,
     UserListView,
     UserDetailView,
     UserUpdateView,
@@ -112,7 +113,8 @@ urlpatterns = [
     path("authentication/", include(conditional_backend_url_patterns)),
     # custom stuff...
     path("authentication/disabled/", DisabledView.as_view(), name="disabled"),
-    path("authentication/disapproved/", DisabledView.as_view(), name="disapproved"),
+    path("authentication/disapproved/", DisapprovedView.as_view(), name="disapproved"),
+    path("authentication/unaccepted/", UnacceptedView.as_view(), name="unaccepted"),
     path("users/", check_backend_access(UserListView.as_view()), name="user-list"),
     path(
         "users/<str:email>/",

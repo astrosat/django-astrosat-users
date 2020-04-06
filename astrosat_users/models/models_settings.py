@@ -29,6 +29,10 @@ class UserSettings(SingletonMixin, models.Model):
         default=True,
         help_text=_("Require an email verification step to the sign up process."),
     )
+    require_terms_acceptance = models.BooleanField(
+        default=False,
+        help_text=_("Require a user to accept the terms & conditions during the sign up process."),
+    )
 
     def __str__(self):
         return "User Settings"

@@ -44,6 +44,15 @@ ASTROSAT_USERS_REQUIRE_APPROVAL = getattr(
     ),
 )
 
+ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE = getattr(
+    settings,
+    "ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE",
+    DynamicSetting(
+        "astrosat_users.UserSettings.require_terms_acceptance",
+        env("DJANGO_ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE", default=False),
+    ),
+)
+
 ASTROSAT_USERS_ALLOW_REGISTRATION = getattr(
     settings,
     "ASTROSAT_USERS_ALLOW_REGISTRATION",
@@ -96,7 +105,7 @@ ALLAUTH_SETTINGS = {
         "reset_password": "astrosat_users.forms.PasswordResetForm",
         # "reset_password_from_key": "allauth.account.forms.ResetPasswordKeyForm",
         # "set_password": "allauth.account.forms.SetPasswordForm",
-        # "signup": "allauth.account.forms.SignupForm",
+        "signup": "astrosat_users.forms.RegistrationForm",
     },
 }
 

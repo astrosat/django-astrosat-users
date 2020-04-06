@@ -50,6 +50,9 @@ class User(AbstractUser):
     is_approved = models.BooleanField(
         default=False, help_text=_("Has this user been approved?")
     )
+    accepted_terms = models.BooleanField(
+        default=False, help_text=_("Has this user accepted the terms & conditions?")
+    )
     latest_confirmation_key = models.CharField(
         blank=True,
         null=True,
