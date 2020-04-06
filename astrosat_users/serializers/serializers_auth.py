@@ -28,6 +28,7 @@ class LoginSerializer(RestAuthLoginSerializer):
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
     is_verified = serializers.BooleanField(read_only=True)
     is_approved = serializers.BooleanField(read_only=True)
+    accepted_terms = serializers.BooleanField(read_only=True)
 
     # (even though I don't need the 'username' field, the 'validate()' fn checks its value)
     # (so I haven't bothered removing it; the client can deal w/ this)
@@ -54,6 +55,10 @@ class LoginSerializer(RestAuthLoginSerializer):
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
             msg = {"user": user_serializer.data, "detail": f"{user} is not approved"}
+            raise ValidationError(msg)
+
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.accepted_terms:
+            msg = {"user": user_serializer.data, "detail": f"{user} has not accepted the terms & conditions."}
             raise ValidationError(msg)
 
         return instance

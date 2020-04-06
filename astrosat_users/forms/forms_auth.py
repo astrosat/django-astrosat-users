@@ -73,12 +73,13 @@ class RegistrationForm(AllAuthRegistrationForm):
 
     field_order = ["email", "password1", "password2", "accepted_terms"]
 
-    accepted_terms  = forms.BooleanField(required=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE, label="Accept Terms & Conditions")
+    accepted_terms  = forms.BooleanField(label="Accept Terms & Conditions")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE:
             self.fields["accepted_terms"].widget = forms.HiddenInput()
+            self.fields["accepted_terms"].required = False
 
     def clean_accepted_terms(self):
         # just in case the setting changes and the user doesn't clear cache,
