@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+
+{% load static %}
+
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<h1>
+    Please select the roles to include/exclude for the following Users:
+    {{ users }}
+</h1>
+
+<form action="." method="POST">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <input type="hidden" name="action" value="update_roles" />
+
+    <p>
+        <input type="submit" name="apply" value="Update Roles" />
+    </p>
+
+</form>
+
+{% endblock %}
