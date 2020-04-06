@@ -63,6 +63,11 @@ class AccountAdapter(DefaultAccountAdapter):
             response = HttpResponseRedirect(reverse("disapproved"))
             raise ImmediateHttpResponse(response)
 
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.has_accepted_terms:
+            request.session["username"] = user.username
+            response = HttpResponseRedirect(reverse("unaccepted"))
+            raise ImmediateHttpResponse(response)
+
         super().login(request, user)
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):

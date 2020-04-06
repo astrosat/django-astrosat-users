@@ -37,18 +37,18 @@ def user_data():
 
 
 @pytest.fixture
+def user():
+    user = UserFactory()
+    # user.verify()
+    return user
+
+
+@pytest.fixture
 def admin():
     UserModel = get_user_model()
     admin = UserModel.objects.create_superuser("admin", "admin@admin.com", "password")
     admin.verify()
     return admin
-
-
-@pytest.fixture
-def user():
-    user = UserFactory()
-    # user.verify()
-    return user
 
 
 @pytest.fixture

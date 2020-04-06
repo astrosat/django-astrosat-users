@@ -58,7 +58,6 @@ class LoginSerializer(RestAuthLoginSerializer):
 
         return instance
 
-
 class RegisterSerializer(RestAuthRegisterSerializer):
 
     # just a bit more security...
@@ -68,6 +67,14 @@ class RegisterSerializer(RestAuthRegisterSerializer):
     # no need to overwrite serializers/forms to use zxcvbn;
     # both of those hook into the allauth adapter
     # which uses settings.AUTH_PASSWORD_VALIDATORS which includes zxcvbn
+
+    # add term acceptance bits...
+    accepted_terms = serializers.BooleanField(source="has_accepted_terms")
+
+    def validate_accepted_terms(self, value):
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not value:
+            raise serializers.ValidationError("xAccepting terms & conditions is required.")
+        return value
 
 
 class SendEmailVerificationSerializer(serializers.Serializer):

@@ -56,6 +56,7 @@ class UserAdmin(auth_admin.UserAdmin):
                     "description",
                     "change_password",
                     "is_approved",
+                    "has_accepted_terms",
                     "roles",
                 )
             },
@@ -70,6 +71,7 @@ class UserAdmin(auth_admin.UserAdmin):
         "is_verified_pretty",
         "is_approved",
         "is_active",
+        "has_accepted_terms",
     ]
     list_filter = auth_admin.UserAdmin.list_filter + ("roles",)
 
@@ -106,6 +108,18 @@ class UserAdmin(auth_admin.UserAdmin):
             self.message_user(request, msg)
 
     toggle_approval.short_description = "Toggles the approval of the selected users"
+
+    def toggle_accepted_terms(self, request, queryset):
+        # TODO: doing this cleverly w/ negated F expressions is not supported (https://code.djangoproject.com/ticket/17186)
+        # queryset.update(has_accepted_terms=not(F("has_accepted_terms")))
+        for obj in queryset:
+            obj.has_accepted_terms = not obj.has_accepted_terms
+            obj.save()
+
+            msg = f"{obj} {'has not' if not obj.has_accepted_terms else 'has'} accepted terms."
+            self.message_user(request, msg)
+
+    toggle_approval.short_description = "Toggles the term acceptance of the selected users"
 
     def toggle_verication(self, request, queryset):
 

@@ -5,10 +5,10 @@ from astrosat_users.models import User
 
 class Command(BaseCommand):
     """
-    Allows me to force a user to be approved.
+    Allows me to force a user to have accepted terms & conditions.
     """
 
-    help = "Force approval of a user"
+    help = "Force term acceptance of a user"
 
     def add_arguments(self, parser):
 
@@ -29,6 +29,6 @@ class Command(BaseCommand):
             msg = f"Unable to find user '{username}'."
             raise CommandError(msg)
 
-        if not user.is_approved:
-            user.is_approved = True
+        if not user.has_accepted_terms:
+            user.has_accepted_terms = True
             user.save()

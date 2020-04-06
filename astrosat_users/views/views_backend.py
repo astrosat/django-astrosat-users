@@ -25,6 +25,10 @@ class DisapprovedView(TemplateView):
     template_name = "astrosat_users/disapproved.html"
 
 
+class UnacceptedView(TemplateView):
+
+    template_name = "astrosat_users/unaccepted.html"
+
 ##############
 # user views #
 ##############

@@ -24,6 +24,7 @@ class UserFactory(factory.DjangoModelFactory):
     name = FactoryFaker("name")
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
     is_approved = False
+    has_accepted_terms = False
 
     @factory.lazy_attribute
     def username(self):
@@ -81,11 +82,11 @@ class UserRoleFactory(factory.DjangoModelFactory):
         model = UserRole
 
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    @factory.lazy_attribute_sequence
 
-    @factory.lazy_attribute
-    def name(self):
-        word = FactoryFaker("word").generate(extra_kwargs={})
-        return f"{word.title()}Role"
+    def name(self, n):
+        word = FactoryFaker("word").generate()
+        return f"{word.title()}{n}Role"
 
     @factory.post_generation
     def permissions(self, create: bool, extracted: Sequence[Any], **kwargs):
@@ -108,7 +109,7 @@ class UserPermissionFactory(factory.DjangoModelFactory):
 
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
 
-    @factory.lazy_attribute
-    def name(self):
-        words = FactoryFaker("words", nb=2).generate(extra_kwargs={})
-        return f"can_{'_'.join(words)}"
+    @factory.lazy_attribute_sequence
+    def name(self, n):
+        words = FactoryFaker("words", nb=2).generate()
+        return f"can_{'_'.join(words)}_{n}"

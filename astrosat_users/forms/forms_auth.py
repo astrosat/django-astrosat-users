@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.urls import reverse
@@ -8,10 +9,12 @@ from allauth.account.adapter import get_adapter
 from allauth.account.forms import (
     LoginForm as AllAuthLoginForm,
     ResetPasswordForm as AllAuthPasswordResetForm,
+    SignupForm as AllAuthRegistrationForm,
     EmailAwarePasswordResetTokenGenerator,
 )
 from allauth.account.utils import user_username
 
+from astrosat_users.conf import app_settings
 from astrosat_users.models import User
 
 
@@ -64,3 +67,23 @@ class PasswordResetForm(AllAuthPasswordResetForm):
             adapter.send_mail("account/email/password_reset_key", email, context)
 
         return self.cleaned_data["email"]
+
+
+class RegistrationForm(AllAuthRegistrationForm):
+
+    field_order = ["email", "password1", "password2", "has_accepted_terms"]
+
+    has_accepted_terms  = forms.BooleanField(required=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE, label="Accept Terms & Conditions")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE:
+            self.fields["has_accepted_terms"].widget = forms.HiddenInput()
+
+    def clean_has_accepted_terms(self):
+        # just in case the setting changes and the user doesn't clear cache,
+        # perform this explicit validation
+        has_accepted_terms = self.cleaned_data["has_accepted_terms"]
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not has_accepted_terms:
+            raise forms.ValidationError("Accepting terms & conditions is required.")
+        return has_accepted_terms

@@ -1,2 +1,2 @@
 from .forms_admin import UserAdminCreationForm, UserAdminChangeForm
-from .forms_auth import LoginForm, PasswordResetForm
+from .forms_auth import LoginForm, PasswordResetForm, RegistrationForm
