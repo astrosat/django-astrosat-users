@@ -69,12 +69,20 @@ class RegisterSerializer(RestAuthRegisterSerializer):
     # which uses settings.AUTH_PASSWORD_VALIDATORS which includes zxcvbn
 
     # add term acceptance bits...
-    accepted_terms = serializers.BooleanField(source="has_accepted_terms")
+    accepted_terms = serializers.BooleanField()
 
     def validate_accepted_terms(self, value):
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not value:
-            raise serializers.ValidationError("xAccepting terms & conditions is required.")
+            raise serializers.ValidationError("Accepting terms & conditions is required.")
         return value
+
+    def get_cleaned_data(self):
+        # this serializer pretends to be a form by passing "validated_data"
+        # as "cleaned_data" to the adapter.save_user method; but the parent
+        # class hard-codes the attributes - this is stupid (I didn't write it)
+        # So I override this fn to simply return all serializer fields
+        # (the adapter will ignore what it doesn't care about)
+        return self.validated_data
 
 
 class SendEmailVerificationSerializer(serializers.Serializer):

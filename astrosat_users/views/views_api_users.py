@@ -52,11 +52,11 @@ class ListRetrieveViewSet(
 class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
-        fields = ["is_active", "is_approved", "is_verified", "has_accepted_terms", "roles"]
+        fields = ["is_active", "is_approved", "is_verified", "accepted_terms", "roles"]
 
     is_active = BetterBooleanFilter()
     is_approved = BetterBooleanFilter()
-    has_accepted_terms = BetterBooleanFilter()
+    accepted_terms = BetterBooleanFilter()
     is_verified = filters.Filter(method="filter_is_verified")
     roles__any = filters.Filter(method="filter_roles_or")
     roles__all = filters.Filter(method="filter_roles_and")

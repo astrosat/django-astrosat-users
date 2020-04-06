@@ -71,19 +71,19 @@ class PasswordResetForm(AllAuthPasswordResetForm):
 
 class RegistrationForm(AllAuthRegistrationForm):
 
-    field_order = ["email", "password1", "password2", "has_accepted_terms"]
+    field_order = ["email", "password1", "password2", "accepted_terms"]
 
-    has_accepted_terms  = forms.BooleanField(required=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE, label="Accept Terms & Conditions")
+    accepted_terms  = forms.BooleanField(required=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE, label="Accept Terms & Conditions")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE:
-            self.fields["has_accepted_terms"].widget = forms.HiddenInput()
+            self.fields["accepted_terms"].widget = forms.HiddenInput()
 
-    def clean_has_accepted_terms(self):
+    def clean_accepted_terms(self):
         # just in case the setting changes and the user doesn't clear cache,
         # perform this explicit validation
-        has_accepted_terms = self.cleaned_data["has_accepted_terms"]
-        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not has_accepted_terms:
+        accepted_terms = self.cleaned_data["accepted_terms"]
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not accepted_terms:
             raise forms.ValidationError("Accepting terms & conditions is required.")
-        return has_accepted_terms
+        return accepted_terms

@@ -29,6 +29,6 @@ class Command(BaseCommand):
             msg = f"Unable to find user '{username}'."
             raise CommandError(msg)
 
-        if not user.has_accepted_terms:
-            user.has_accepted_terms = True
+        if not user.accepted_terms:
+            user.accepted_terms = True
             user.save()

@@ -63,7 +63,7 @@ class AccountAdapter(DefaultAccountAdapter):
             response = HttpResponseRedirect(reverse("disapproved"))
             raise ImmediateHttpResponse(response)
 
-        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.has_accepted_terms:
+        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.accepted_terms:
             request.session["username"] = user.username
             response = HttpResponseRedirect(reverse("unaccepted"))
             raise ImmediateHttpResponse(response)
@@ -142,13 +142,19 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def save_user(self, request, user, form, commit=True):
         """
-        Saves a new User instance from the signup form.
-        Overriding to send a notification email to the managers.
+        Saves a new User instance from the signup form / serializer.
+        Overriding to add extra fields and send a notification email.
         Overriding this Adapter method instead of using signals,
         so that the notification is only sent when a user is added
         by the form/serializer (as opposed to in the shell or via the admin).
         """
         saved_user = super().save_user(request, user, form, commit=commit)
+
+        extra_fields = ["accepted_terms"]
+        for extra_field in extra_fields:
+            setattr(saved_user, extra_field, form.cleaned_data[extra_field])
+        saved_user.save()
+
         if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
             subject = super().format_email_subject(f"new user signup: {saved_user}")
             message = f"User {saved_user.email} signed up for an account."

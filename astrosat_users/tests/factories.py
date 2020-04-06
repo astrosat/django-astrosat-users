@@ -24,7 +24,7 @@ class UserFactory(factory.DjangoModelFactory):
     name = FactoryFaker("name")
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
     is_approved = False
-    has_accepted_terms = False
+    accepted_terms = False
 
     @factory.lazy_attribute
     def username(self):

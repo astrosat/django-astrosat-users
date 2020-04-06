@@ -88,7 +88,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "is_verified",
             "is_approved",
-            "has_accepted_terms",
+            "accepted_terms",
             "profiles",
             "roles",
             "permissions",
