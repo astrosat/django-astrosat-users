@@ -135,7 +135,7 @@ class UserAdmin(auth_admin.UserAdmin):
             emailaddress.save()
 
             msg = f"{emailaddress} {'created and' if created else ''} {'not' if not emailaddress.verified else ''} verified."
-            self.message_user(request, sg)
+            self.message_user(request, msg)
 
     toggle_verication.short_description = (
         "Toggles the verification of the selected users' primary email addresses"

@@ -5,7 +5,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
@@ -41,8 +41,16 @@ from astrosat_users.serializers import (
 from astrosat_users.utils import create_knox_token
 
 
+########################
+# relevant permissions #
+########################
+
+
+REGISTRATION_CLOSED_MSG = "We are sorry, but the sign up is currently closed."
+
+
 class IsNotAuthenticated(BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         # anybody can do GET, HEAD, or OPTIONS
         if request.method in SAFE_METHODS:
             return True
@@ -52,9 +60,24 @@ class IsNotAuthenticated(BasePermission):
         return not user.is_authenticated
 
 
- # b/c ACCOUNT_USERNAME_REQURED is False and ACCOUNT_EMAIL_REQUIRED is True,
- # not all fields from the LoginSerializer/RegisterSerializer are used in the LoginView/RegisterView
- # therefore, I overide the swagger documentation w/ the following schemas...
+class AllowRegistrationPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        if not astrosat_users_settings.ASTROSAT_USERS_ALLOW_REGISTRATION:
+            # raising an error instead of returning False in order to get a custom message
+            # as per https://github.com/encode/django-rest-framework/issues/3754#issuecomment-206953020
+            raise PermissionDenied(REGISTRATION_CLOSED_MSG)
+        return True
+
+
+#################
+# swagger stuff #
+#################
+
+
+# b/c ACCOUNT_USERNAME_REQURED is False and ACCOUNT_EMAIL_REQUIRED is True,
+# not all fields from the LoginSerializer/RegisterSerializer are used in the LoginView/RegisterView
+# therefore, I overide the swagger documentation w/ the following schemas...
 
 _login_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -76,6 +99,11 @@ _register_schema = openapi.Schema(
         ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
     ))
 )
+
+
+#########
+# views #
+#########
 
 
 @method_decorator(
@@ -122,13 +150,6 @@ class LogoutView(RestAuthLogoutView):
 
 @method_decorator(sensitive_post_parameters("password1", "password2"), name="dispatch")
 @method_decorator(
-    conditional_redirect(
-        lambda: not astrosat_users_settings.ASTROSAT_USERS_ALLOW_REGISTRATION,
-        redirect_name="rest_disabled",
-    ),
-    name="dispatch",
-)
-@method_decorator(
     swagger_auto_schema(
         request_body=_register_schema, responses={status.HTTP_200_OK: UserSerializerLite}
     ),
@@ -136,7 +157,7 @@ class LogoutView(RestAuthLogoutView):
 )
 class RegisterView(RestAuthRegisterView):
 
-    permission_classes = [IsNotAuthenticated]
+    permission_classes = [IsNotAuthenticated, AllowRegistrationPermission]
 
     def get_response_data(self, user):
         # just return a lightweight representation of the user

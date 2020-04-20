@@ -14,6 +14,7 @@ from rest_framework.test import APIClient
 
 from astrosat_users.conf import app_settings
 from astrosat_users.tests.utils import *
+from astrosat_users.views.views_api_auth import REGISTRATION_CLOSED_MSG
 
 from .factories import *
 
@@ -37,15 +38,20 @@ class TestApiRegistration:
         user_settings.allow_registration = True
         user_settings.save()
 
+        # get is never allowed
         response = client.get(url)
-        assert status.is_client_error(response.status_code)  # get isn't allowed
+        assert status.is_client_error(response.status_code)
 
         user_settings.allow_registration = False
         user_settings.save()
 
+        # get/post are not allowed if allow_registration is False
         response = client.get(url)
-        assert status.is_redirect(response.status_code)
-        assert resolve(response.url).view_name == "rest_disabled"
+        assert status.is_client_error(response.status_code)
+        assert response.json()["detail"] == REGISTRATION_CLOSED_MSG
+        response = client.post(url, {})
+        assert status.is_client_error(response.status_code)
+        assert response.json()["detail"] == REGISTRATION_CLOSED_MSG
 
     def test_registration(self, user_data):
         """

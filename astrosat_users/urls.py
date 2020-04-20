@@ -23,7 +23,6 @@ from .views import (
 
 # API views...
 from .views import (
-    api_disabled,
     LoginView,
     LogoutView,
     RegisterView,
@@ -56,7 +55,6 @@ api_router.register("roles", UserRoleViewSet, basename="roles")
 api_router.register("permissions", UserPermissionViewSet, basename="permissions")
 api_urlpatterns = [
     path("", include(api_router.urls)),
-    path("disabled", api_disabled, name="rest_disabled"),
     # overwrite the rest_auth.urls to cope w/ the idiosyncracies of astrosat_users
     # (and to exclude the built-in user ViewSets)
     # path("authentication/", include("rest_auth.urls")),
