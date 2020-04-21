@@ -23,8 +23,8 @@ class UserFactory(factory.DjangoModelFactory):
     email = FactoryFaker("email")
     name = FactoryFaker("name")
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    accepted_terms = True
     is_approved = False
-    accepted_terms = False
 
     @factory.lazy_attribute
     def username(self):

@@ -36,6 +36,7 @@ from astrosat_users.serializers import (
     UserSerializerLite,
     KnoxTokenSerializer,
     SendEmailVerificationSerializer,
+    VerifyEmailSerializer,
     LoginSerializer,
 )
 from astrosat_users.utils import create_knox_token
@@ -187,12 +188,8 @@ class SendEmailVerificationView(GenericAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email_data = serializer.data["email"]
 
-        try:
-            user = User.objects.get(email=email_data)
-        except User.DoesNotExist:
-            raise ValidationError(f"Unable to find user with '{email_data}' address.")
+        user = serializer.validated_data["user"]
 
         if not user.is_verified:
             send_email_confirmation(request, user)
@@ -215,7 +212,19 @@ class VerifyEmailView(RestAuthVerifyEmailView):
     ```
     """
 
-    pass
+    def get_serializer(self, *args, **kwargs):
+        # NOTE THAT THIS SERIALIZER CAN'T BE OVERWRITTEN IN SETTINGS, SO I HARD-CODE IT HERE
+        return VerifyEmailSerializer(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        confirmation = serializer.validated_data["confirmation"]
+        confirmation.confirm(self.request)
+
+        return Response({'detail': _('ok')}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):

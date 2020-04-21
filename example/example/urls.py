@@ -4,7 +4,7 @@ from django.urls import include, path
 
 from rest_framework.routers import SimpleRouter
 
-from astrosat.views import api_schema_views
+from astrosat.views import api_schema_views, remove_urlpatterns
 
 from astrosat.urls import (
     urlpatterns as astrosat_urlpatterns,
@@ -40,6 +40,7 @@ api_urlpatterns = [
 api_urlpatterns += astrosat_api_urlpatterns
 api_urlpatterns += astrosat_users_api_urlpatterns
 
+api_urlpatterns = remove_urlpatterns(api_urlpatterns, ["proxy-s3"])
 
 #################
 # normal routes #

@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.settings import api_settings as drf_settings
 
 from allauth.account.adapter import get_adapter
-from allauth.account.forms import SetPasswordForm
+from allauth.account.forms import SetPasswordForm as AllAuthSetPasswordForm
+from allauth.account.views import ConfirmEmailView as AllAuthVerifyEmailView
 
 from rest_auth.serializers import (
     LoginSerializer as RestAuthLoginSerializer,
@@ -14,6 +16,8 @@ from rest_auth.registration.serializers import (
     RegisterSerializer as RestAuthRegisterSerializer,
 )
 
+from astrosat.serializers import ConsolidatedErrorsSerializerMixin
+
 from astrosat_users.conf import app_settings
 from astrosat_users.forms import PasswordResetForm
 from astrosat_users.models import User
@@ -22,7 +26,7 @@ from astrosat_users.utils import rest_decode_user_pk
 from .serializers_users import UserSerializerLite
 
 
-class LoginSerializer(RestAuthLoginSerializer):
+class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer):
 
     # just a bit more security...
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
@@ -50,20 +54,21 @@ class LoginSerializer(RestAuthLoginSerializer):
         if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not user.is_verified:
             # do not automatically re-send the verification email
             # send_email_confirmation(request, user)
-            msg = {"user": user_serializer.data, "detail": f"{user} is not verified"}
+            msg = {"user": user_serializer.data, drf_settings.NON_FIELD_ERRORS_KEY: f"{user} is not verified."}
             raise ValidationError(msg)
 
         if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
-            msg = {"user": user_serializer.data, "detail": f"{user} is not approved"}
+            msg = {"user": user_serializer.data, drf_settings.NON_FIELD_ERRORS_KEY: f"{user} is not approved."}
             raise ValidationError(msg)
 
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.accepted_terms:
-            msg = {"user": user_serializer.data, "detail": f"{user} has not accepted the terms & conditions."}
+            msg = {"user": user_serializer.data, drf_settings.NON_FIELD_ERRORS_KEY: f"{user} has not accepted the terms & conditions."}
             raise ValidationError(msg)
 
         return instance
 
-class RegisterSerializer(RestAuthRegisterSerializer):
+
+class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSerializer):
 
     # just a bit more security...
     password1 = serializers.CharField(write_only=True, style={"input_type": "password"})
@@ -90,12 +95,40 @@ class RegisterSerializer(RestAuthRegisterSerializer):
         return self.validated_data
 
 
-class SendEmailVerificationSerializer(serializers.Serializer):
+class SendEmailVerificationSerializer(ConsolidatedErrorsSerializerMixin, serializers.Serializer):
 
     email = serializers.EmailField()
 
+    def validate(self, data):
 
-class PasswordChangeSerializer(RestAuthPasswordChangeSerializer):
+        email_data = data["email"]
+        try:
+            user = User.objects.get(email=email_data)
+            data["user"] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError(f"Unable to find user with '{email_data}' address.")
+
+        return data
+
+
+class VerifyEmailSerializer(ConsolidatedErrorsSerializerMixin, serializers.Serializer):
+
+    key = serializers.CharField()
+
+    def validate(self, data):
+
+        try:
+            view = AllAuthVerifyEmailView()
+            view.kwargs = data # little hack here b/c I'm using a view outside a request
+            emailconfirmation = view.get_object()
+            data["confirmation"] = emailconfirmation
+        except Exception:
+            raise serializers.ValidationError("This is an invalid key.")
+
+        return data
+
+
+class PasswordChangeSerializer(ConsolidatedErrorsSerializerMixin, RestAuthPasswordChangeSerializer):
 
     # just a bit more security...
     old_password = serializers.CharField(
@@ -112,7 +145,7 @@ class PasswordChangeSerializer(RestAuthPasswordChangeSerializer):
     # which hooks into adapter.set_password
 
 
-class PasswordResetSerializer(RestAuthPasswordResetSerializer):
+class PasswordResetSerializer(ConsolidatedErrorsSerializerMixin, RestAuthPasswordResetSerializer):
 
     # RestAuthPasswordChangeSerializer uses Django's PasswordResetForm
     # but I want it to use AllAuth's PasswordResetForm (actually, I want
@@ -121,8 +154,15 @@ class PasswordResetSerializer(RestAuthPasswordResetSerializer):
     # TODO: I SHOULD GET THIS FROM settings INSTEAD OF HARD-CODING IT
     password_reset_form_class = PasswordResetForm
 
+    def validate_email(self, value):
+        # TODO: THERE IS AN ERROR IN django-rest-auth [https://github.com/Tivix/django-rest-auth/blob/624ad01afbc86fa15b4e652406f3bdcd01f36e00/rest_auth/serializers.py#L172]
+        # TODO: WHICH WILL RETURN A NESTED ERROR UNLESS I OVERRIDE THIS FN
+        self.reset_form = self.password_reset_form_class(data=self.initial_data)
+        if not self.reset_form.is_valid():
+            raise serializers.ValidationError(self.reset_form.errors["email"])
+        return value
 
-class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
+class PasswordResetConfirmSerializer(ConsolidatedErrorsSerializerMixin, RestAuthPasswordResetConfirmSerializer):
 
     new_password1 = serializers.CharField(
         write_only=True, style={"input_type": "password"}
@@ -131,10 +171,10 @@ class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
         write_only=True, style={"input_type": "password"}
     )
 
-    # RestAuthPasswordChangeSerializer uses exceptionsDjango's SetPasswordForm
+    # RestAuthPasswordChangeSerializer uses Django's SetPasswordForm
     # in the long-term, I probably want to use AllAuth's SetPassworForm
 
-    # set_password_form_class = SetPasswordForm
+    # set_password_form_class = AllAuthSetPasswordForm
 
     def validate(self, attrs):
         # I am rewriting the validate fn, though b/c I use a different
@@ -145,7 +185,7 @@ class PasswordResetConfirmSerializer(RestAuthPasswordResetConfirmSerializer):
             uid = rest_decode_user_pk(attrs["uid"])
             self.user = User._default_manager.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            raise ValidationError({"uid": ["Invalid value"]})
+            raise serializers.ValidationError({"uid": ["Invalid value"]})
 
         self.custom_validation(attrs)
         self.set_password_form = self.set_password_form_class(

@@ -7,6 +7,7 @@ from .serializers_users import (
 from .serializers_auth import (
     RegisterSerializer,
     SendEmailVerificationSerializer,
+    VerifyEmailSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
     PasswordResetSerializer,
