@@ -271,7 +271,11 @@ if DEBUG:
         "debug_toolbar.middleware.DebugToolbarMiddleware",
         "astrosat.middleware.JSONDebugToolbarMiddleware",
     ]  # noqa F405
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TEMPLATE_CONTEXT": True, "SHOW_COLLAPSED": True}
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TEMPLATE_CONTEXT": True,
+        "SHOW_COLLAPSED": True,
+        "SHOW_TOOLBAR_CALLBACK": "astrosat.utils.show_toolbar",
+    }
     DEBUG_TOOLBAR_PANELS = [
         "debug_toolbar.panels.versions.VersionsPanel",
         "debug_toolbar.panels.timer.TimerPanel",
