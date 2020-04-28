@@ -10,7 +10,7 @@ class ExampleProfile(models.Model):
     A silly user profile, just for testing.
     """
 
-    user = UserProfileField(related_name="example_profile")
+    user = UserProfileField(related_name="example_profile", serializer_class="example.serializers.ExampleProfileSerializer")
 
     # some silly fields for playing w/ profiles...
     age = models.IntegerField(blank=True, null=True, help_text=_("Age in years."))
