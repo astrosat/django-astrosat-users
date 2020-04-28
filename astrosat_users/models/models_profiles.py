@@ -1,3 +1,4 @@
+from importlib import import_module
 from itertools import chain
 
 from django.conf import settings
@@ -17,7 +18,6 @@ def get_profile_qs():
     # clever way of combining multiple querysets
     return chain(*profile_querysets)
 
-
 # TODO: MOVE THIS FN TO django-astrosat-core
 def reflect_class_from_name(class_name):
     """
@@ -25,11 +25,9 @@ def reflect_class_from_name(class_name):
     (it _has_ to do this to avoid circular dependencies)
     this fn takes that string and returns the actual class
     """
-    class_name_parts = class_name.split(".")
-    reflected_class = __import__(".".join(class_name_parts[:-1]))
-    for part in class_name_parts[1:]:
-        reflected_class = getattr(reflected_class, part)
-    return reflected_class
+    module_path, _, class_name = class_name.rpartition(".")
+    module = import_module(module_path)
+    return getattr(module, class_name)
 
 
 class UserProfileField(OneToOneField):
