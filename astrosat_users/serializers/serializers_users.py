@@ -31,9 +31,9 @@ class GenericProfileSerializer(serializers.ModelSerializer):
         exclude = ("user",)
 
     @classmethod
-    def wrap_profile(cls, profile_key):
+    def wrap_profile(cls, profile):
         # wraps this _generic_ profile serializer around a _specific_ profile model
-        cls.Meta.model = PROFILES[profile_key]
+        cls.Meta.model = profile
         return cls
 
 
@@ -106,13 +106,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_profiles(self, obj):
         profiles = {}
-        # see comment in "views_api.py" about managed_profiles
+        # see comment in "views_api_users.py" about managed_profiles
         managed_profiles = self.context.get("managed_profiles", [])
         for profile_key, profile in obj.profiles.items():
             if profile_key in managed_profiles:
-                profile_serializer = GenericProfileSerializer().wrap_profile(
-                    profile_key
-                )
+                profile_serializer = profile.get_serializer_class()
                 profiles[profile_key] = profile_serializer(profile).data
         return profiles
 
@@ -120,7 +118,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         profiles_representation = {}
         for profile_key, profile in instance.profiles.items():
-            profile_serializer = GenericProfileSerializer().wrap_profile(profile_key)
+            profile_serializer = profile.get_serializer_class()
             profiles_representation[
                 profile_key
             ] = profile_serializer().to_representation(profile)
@@ -140,12 +138,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         if "profiles" in data:
             for profile_key, profile_data in data["profiles"].items():
-                profile_serializer = GenericProfileSerializer().wrap_profile(
-                    profile_key
-                )
+                profile_class = PROFILES[profile_key]
+                profile_serializer = profile_class.get_serializer_class()
                 profiles_internal_value[
                     profile_key
                 ] = profile_serializer().to_internal_value(profile_data)
+
 
         internal_value = super().to_internal_value(data)
 
@@ -158,11 +156,17 @@ class UserSerializer(serializers.ModelSerializer):
         profiles_data = validated_data.pop("profiles")
         if profiles_data:
             for profile_key, profile_data in profiles_data.items():
-                profile_serializer = GenericProfileSerializer().wrap_profile(
-                    profile_key
+                profile_class = PROFILES[profile_key]
+                profile_serializer = profile_class.get_serializer_class()
+                profile_serializer().update(
+                    getattr(instance, profile_key), profile_data,
                 )
-                profile_instance = getattr(instance, profile_key)
-                profile_serializer().update(profile_instance, profile_data)
+
+                # profile_serializer = GenericProfileSerializer().wrap_profile(
+                #     profile_key
+                # )
+                # profile_instance = getattr(instance, profile_key)
+                # profile_serializer().update(profile_instance, profile_data)
 
         updated_instance = super().update(instance, validated_data)
 
