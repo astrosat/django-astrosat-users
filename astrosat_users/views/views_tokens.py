@@ -7,10 +7,9 @@ from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from rest_auth.models import TokenModel
-from rest_auth.app_settings import TokenSerializer, create_token
+from dj_rest_auth.models import TokenModel
+from dj_rest_auth.app_settings import TokenSerializer, create_token
 
 from astrosat_users.conf import app_settings
 

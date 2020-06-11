@@ -1,16 +1,5 @@
-from .views_backend import (
-    DisabledView,
-    DisapprovedView,
-    UnacceptedView,
-    UserListView,
-    UserDetailView,
-    UserUpdateView,
-    GenericProfileListView,
-    GenericProfileDetailView,
-    GenericProfileUpdateView,
-)
-from .views_api_users import UserViewSet, UserRoleViewSet, UserPermissionViewSet
-from .views_api_auth import (
+from .views_tokens import token_view
+from .views_auth import (
     LoginView,
     LogoutView,
     PasswordChangeView,
@@ -20,4 +9,6 @@ from .views_api_auth import (
     VerifyEmailView,
     SendEmailVerificationView,
 )
-from .views_tokens import token_view
+from .views_customers import CustomerDetailView, CustomerUserListView, CustomerUserDetailView
+from .views_users import UserViewSet, UserListView, UserDetailView, UserUpdateView
+from .views_messages import message_view

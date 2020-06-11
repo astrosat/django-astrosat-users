@@ -12,7 +12,8 @@ env = environ.Env()
 
 PROJECT_NAME = getattr(settings, "PROJECT_NAME", "Django Astrosat Users")
 PROJECT_SLUG = getattr(settings, "PROJECT_SLUG", slugify(PROJECT_NAME))
-PROJECT_EMAIL = getattr(settings, "PROJECT_EMAIL", "{role}@astrosat.space")
+PROJECT_EMAIL = getattr(settings, "PROJECT_EMAIL", "{role}@astrosat.net")
+
 
 ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = getattr(
     settings, "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", "verify-email/?key={key}"
@@ -100,11 +101,11 @@ ALLAUTH_SETTINGS = {
     "ACCOUNT_USERNAME_BLACKLIST": ["admin", "sentinel"],
     "ACCOUNT_FORMS": {
         # "add_email": "allauth.account.forms.AddEmailForm",
-        # "change_password": "allauth.account.forms.ChangePasswordForm",
+        "change_password": "astrosat_users.forms.PasswordChangeForm",
         "login": "astrosat_users.forms.LoginForm",
         "reset_password": "astrosat_users.forms.PasswordResetForm",
         # "reset_password_from_key": "allauth.account.forms.ResetPasswordKeyForm",
-        # "set_password": "allauth.account.forms.SetPasswordForm",
+        "set_password": "astrosat_users.forms.PasswordSetForm",
         "signup": "astrosat_users.forms.RegistrationForm",
     },
 }

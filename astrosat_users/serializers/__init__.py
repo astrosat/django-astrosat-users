@@ -1,16 +1,14 @@
-from .serializers_users import (
-    UserSerializerLite,
-    UserSerializer,
-    UserRoleSerializer,
-    UserPermissionSerializer,
-)
+from .serializers_tokens import KnoxTokenSerializer
 from .serializers_auth import (
-    RegisterSerializer,
-    SendEmailVerificationSerializer,
-    VerifyEmailSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
+    RegisterSerializer,
+    VerifyEmailSerializer,
+    SendEmailVerificationSerializer,
 )
-from .serializers_tokens import KnoxTokenSerializer
+from .serializers_profiles import GenericProfileSerializerFactory
+from .serializers_roles import UserPermissionSerializer, UserRoleSerializer
+from .serializers_users import UserSerializerLite, UserSerializer
+from .serializers_customers import CustomerSerializer, CustomerUserSerializer

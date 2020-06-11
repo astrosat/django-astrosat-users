@@ -15,10 +15,10 @@ django = "~=3.0"  # django, duh
 django-allauth = "*"  # user authentication
 django-environ = "*"  # better env handling
 django-filter = "*"  # richer api filters
-django-rest-auth = "*"  # API user authentication
+django-rest-framework = "*" # api
 django-rest-knox = "*"  # secure tokens
-djangorestframework = "*"  # API
-drf-yasg = "*"  # api documentation (swagger)
+dj-rest-auth = {extras = ["with_social"],version = "*"}  # user authentication via api
+drf-yasg = "*" # api documentation
 zxcvbn = "*"  # secure passwords
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
 django-astrosat-users = {editable = true,path = "./.."}

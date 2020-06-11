@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 
-from .models import ExampleProfile
+from example.models import ExampleProfile
 
 
 def post_save_user_hander(sender, *args, **kwargs):

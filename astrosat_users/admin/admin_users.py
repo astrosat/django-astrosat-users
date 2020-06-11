@@ -1,50 +1,22 @@
-from django import forms
-from django.forms import ValidationError
-from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
-from django.contrib.auth.models import Group, Permission
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
 
 from astrosat.admin import get_clickable_m2m_list_display
 
+from astrosat_users.admin.admin_roles import update_roles_action
 from astrosat_users.forms import UserAdminChangeForm, UserAdminCreationForm
-from astrosat_users.models import User, UserSettings, UserRole, UserPermission
-
-
-# don't let the built-in Django Roles system
-# get in-the-way-of the astrosat_users roles
-try:
-    admin.site.unregister(Group)
-except admin.sites.NotRegistered:
-    pass
-try:
-    admin.site.unregister(Permission)
-except admin.sites.NotRegistered:
-    pass
-
-
-@admin.register(UserSettings)
-class UserSettingsAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(UserPermission)
-class UserPermissionAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(UserRole)
-class UserRoleAdmin(admin.ModelAdmin):
-    filter_horizontal = ("permissions",)
+from astrosat_users.models import User, Customer, UserRole
 
 
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
 
-    actions = ("update_roles", "toggle_approval", "toggle_accepted_terms", "toggle_verication", "logout_all")
-
+    actions = (
+        "toggle_approval",
+        "toggle_accepted_terms",
+        "toggle_verication",
+        "logout_all",
+    ) + (update_roles_action,)
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
     fieldsets = (
@@ -66,32 +38,42 @@ class UserAdmin(auth_admin.UserAdmin):
         "username",
         "email",
         "name",
-        "get_roles_for_list_display",
         "is_superuser",
-        "is_verified_pretty",
+        "is_verified_for_list_display",
         "is_approved",
         "is_active",
         "accepted_terms",
+        "get_roles_for_list_display",
+        "get_customers_for_list_display",
     ]
-    list_filter = auth_admin.UserAdmin.list_filter + ("roles",)
-
+    list_filter = auth_admin.UserAdmin.list_filter + ("customers",)
     search_fields = ["username", "name", "email"]
-
     filter_horizontal = (
         "roles",
     )  # makes a pretty widget; the same one as used by "groups"
+
+    def get_queryset(self, request):
+        # pre-fetching m2m fields that are used in list_displays
+        # to avoid the "n+1" problem
+        queryset = super().get_queryset(request)
+        return queryset.prefetch_related("roles", "customers")
+
+    def is_verified_for_list_display(self, instance):
+        # makes the "is_verified" property look pretty in list_display
+        return instance.is_verified
+
+    is_verified_for_list_display.boolean = True
+    is_verified_for_list_display.short_description = "IS VERIFIED"
+
+    def get_customers_for_list_display(self, obj):
+        return get_clickable_m2m_list_display(Customer, obj.customers.all())
+
+    get_customers_for_list_display.short_description = "customers"
 
     def get_roles_for_list_display(self, obj):
         return get_clickable_m2m_list_display(UserRole, obj.roles.all())
 
     get_roles_for_list_display.short_description = "roles"
-
-    def is_verified_pretty(self, instance):
-        # makes the "is_verified" property look pretty in list_display
-        return instance.is_verified
-
-    is_verified_pretty.boolean = True
-    is_verified_pretty.short_description = "IS VERIFIED"
 
     ###########
     # actions #
@@ -119,7 +101,9 @@ class UserAdmin(auth_admin.UserAdmin):
             msg = f"{obj} {'has not' if not obj.accepted_terms else 'has'} accepted terms."
             self.message_user(request, msg)
 
-    toggle_approval.short_description = "Toggles the term acceptance of the selected users"
+    toggle_accepted_terms.short_description = (
+        "Toggles the term acceptance of the selected users"
+    )
 
     def toggle_verication(self, request, queryset):
 
@@ -149,63 +133,3 @@ class UserAdmin(auth_admin.UserAdmin):
             self.message_user(request, msg)
 
     logout_all.short_description = "Logs the selected users out of all active sessions"
-
-    def update_roles(self, request, queryset):
-        class _UpdateRolesForm(forms.Form):
-            _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
-            included_roles = forms.ModelMultipleChoiceField(
-                required=False, label="Included Roles", queryset=UserRole.objects.all(),
-            )
-            excluded_roles = forms.ModelMultipleChoiceField(
-                required=False, label="Excluded Roles", queryset=UserRole.objects.all()
-            )
-
-            def clean(self):
-                cleaned_data = super().clean()
-                included_roles = cleaned_data["included_roles"]
-                excluded_roles = cleaned_data["excluded_roles"]
-                if included_roles.intersection(excluded_roles).exists():
-                    raise ValidationError(
-                        "Included and excluded roles must be mutually-exclusive."
-                    )
-
-        update_roles_form = _UpdateRolesForm(
-            request.POST or None,
-            initial={
-                "_selected_action": request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-            },
-        )
-
-        if "apply" in request.POST:
-            if update_roles_form.is_valid():
-                included_roles = update_roles_form.cleaned_data["included_roles"]
-                excluded_roles = update_roles_form.cleaned_data["excluded_roles"]
-
-                for obj in queryset:
-
-                    existing_roles = obj.roles.all()
-                    roles_to_add = included_roles.difference(existing_roles)
-                    roles_to_remove = excluded_roles.intersection(existing_roles)
-                    obj.roles.add(*roles_to_add)
-                    obj.roles.remove(*roles_to_remove)
-
-                    if roles_to_add.exists() or roles_to_remove.exists():
-                        msg = f"Successfully added '{', '.join([r.name for r in roles_to_add])}' and removed '{', '.join([r.name for r in roles_to_remove])}' from '{obj}'."
-                        self.message_user(request, msg)
-
-                return HttpResponseRedirect(request.get_full_path())
-
-        context = {
-            "form": update_roles_form,
-            "users": get_clickable_m2m_list_display(User, queryset),
-            "site_header": getattr(settings, "ADMIN_SITE_HEADER", None),
-            "site_title": getattr(settings, "ADMIN_SITE_TITLE", None),
-            "index_title": getattr(settings, "ADMIN_INDEX_TITLE", None),
-        }
-        return render(
-            request, "astrosat_users/admin/update_roles.html", context=context
-        )
-
-    update_roles.short_description = (
-        "Updates the selected users to include/exclude roles"
-    )

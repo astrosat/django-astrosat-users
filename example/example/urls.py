@@ -16,10 +16,12 @@ from astrosat_users.urls import (
     api_urlpatterns as astrosat_users_api_urlpatterns,
 )
 
-from .views import index_view
+from .views import IndexView
 
 
-admin.site.site_header = "Admin for Example Project for Django-Astrosat-Users"
+admin.site.site_header = settings.ADMIN_SITE_HEADER
+admin.site.site_title = settings.ADMIN_SITE_TITLE
+admin.site.index_title = settings.ADMIN_INDEX_TITLE
 
 handler400 = "astrosat.views.handler400"
 handler403 = "astrosat.views.handler403"
@@ -56,7 +58,7 @@ urlpatterns = [
     # astrosat_users...
     path("astrosat_users/", include(astrosat_users_urlpatterns)),
     # index...
-    path("", index_view, name="index"),
+    path("", IndexView.as_view(), name="index"),
 ]
 
 if settings.DEBUG:

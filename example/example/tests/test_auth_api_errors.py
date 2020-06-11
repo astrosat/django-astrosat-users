@@ -61,7 +61,7 @@ class TestRegistrationErrors:
         }
 
         UNNACCEPTED_TERMS_ERROR_RESPONSE = {
-            "errors": {"accepted_terms": ["Accepting terms & conditions is required."],}
+            "errors": {"accepted_terms": ["Accepting terms & conditions is required."]}
         }
 
         response = client.post(self.url, test_data)
@@ -82,7 +82,7 @@ class TestRegistrationErrors:
             "errors": {
                 "password1": [
                     "This is a top-10 common password.Add another word or two. Uncommon words are better."
-                ],
+                ]
             }
         }
 
@@ -121,7 +121,7 @@ class TestRegistrationErrors:
 
         EXISTING_USER_ERROR_RESPONSE = {
             "errors": {
-                "email": ["A user is already registered with this e-mail address."],
+                "email": ["A user is already registered with this e-mail address."]
             }
         }
 
@@ -133,13 +133,10 @@ class TestRegistrationErrors:
 
         client = APIClient()
 
-        test_data = {
-            "email": user_data["email"],
-            "password1": user_data["password"],
-        }
+        test_data = {"email": user_data["email"], "password1": user_data["password"]}
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"password2": ["This field is required."],}
+            "errors": {"password2": ["This field is required."]}
         }
 
         response = client.post(self.url, test_data)
@@ -156,14 +153,11 @@ class TestLoginErrors:
 
         client = APIClient()
 
-        test_data = {
-            "email": user_data["email"],
-            "password": user_data["password"],
-        }
+        test_data = {"email": user_data["email"], "password": user_data["password"]}
 
         UNKNOWN_USER_ERROR_RESPONSE = {
             "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."],
+                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
             }
         }
 
@@ -179,7 +173,7 @@ class TestLoginErrors:
 
         INCORRECT_PASSWORD_ERROR_RESPONSE = {
             "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."],
+                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
             }
         }
 
@@ -191,12 +185,10 @@ class TestLoginErrors:
 
         client = APIClient()
 
-        test_data = {
-            "email": user.email,
-        }
+        test_data = {"email": user.email}
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"password": ["This field is required."],}
+            "errors": {"password": ["This field is required."]}
         }
 
         response = client.post(self.url, test_data)
@@ -214,16 +206,13 @@ class TestLoginErrors:
         user_settings.save()
 
         user = UserFactory(is_active=False)
-        test_data = {
-            "email": user.email,
-            "password": user.raw_password,
-        }
+        test_data = {"email": user.email, "password": user.raw_password}
 
         # TODO: THOUGHT THIS WOULD RETURN "User account is disabled."
         # TODO: BUT LOW-LEVEL DJANGO-NESS: https://github.com/pennersr/django-allauth/blob/b52a61b4d5c74c586f032c761cd0f902df20fd4b/allauth/account/auth_backends.py#L62
         INACTIVE_USER_ERROR_RESPONSE = {
             "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."],
+                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
             }
         }
 
@@ -244,13 +233,10 @@ class TestLoginErrors:
         user = UserFactory()
         assert not user.is_verified
 
-        test_data = {
-            "email": user.email,
-            "password": user.raw_password,
-        }
+        test_data = {"email": user.email, "password": user.raw_password}
 
         UNVERIFIED_USER_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: [f"{user} is not verified."],}
+            "errors": {NON_FIELD_ERRORS_KEY: [f"User {user} is not verified."]}
         }
 
         response = client.post(self.url, test_data)
@@ -271,13 +257,10 @@ class TestLoginErrors:
         user = UserFactory(is_approved=False)
         assert not user.is_approved
 
-        test_data = {
-            "email": user.email,
-            "password": user.raw_password,
-        }
+        test_data = {"email": user.email, "password": user.raw_password}
 
         UNAPPROVED_USER_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: [f"{user} is not approved."],}
+            "errors": {NON_FIELD_ERRORS_KEY: [f"User {user} has not been approved."]}
         }
 
         response = client.post(self.url, test_data)
@@ -298,16 +281,13 @@ class TestLoginErrors:
         user = UserFactory(accepted_terms=False)
         assert not user.accepted_terms
 
-        test_data = {
-            "email": user.email,
-            "password": user.raw_password,
-        }
+        test_data = {"email": user.email, "password": user.raw_password}
 
         UNACCEPTED_USER_ERROR_RESPONSE = {
             "errors": {
                 NON_FIELD_ERRORS_KEY: [
-                    f"{user} has not accepted the terms & conditions."
-                ],
+                    f"User {user} has not yet accepted the terms & conditions."
+                ]
             }
         }
 
@@ -360,7 +340,7 @@ class TestPasswordErrors:
         # TODO: THERE IS AN INCONSISTENCY IN DJANGO!  ("didn’t" instead of "didn't") BAD BAD DJANGO!
         # TODO: https://github.com/django/django/blob/505fec6badba0622bbf97bb659188c3d62a9bc58/django/contrib/auth/forms.py#L334
         NON_MATCHING_PASSWORD_ERROR_RESPONSE = {
-            "errors": {"new_password2": ["The two password fields didn’t match."],}
+            "errors": {"new_password2": ["The two password fields didn’t match."]}
         }
 
         response = client.post(self.change_url, test_data)
@@ -373,12 +353,10 @@ class TestPasswordErrors:
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
-        test_data = {
-            "new_password1": user.raw_password,
-        }
+        test_data = {"new_password1": user.raw_password}
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"new_password2": ["This field is required."],}
+            "errors": {"new_password2": ["This field is required."]}
         }
 
         response = client.post(self.change_url, test_data)
@@ -391,16 +369,13 @@ class TestPasswordErrors:
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
-        test_data = {
-            "new_password1": "password",
-            "new_password2": "password",
-        }
+        test_data = {"new_password1": "password", "new_password2": "password"}
 
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
                 "new_password2": [
                     "This is a top-10 common password.Add another word or two. Uncommon words are better."
-                ],
+                ]
             }
         }
 
@@ -416,13 +391,11 @@ class TestPasswordErrors:
 
         client = APIClient()
 
-        test_data = {
-            "email": user_data["email"],
-        }
+        test_data = {"email": user_data["email"]}
 
         UNKNOWN_USER_ERROR_RESPONSE = {
             "errors": {
-                "email": ["The e-mail address is not assigned to any user account"],
+                "email": ["The e-mail address is not assigned to any user account"]
             }
         }
 
@@ -438,9 +411,8 @@ class TestPasswordErrors:
 
         client = APIClient()
 
-        password = generate_password()
-        token_key = get_adapter().default_token_generator.make_token(user)
         uid = rest_encode_user_pk(user)
+        token_key = get_adapter().default_token_generator.make_token(user)
 
         test_data = {
             "new_password1": "password",
@@ -451,7 +423,9 @@ class TestPasswordErrors:
 
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
-                "new_password2": ["This is a top-10 common password.Add another word or two. Uncommon words are better."],
+                "new_password2": [
+                    "This is a top-10 common password.Add another word or two. Uncommon words are better."
+                ]
             }
         }
 
@@ -474,11 +448,7 @@ class TestPasswordErrors:
             "token": shuffle_string(token_key),
         }
 
-        INVALID_KEY_ERROR_RESPONSE = {
-            "errors": {
-                "token": ["Invalid value"],
-            }
-        }
+        INVALID_KEY_ERROR_RESPONSE = {"errors": {"token": ["Invalid value"]}}
 
         response = client.post(self.reset_confirm_url, test_data)
         assert status.is_client_error(response.status_code)
@@ -502,20 +472,19 @@ class TestEmailErrors:
 
         client = APIClient()
 
-        test_data = {
-            "email": user_data["email"],
-        }
+        test_data = {"email": user_data["email"]}
 
         UNKNOWN_USER_ERROR_RESPONSE = {
             "errors": {
-                NON_FIELD_ERRORS_KEY: [f"Unable to find user with '{test_data['email']}' address."],
+                NON_FIELD_ERRORS_KEY: [
+                    f"Unable to find user with '{test_data['email']}' address."
+                ]
             }
         }
 
         response = client.post(self.send_email_verifciation_url, test_data)
         assert status.is_client_error(response.status_code)
         assert response.json() == UNKNOWN_USER_ERROR_RESPONSE
-
 
     ##############################
     # perform verification views #
@@ -527,29 +496,20 @@ class TestEmailErrors:
 
         test_data = {}
 
-        MISSING_KEY_ERROR_RESPONSE = {
-            "errors": {
-                "key": ["This field is required."],
-            }
-        }
+        MISSING_KEY_ERROR_RESPONSE = {"errors": {"key": ["This field is required."]}}
 
         response = client.post(self.verify_email_url, test_data)
         assert status.is_client_error(response.status_code)
         assert response.json() == MISSING_KEY_ERROR_RESPONSE
 
-
     def test_invalid_key(self, user):
 
         client = APIClient()
 
-        test_data = {
-            "key": "invalid_key",
-        }
+        test_data = {"key": "invalid_key"}
 
         INVALID_KEY_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: ["This is an invalid key."],
-            }
+            "errors": {NON_FIELD_ERRORS_KEY: ["This is an invalid key."]}
         }
 
         response = client.post(self.verify_email_url, test_data)

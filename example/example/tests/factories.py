@@ -5,9 +5,6 @@ from factory.faker import (
 
 from django.db.models.signals import post_save
 
-from astrosat.tests.providers import ValidatedProvider
-from astrosat.tests.utils import optional_declaration
-
 from astrosat_users.tests.factories import (
     UserFactory as AstrosatUserFactory,
     UserRoleFactory,
@@ -15,9 +12,6 @@ from astrosat_users.tests.factories import (
 )
 
 from example.models import ExampleProfile
-
-
-FactoryFaker.add_provider(ValidatedProvider)
 
 
 class ExampleProfileFactory(factory.DjangoModelFactory):

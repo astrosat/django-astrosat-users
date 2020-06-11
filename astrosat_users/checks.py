@@ -9,14 +9,14 @@ from . import APP_NAME
 from .conf import app_settings
 
 
-# apps required by astrosat
+# apps required by astrosat_users
 APP_DEPENDENCIES = [
     "astrosat",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "rest_auth",
-    "rest_auth.registration",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     "knox",
 ]
 
@@ -24,9 +24,8 @@ APP_DEPENDENCIES = [
 @register(Tags.compatibility)
 def check_dependencies(app_configs, **kwargs):
     """
-    Makes sure that all django app dependencies are met.
-    (Standard python dependencies are handled in setup.py.)
-    Called by `AppConfig.ready()`.
+    Makes sure that all Django app dependencies are met.
+    (Standard Python dependencies are handled in setup.py.)
     """
 
     errors = []
@@ -67,8 +66,8 @@ def check_settings(app_configs):
     if not all(
         validator in password_validators
         for validator in [
-            "astrosat_users.utils.LengthPasswordValidator",
-            "astrosat_users.utils.StrengthPasswordValidator",
+            "astrosat_users.validators.LengthPasswordValidator",
+            "astrosat_users.validators.StrengthPasswordValidator",
         ]
     ):
         errors.append(

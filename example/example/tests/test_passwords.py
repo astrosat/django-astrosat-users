@@ -12,12 +12,9 @@ from rest_framework.test import APIClient
 from allauth.account.utils import user_pk_to_url_str, url_str_to_user_pk
 
 from astrosat_users.conf import app_settings
-from astrosat_users.utils import (
-    LengthPasswordValidator,
-    StrengthPasswordValidator,
-    rest_encode_user_pk,
-    rest_decode_user_pk,
-)
+from astrosat_users.utils import rest_encode_user_pk, rest_decode_user_pk
+from astrosat_users.validators import LengthPasswordValidator, StrengthPasswordValidator
+
 from astrosat_users.tests.utils import *
 
 from .factories import *

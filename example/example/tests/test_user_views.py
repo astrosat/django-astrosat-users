@@ -1,22 +1,24 @@
-from django.urls import resolve, reverse
-
 import pytest
 import urllib
+
+from django.urls import resolve, reverse
 
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from rest_auth.models import TokenModel
-from rest_auth.app_settings import TokenSerializer, create_token
+from dj_rest_auth.models import TokenModel
+from dj_rest_auth.app_settings import TokenSerializer, create_token
 
 from astrosat_users.models import User
 from astrosat_users.tests.utils import *
 
 from .factories import *
 
-
 @pytest.mark.django_db
 class TestApiViews:
+
+    users_list_url = reverse("users-list")
+
     def test_list_users(self, admin):
 
         token, key = create_auth_token(admin)
@@ -25,61 +27,85 @@ class TestApiViews:
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("users-list")
-        response = client.get(url)
-        data = response.json()
+
+        response = client.get(self.users_list_url)
+        content = response.json()
 
         assert status.is_success(response.status_code)
-        assert len(data) == len(users) + 1  # (add 1 for the admin user)
+        assert len(content) == len(users) + 1  # (add 1 for the admin user)
 
-        for actual_data, test_data in zip(data, [admin] + users):
-            assert actual_data["id"] == test_data.id
-            assert actual_data["email"] == test_data.email
+        for response_data, db_data in zip(content, [admin] + users):
+            assert response_data["id"]  == db_data.id
+            assert response_data["email"] == db_data.email
 
     def test_filter_approved_users(self, admin):
 
         token, key = create_auth_token(admin)
 
-        users = [UserFactory() for _ in range(10)]
+        users = [UserFactory(is_approved=i%2) for i in range(10)]
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
         url_params = urllib.parse.urlencode({"is_approved": "true"})
-        url = f"{reverse('users-list')}?{url_params}"
 
-        response = client.get(url)
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(response.json()) == 0
+        assert len(content) == 5
 
-        for user in users:
-            user.is_approved = True
-            user.save()
+        for response_data, db_data in zip(content, users[1::2]):
+            assert response_data["id"] == db_data.id
+            assert response_data["email"] == db_data.email
+            assert response_data["is_approved"] == True
 
-        response = client.get(url)
+    def test_filter_accepted_terms_users(self, admin):
+
+        token, key = create_auth_token(admin)
+
+        users = [UserFactory(accepted_terms=i%2) for i in range(10)]
+
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url_params = urllib.parse.urlencode({"accepted_terms": "true"})
+
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(response.json()) == len(users)
+        assert len(content) == 5
+
+        for response_data, db_data in zip(content, users[1::2]):
+            assert response_data["id"] == db_data.id
+            assert response_data["email"] == db_data.email
+            assert response_data["accepted_terms"] == True
 
     def test_filter_verified_users(self, admin):
 
         token, key = create_auth_token(admin)
 
-        users = [UserFactory() for _ in range(10)]
+        users = [UserFactory() for i in range(10)]
+        for i, user in enumerate(users):
+            if i%2:
+                user.verify()
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
         url_params = urllib.parse.urlencode({"is_verified": "true"})
-        url = f"{reverse('users-list')}?{url_params}"
 
-        response = client.get(url)
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(response.json()) == 1
+        assert len(content) == 5 + 1  # (don't forget the admin)
 
-        for user in users:
-            user.verify()
-
-        response = client.get(url)
-        assert status.is_success(response.status_code)
-        assert len(response.json()) == len(users) + 1
+        for response_data, db_data in zip(content[1:], users[1::2]):
+            assert response_data["id"] == db_data.id
+            assert response_data["email"] == db_data.email
+            assert response_data["is_verified"] == True
 
     def test_filter_roles_users(self, admin):
 
@@ -111,26 +137,27 @@ class TestApiViews:
         url_params = urllib.parse.urlencode(
             {"roles__any": ",".join([role.name for role in roles[:2]])}
         )
-        url = f"{reverse('users-list')}?{url_params}"
+        matching_users = [users[1], users[2], users[5], users[6]]
 
-        response = client.get(url)
-        actual_data = response.json()
-        expected_data = [users[1].id, users[2].id, users[5].id, users[6].id]
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(actual_data) == len(expected_data)
-        assert set(map(lambda x: x["id"], actual_data)) == set(expected_data)
+        assert len(content) == len(matching_users)
+        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
 
         url_params = urllib.parse.urlencode(
             {"roles__all": ",".join([role.name for role in roles[:2]])}
         )
-        url = f"{reverse('users-list')}?{url_params}"
+        matching_users = [users[5]]
 
-        response = client.get(url)
-        actual_data = response.json()
-        expected_data = [users[5].id]
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(actual_data) == len(expected_data)
-        assert set(map(lambda x: x["id"], actual_data)) == set(expected_data)
+        assert len(content) == len(matching_users)
+        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
+
 
     def test_filter_permissions_users(self, admin):
 
@@ -167,14 +194,14 @@ class TestApiViews:
                 )
             }
         )
-        url = f"{reverse('users-list')}?{url_params}"
+        matching_users = [users[1], users[2], users[5], users[6]]
 
-        response = client.get(url)
-        actual_data = response.json()
-        expected_data = [users[1].id, users[2].id, users[5].id, users[6].id]
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(actual_data) == len(expected_data)
-        assert set(map(lambda x: x["id"], actual_data)) == set(expected_data)
+        assert len(content) == len(matching_users)
+        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
 
         url_params = urllib.parse.urlencode(
             {
@@ -183,14 +210,14 @@ class TestApiViews:
                 )
             }
         )
-        url = f"{reverse('users-list')}?{url_params}"
+        matching_users = [users[5]]
 
-        response = client.get(url)
-        actual_data = response.json()
-        expected_data = [users[5].id]
+        response = client.get(f"{self.users_list_url}?{url_params}")
+        content = response.json()
+
         assert status.is_success(response.status_code)
-        assert len(actual_data) == len(expected_data)
-        assert set(map(lambda x: x["id"], actual_data)) == set(expected_data)
+        assert len(content) == len(matching_users)
+        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
 
     def test_get_user(self, admin):
 
@@ -245,8 +272,8 @@ class TestApiViews:
         """
 
         client = APIClient()
-        for _ in range(4):
-            user = UserFactory()
+        users = [UserFactory() for _ in range(4)]
+        for user in users:
             token, key = create_auth_token(user)
             client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
             url = reverse("users-detail", kwargs={"email": "current"})
