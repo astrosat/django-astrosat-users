@@ -1,77 +1,97 @@
-from django.urls import include, path, re_path
-from django.urls.resolvers import RegexPattern, RoutePattern
-from django.utils.decorators import method_decorator
-from django.views.defaults import page_not_found
+from functools import partial
 
-from rest_framework.exceptions import bad_request
+from django.urls import include, path, re_path
+from django.utils.decorators import method_decorator
+from django.urls.resolvers import RegexPattern, RoutePattern
+
 from rest_framework.routers import SimpleRouter
 
 from allauth.urls import urlpatterns as allauth_urlpatterns
 
-# Backend views...
-from .views import (
-    DisabledView,
-    DisapprovedView,
-    UnacceptedView,
-    UserListView,
-    UserDetailView,
-    UserUpdateView,
-    GenericProfileListView,
-    GenericProfileDetailView,
-    GenericProfileUpdateView,
-)
+from astrosat.decorators import conditional_redirect
+
+from astrosat_users.conf import app_settings
+
+# backend views...
+from .views import message_view, UserListView, UserDetailView, UserUpdateView
 
 # API views...
 from .views import (
     LoginView,
     LogoutView,
-    RegisterView,
-    SendEmailVerificationView,
-    VerifyEmailView,
     PasswordChangeView,
     PasswordResetView,
     PasswordResetConfirmView,
+    RegisterView,
+    VerifyEmailView,
+    SendEmailVerificationView,
     UserViewSet,
-    UserRoleViewSet,
-    UserPermissionViewSet,
+    CustomerDetailView,
+    CustomerUserListView,
+    CustomerUserDetailView,
 )
 
 # API views that still authenticate w/ backend...
-from .views import (
-    token_view,
-)
+from .views import token_view
 
-from astrosat.decorators import conditional_redirect
-from .conf import app_settings
 
 ##############
-# API routes #
+# api routes #
 ##############
 
 
 api_router = SimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
-api_router.register("roles", UserRoleViewSet, basename="roles")
-api_router.register("permissions", UserPermissionViewSet, basename="permissions")
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path(
+        "customers/<slug:name>/", CustomerDetailView.as_view(), name="customers-detail"
+    ),
+    path(
+        "customers/<slug:name>/users/",
+        CustomerUserListView.as_view(),
+        name="customer-users-list",
+    ),
+    path(
+        "customers/<slug:name>/users/<str:email>/",
+        CustomerUserDetailView.as_view(),
+        name="customer-users-detail",
+    ),
     # overwrite the rest_auth.urls to cope w/ the idiosyncracies of astrosat_users
     # (and to exclude the built-in user ViewSets)
-    # path("authentication/", include("rest_auth.urls")),
-    # path("authentication/registration/", include("rest_auth.registration.urls")),
+    # path("authentication/", include("dj_rest_auth.urls")),
+    # path("authentication/registration/", include("dj_rest_auth.registration.urls")),
     path("authentication/login/", LoginView.as_view(), name="rest_login"),
     path("authentication/logout/", LogoutView.as_view(), name="rest_logout"),
-    path("authentication/password/change/", PasswordChangeView.as_view(), name="rest_password_change"),
-    path("authentication/password/reset/", PasswordResetView.as_view(), name="rest_password_reset"),
-    path("authentication/password/verify-reset/", PasswordResetConfirmView.as_view(), name="rest_password_reset_confirm"),
-    path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
-    path("authentication/registration/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email"),
-    path("authentication/send-email-verification/", SendEmailVerificationView.as_view(), name="rest_send_email_verification"),
+    path(
+        "authentication/password/change/",
+        PasswordChangeView.as_view(),
+        name="rest_password_change",
+    ),
+    path(
+        "authentication/password/reset/",
+        PasswordResetView.as_view(),
+        name="rest_password_reset",
+    ),
+    path(
+        "authentication/password/verify-reset/",
+        PasswordResetConfirmView.as_view(),
+        name="rest_password_reset_confirm",
+    ),
     # a "special" api_urlpattern that authenticates using django-allauth NOT django-rest-auth
+    path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
+    path(
+        "authentication/registration/verify-email/",
+        VerifyEmailView.as_view(),
+        name="rest_verify_email",
+    ),
+    path(
+        "authentication/send-email-verification/",
+        SendEmailVerificationView.as_view(),
+        name="rest_send_email_verification",
+    ),
     path("token", token_view, name="token"),
-
 ]
-
 
 #################
 # normal routes #
@@ -109,10 +129,12 @@ for urlresolver in allauth_urlpatterns:
 urlpatterns = [
     # allauth stuff...
     path("authentication/", include(conditional_backend_url_patterns)),
-    # custom stuff...
-    path("authentication/disabled/", DisabledView.as_view(), name="disabled"),
-    path("authentication/disapproved/", DisapprovedView.as_view(), name="disapproved"),
-    path("authentication/unaccepted/", UnacceptedView.as_view(), name="unaccepted"),
+    path(
+        "authentication/message/disabled/",
+        partial(message_view, message="Backend access is currently disabled."),
+        name="disabled",
+    ),
+    # user stuff...
     path("users/", check_backend_access(UserListView.as_view()), name="user-list"),
     path(
         "users/<str:email>/",
@@ -123,20 +145,5 @@ urlpatterns = [
         "users/<str:email>/update/",
         check_backend_access(UserUpdateView.as_view()),
         name="user-update",
-    ),
-    path(
-        "profiles/",
-        check_backend_access(GenericProfileListView.as_view()),
-        name="profile-list",
-    ),
-    path(
-        "users/<str:email>/profiles/<slug:profile_key>",
-        check_backend_access(GenericProfileDetailView.as_view()),
-        name="profile-detail",
-    ),
-    path(
-        "users/<str:email>/profiles/<slug:profile_key>/update/",
-        check_backend_access(GenericProfileUpdateView.as_view()),
-        name="profile-update",
     ),
 ]

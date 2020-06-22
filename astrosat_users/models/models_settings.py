@@ -10,28 +10,31 @@ class UserSettings(SingletonMixin, models.Model):
         verbose_name_plural = "User Settings"
 
     allow_registration = models.BooleanField(
-        default=True, help_text=_("Allow users to register via the 'sign up' view.")
+        default=True, help_text=_("Allow users to register via the 'sign up' views.")
     )
     enable_backend_access = models.BooleanField(
         default=True,
         help_text=_(
-            "Enable user management via the backend views (as opposed to only the API)."
+            "Enable user management via the backend views (as opposed to only via the API)."
         ),
     )
     notify_signups = models.BooleanField(
-        default=False, help_text=_("Send an email to the admin when a user signs up.")
+        default=False,
+        help_text=_("Send an email to the MANAGERS when a user signs up."),
     )
     require_approval = models.BooleanField(
         default=False,
         help_text=_("Require a formal approval step to the sign up process."),
     )
+    require_terms_acceptance = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Require a user to accept the terms & conditions during the sign up process."
+        ),
+    )
     require_verification = models.BooleanField(
         default=True,
         help_text=_("Require an email verification step to the sign up process."),
-    )
-    require_terms_acceptance = models.BooleanField(
-        default=False,
-        help_text=_("Require a user to accept the terms & conditions during the sign up process."),
     )
 
     def __str__(self):

@@ -1,18 +1,19 @@
 import re
 from typing import Any
 
+from django import forms
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ValidationError
 from django.core.mail import mail_managers
 from django.http import HttpRequest, HttpResponseRedirect
-from django.shortcuts import resolve_url
-from django.urls import reverse
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode as uid_encode
+from django.shortcuts import redirect, render
+from django.urls import resolve, reverse
 
-from allauth.exceptions import ImmediateHttpResponse
-from allauth.utils import build_absolute_uri
+from rest_framework.exceptions import APIException
+
+from allauth.account import app_settings as allauth_app_settings
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.forms import default_token_generator
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.account.utils import (
     complete_signup,
     send_email_confirmation,
@@ -20,16 +21,18 @@ from allauth.account.utils import (
     url_str_to_user_pk,
     user_username,
 )
+from allauth.account.utils import user_username
+from allauth.exceptions import ImmediateHttpResponse
+from allauth.utils import build_absolute_uri
 
-from .conf import app_settings
-from .utils import rest_encode_user_pk
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+
+from astrosat_users.conf import app_settings
+from astrosat_users.serializers import UserSerializerLite
+from astrosat_users.utils import rest_encode_user_pk
 
 
-class AccountAdapter(DefaultAccountAdapter):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.default_token_generator = default_token_generator
-
+class AdapterMixin(object):
     @property
     def is_api(self):
         return re.match("^/api/", self.request.path) is not None
@@ -37,49 +40,88 @@ class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request: HttpRequest):
         return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
 
-    # TODO: MOVE THIS LOGIC TO THE LoginForm, WHERE IT BELONGS !
-    def login(self, request, user):
+    def check_user(self, user, **kwargs):
         """
-        Adds some checks into the login procedure.
+        Here is where I put all the custom checks that I want to happen
+        which aren't necessarily form/serializer errors.
         """
 
-        # THIS IS F%!&@#G CONFUSING...
-        # "astrosat_users.adapters.login" gets called from "allauth.utils.perform_login" which assumes
-        # that login succeeds (b/c "perform_login" already has its own checks); so if I just try to return
-        # an HttpResponse, rather than actually login, an error will ocurr b/c the _next_ thing that "perform_login"
-        # does is to redirect to LOGIN_REDIRECT_URL and the assert in "astrosat_users.adapters.get_login_redirect_url"
-        # will fail (fwiw, that assert is in the base class as well).  However, there _is_ a try-catch block in
-        # "perform_login" which immediately returns a response in case an "allauth.exceptions.ImmediateHttpResponse"
-        # is caught.  So, if a check fails I just raise an ImmediateHttpResponse w/ the correct response.
+        from astrosat_users.views.views_messages import message_view
 
-        if app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and not user.is_verified:
-            # don't automatically send another verification email
+        # verification (overriding the check here in order to not automatically resend the verification email)
+        if (
+            kwargs.get("check_verification", True)
+            and app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION
+            and not user.is_verified
+        ):
+            msg = f"User {user} is not verified."
             # send_email_confirmation(request, user)
-            response = self.respond_email_verification_sent(request, user)
-            raise ImmediateHttpResponse(response)
+            if self.is_api:
+                raise APIException(msg)
+            else:
+                response = self.respond_email_verification_sent(self.request, user)
+                raise ImmediateHttpResponse(response)
 
-        if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
-            request.session["username"] = user.username
-            response = HttpResponseRedirect(reverse("disapproved"))
-            raise ImmediateHttpResponse(response)
+        # approval (display a message)
+        if (
+            kwargs.get("check_approval", True)
+            and app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL
+            and not user.is_approved
+        ):
+            msg = f"User {user} has not been approved."
+            if self.is_api:
+                raise APIException(msg)
+            else:
+                # (this is dealt w/ in "authenticate" below as a ValidationError, but just-in-case...)
+                response = message_view(self.request, message=msg)
+                raise ImmediateHttpResponse(response)
 
-        if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not user.accepted_terms:
-            request.session["username"] = user.username
-            response = HttpResponseRedirect(reverse("unaccepted"))
-            raise ImmediateHttpResponse(response)
+        # terms acceptance (display a message)
+        if (
+            kwargs.get("check_terms_acceptance", True)
+            and app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE
+            and not user.accepted_terms
+        ):
+            msg = f"User {user} has not yet accepted the terms & conditions."
+            if self.is_api:
+                raise APIException(msg)
+            else:
+                # (this is dealt w/ in "authenticate" below as a ValidationError, but just-in-case...)
+                response = message_view(self.request, message=msg)
+                raise ImmediateHttpResponse(response)
 
-        super().login(request, user)
+        # change_password (redirecting to reset_password_view)
+        if kwargs.get("check_password", True) and user.change_password:
+            self.send_password_confirmation_email(user, user.email)
+            if self.is_api:
+                raise APIException("A password reset email has been sent.")
+            else:
+                response = redirect("account_reset_password_done")
+                raise ImmediateHttpResponse(response)
 
-    def send_confirmation_mail(self, request, emailconfirmation, signup):
-        """
-        Sends the actual email verification message.
-        After doing this the normal way, records the key that was used in that message.
-        """
-        super().send_confirmation_mail(request, emailconfirmation, signup)
+        return True
 
-        user = emailconfirmation.email_address.user
-        user.latest_confirmation_key = emailconfirmation.key
-        user.save()
+
+class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.default_token_generator = default_token_generator
+
+    def authenticate(self, request: HttpRequest, **credentials):
+        user = super().authenticate(request, **credentials)
+
+        if user is not None:
+            if app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and not user.is_approved:
+                msg = f"User {user} has not been approved."
+                raise forms.ValidationError(msg)
+            elif (
+                app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE
+                and not user.accepted_terms
+            ):
+                msg = f"User {user} has not yet accepted Terms & Conditions."
+                raise forms.ValidationError(msg)
+
+        return user
 
     def get_email_confirmation_url(self, request, emailconfirmation):
         """Constructs the email confirmation (activation) url.
@@ -121,6 +163,39 @@ class AccountAdapter(DefaultAccountAdapter):
         url = build_absolute_uri(request, path)
         return url
 
+    def login(self, request, user):
+
+        # THIS IS F%!&@#G CONFUSING...
+        # This fn gets called from "allauth.utils.perform_login" which assumes
+        # that login succeeds (b/c "perform_login" already has its own checks);
+        # so if I just try to return an HttpResponse, rather than actually login,
+        # an error will ocurr b/c the _next_ thing that "perform_login" does is to
+        # redirect to LOGIN_REDIRECT_URL which asserts that the user is authenticated.
+        # However, there is a try-catch block in "perform_login" which immediately returns
+        # a response in case "ImmediateHttpResponse" is thrown.  I thought that adding the
+        # "check_user()" method to LoginForm & LoginSerializer handled this.  But it turns
+        # out that I need to deal w/ this during Registration as well.  I am not happy.
+        # TODO: GET RID OF THIS FN !
+
+        try:
+
+            self.check_user(
+                user,
+                check_verification=app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION,
+                check_approval=app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL,
+                check_terms_acceptance=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE,
+                check_password=False,
+            )
+        except APIException:
+            # the LoginSerializer calls adapter.check_user explicitly so will prevent
+            # logins there; There's no need to prevent RegisterSerializer from proceeding
+            # if these checks fail since I don't automatically log the user in after registration
+            pass
+        except ImmediateHttpResponse:
+            raise
+
+        return super().login(request, user)
+
     def respond_email_verification_sent(self, request, user):
         """
         Adds some context to the default email_verification_sent view.
@@ -133,12 +208,6 @@ class AccountAdapter(DefaultAccountAdapter):
         request.session["email_recipient"] = user_emailaddress.email
 
         return super().respond_email_verification_sent(request, user)
-
-    # def clean_password(self, password, user=None):
-    # no need to overload this fn
-    # django-allauth just hooks into the defined Django Password Validators.
-    # astrosat_users must use LengthPasswordValidator & StrengthPasswordValidators.
-    # super().clean_password(password, user=user)
 
     def save_user(self, request, user, form, commit=True):
         """
@@ -153,7 +222,8 @@ class AccountAdapter(DefaultAccountAdapter):
         extra_fields = ["accepted_terms"]
         for extra_field in extra_fields:
             setattr(saved_user, extra_field, form.cleaned_data[extra_field])
-        saved_user.save()
+        if commit:
+            saved_user.save()
 
         if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
             subject = super().format_email_subject(f"new user signup: {saved_user}")
@@ -161,7 +231,44 @@ class AccountAdapter(DefaultAccountAdapter):
             mail_managers(subject, message, fail_silently=True)
         return saved_user
 
+    def send_confirmation_mail(self, request, emailconfirmation, signup):
+        """
+        Sends the actual email verification message.
+        After doing this the normal way, records the key that was used in that message.
+        """
+        super().send_confirmation_mail(request, emailconfirmation, signup)
 
-class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    def is_open_for_signup(self, request: HttpRequest, sociallogin: Any):
-        return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
+        user = emailconfirmation.email_address.user
+        user.latest_confirmation_key = emailconfirmation.key
+        user.save()
+
+    def send_password_confirmation_email(self, user, email, **kwargs):
+
+        token_generator = kwargs.get("token_generator", self.default_token_generator)
+        token_key = token_generator.make_token(user)
+
+        url = self.get_password_confirmation_url(self.request, user, token_key)
+
+        context = {
+            "current_site": get_current_site(self.request),
+            "user": user,
+            "password_reset_url": url,
+            "request": self.request,
+        }
+
+        if (
+            allauth_app_settings.AUTHENTICATION_METHOD
+            != allauth_app_settings.AuthenticationMethod.EMAIL
+        ):
+            context["username"] = user_username(user)
+
+        self.send_mail("account/email/password_reset_key", email, context)
+
+    def set_password(self, user, password):
+        user.set_password(password)
+        user.change_password = False
+        user.save()
+
+
+class SocialAccountAdapter(AdapterMixin, DefaultSocialAccountAdapter):
+    pass

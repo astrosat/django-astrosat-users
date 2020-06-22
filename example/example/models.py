@@ -1,8 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-
-from astrosat_users.models import UserProfileField
+from astrosat_users.fields import UserProfileField
 
 
 class ExampleProfile(models.Model):
@@ -10,7 +9,14 @@ class ExampleProfile(models.Model):
     A silly user profile, just for testing.
     """
 
-    user = UserProfileField(related_name="example_profile", serializer_class="example.serializers.ExampleProfileSerializer")
+    class Meta:
+        verbose_name = "Example Profile"
+        verbose_name_plural = "Example Profiles"
+
+    user = UserProfileField(
+        related_name="example_profile",
+        serializer_class="example.serializers.ExampleProfileSerializer",
+    )
 
     # some silly fields for playing w/ profiles...
     age = models.IntegerField(blank=True, null=True, help_text=_("Age in years."))

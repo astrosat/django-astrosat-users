@@ -14,42 +14,42 @@ from rest_framework.test import APIClient
 
 from astrosat_users.conf import app_settings
 from astrosat_users.tests.utils import *
-from astrosat_users.views.views_api_auth import REGISTRATION_CLOSED_MSG
+from astrosat_users.views.views_auth import REGISTRATION_CLOSED_MSG
 
 from .factories import *
 
 
 UserModel = get_user_model()
 
-# TODO: test_registration_sends_confirmation_email INTERMITTENTLY FAILS
-# TODO: POSSIBLY B/C OF FUNNY CHARACTERS IN THE EMAIL KEY ?!?
-
 
 @pytest.mark.django_db
 class TestApiRegistration:
+
+    registration_url = reverse("rest_register")
+    verification_url = reverse("rest_verify_email")
+
     def test_disable_registration(self, user_settings):
         """
         Tests that you cannot register when registration is closed
         """
 
         client = APIClient()
-        url = reverse("rest_register")
 
         user_settings.allow_registration = True
         user_settings.save()
 
         # get is never allowed
-        response = client.get(url)
+        response = client.get(self.registration_url)
         assert status.is_client_error(response.status_code)
 
         user_settings.allow_registration = False
         user_settings.save()
 
         # get/post are not allowed if allow_registration is False
-        response = client.get(url)
+        response = client.get(self.registration_url)
         assert status.is_client_error(response.status_code)
         assert response.json()["detail"] == REGISTRATION_CLOSED_MSG
-        response = client.post(url, {})
+        response = client.post(self.registration_url)
         assert status.is_client_error(response.status_code)
         assert response.json()["detail"] == REGISTRATION_CLOSED_MSG
 
@@ -59,7 +59,6 @@ class TestApiRegistration:
         """
 
         client = APIClient()
-        url = reverse("rest_register")
 
         test_data = {
             "email": user_data["email"],
@@ -67,23 +66,42 @@ class TestApiRegistration:
             "password2": user_data["password"],
         }
 
-        response = client.post(url, test_data)
-        data = response.json()
+        response = client.post(self.registration_url, test_data)
         assert status.is_success(response.status_code)
 
-        user = UserModel.objects.get(email=user_data["email"])
         assert UserModel.objects.count() == 1
+        user = UserModel.objects.get(email=user_data["email"])
         assert user.is_active == True
         assert user.is_verified == False
         assert user.is_approved == False
+        assert user.accepted_terms == False
+
+    def test_registration_accept_terms(self, user_data, user_settings):
+
+        client = APIClient()
+
+        user_settings.require_terms_acceptance = True
+        user_settings.save()
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+        }
+
+        response = client.post(self.registration_url, test_data)
+        assert status.is_client_error(response.status_code)
+
+        test_data.update({"accepted_terms": True})
+
+        response = client.post(self.registration_url, test_data)
+        assert status.is_success(response.status_code)
 
     def test_registration_sends_confirmation_email(self, user_data):
         """
         Tests that registering a user sends a single email
         """
-
         client = APIClient()
-        url = reverse("rest_register")
 
         test_data = {
             "email": user_data["email"],
@@ -92,9 +110,10 @@ class TestApiRegistration:
         }
 
         assert len(mail.outbox) == 0
-        response = client.post(url, test_data)
+        response = client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
+
         confirmation_url = build_absolute_uri(
             response.wsgi_request,
             app_settings.ACCOUNT_CONFIRM_EMAIL_CLIENT_URL.format(
@@ -117,7 +136,6 @@ class TestApiRegistration:
             user_settings.save()
 
         client = APIClient()
-        url = reverse("rest_register")
 
         test_data = {
             "email": user_data["email"],
@@ -126,7 +144,7 @@ class TestApiRegistration:
         }
 
         assert len(mail.outbox) == 0
-        client.post(url, test_data)
+        client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
         email = mail.outbox[0]
@@ -140,26 +158,23 @@ class TestApiRegistration:
 
         client = APIClient()
 
-        registration_url = reverse("rest_register")
-        verification_url = reverse("rest_verify_email")
-
         test_data = {
             "email": user_data["email"],
             "password1": user_data["password"],
             "password2": user_data["password"],
         }
 
-        client.post(registration_url, test_data)
+        client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
         valid_user_key = user.latest_confirmation_key
         invalid_user_key = shuffle_string(valid_user_key)
 
-        response = client.post(verification_url, {"key": invalid_user_key})
+        response = client.post(self.verification_url, {"key": invalid_user_key})
         assert status.is_client_error(response.status_code)
         assert user.is_verified is False
 
-        response = client.post(verification_url, {"key": valid_user_key})
+        response = client.post(self.verification_url, {"key": valid_user_key})
         assert status.is_success(response.status_code)
         assert user.is_verified is True
 
@@ -193,24 +208,26 @@ class TestApiRegistration:
 
 @pytest.mark.django_db
 class TestBackendRegistration:
+
+    registration_url = reverse("account_signup")
+
     def test_disable_backend(self, user_settings):
         """
-        Tests that you cannot access any backend views when it's disabled.
+        Tests that you cannot access backend views when it's disabled.
         """
 
         client = Client()
-        url = reverse("account_signup")
 
         user_settings.enable_backend_access = True
         user_settings.save()
 
-        response = client.get(url)
+        response = client.get(self.registration_url)
         assert status.is_success(response.status_code)
 
         user_settings.enable_backend_access = False
         user_settings.save()
 
-        response = client.get(url)
+        response = client.get(self.registration_url)
         assert status.is_redirect(response.status_code)
         assert resolve(response.url).view_name == "disabled"
 
@@ -220,45 +237,43 @@ class TestBackendRegistration:
         """
 
         client = Client()
-        url = reverse("account_signup")
 
-        response = client.get(url)
-        open_template_name = "account/signup.html"
+        response = client.get(self.registration_url)
         assert status.is_success(response.status_code)
         assert any(
             map(
-                lambda template: template.name == open_template_name, response.templates
+                lambda template: template.name == "account/signup.html",
+                response.templates,
             )
         )
 
         user_settings.allow_registration = False
         user_settings.save()
 
-        response = client.get(url)
-        closed_template_name = "account/signup_closed.html"
+        response = client.get(self.registration_url)
         assert status.is_success(response.status_code)
         assert any(
             map(
-                lambda template: template.name == closed_template_name,
+                lambda template: template.name == "account/signup_closed.html",
                 response.templates,
             )
         )
 
-    def test_registration(self, user_data):
+    def test_registration(self, user_data, user_settings):
         """
         Tests that registering a user results in an un-verified un-approved user
         """
 
         client = Client()
-        url = reverse("account_signup")
 
         test_data = {
             "email": user_data["email"],
             "password1": user_data["password"],
             "password2": user_data["password"],
+            "accepted_terms": True,
         }
 
-        response = client.post(url, test_data)
+        response = client.post(self.registration_url, test_data)
 
         assert status.is_redirect(response.status_code)
         assert resolve(response.url).view_name == "account_email_verification_sent"
@@ -269,13 +284,40 @@ class TestBackendRegistration:
         assert user.is_verified == False
         assert user.is_approved == False
 
+    def test_registration_accept_terms(self, user_data, user_settings):
+
+        client = Client()
+
+        user_settings.require_terms_acceptance = True
+        user_settings.save()
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+        }
+
+        response = client.post(self.registration_url, test_data)
+        request_user = response.wsgi_request.user
+
+        assert status.is_success(response.status_code)
+        assert not request_user.is_authenticated
+
+        test_data.update({"accepted_terms": True})
+
+        response = client.post(self.registration_url, test_data)
+        request_user = response.wsgi_request.user
+
+        assert status.is_redirect(response.status_code)
+        assert not request_user.is_authenticated
+        assert resolve(response.url).view_name == "account_email_verification_sent"
+
     def test_registration_sends_confirmation_email(self, user_data):
         """
         Tests that registering a user sends an email
         """
 
         client = Client()
-        url = reverse("account_signup")
 
         test_data = {
             "email": user_data["email"],
@@ -284,7 +326,7 @@ class TestBackendRegistration:
         }
 
         assert len(mail.outbox) == 0
-        client.post(url, test_data)
+        client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
         confirmation_url = reverse(
@@ -305,7 +347,6 @@ class TestBackendRegistration:
             user_settings.save()
 
         client = Client()
-        url = reverse("account_signup")
 
         test_data = {
             "email": user_data["email"],
@@ -314,7 +355,7 @@ class TestBackendRegistration:
         }
 
         assert len(mail.outbox) == 0
-        client.post(url, test_data)
+        client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
         email = mail.outbox[0]
@@ -328,15 +369,13 @@ class TestBackendRegistration:
 
         client = Client()
 
-        registration_url = reverse("account_signup")
-
         test_data = {
             "email": user_data["email"],
             "password1": user_data["password"],
             "password2": user_data["password"],
         }
 
-        client.post(registration_url, test_data)
+        client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
         valid_verification_url = reverse(

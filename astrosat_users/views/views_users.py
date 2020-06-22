@@ -1,25 +1,25 @@
-from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Count
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView, DetailView, UpdateView
 
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAdminUser,
-    BasePermission,
-    SAFE_METHODS,
-)
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated, BasePermission, SAFE_METHODS
 
 from django_filters import rest_framework as filters
 
 from astrosat.views import BetterBooleanFilter, BetterBooleanFilterField
 
 from astrosat_users.models import User, UserRole, UserPermission
-from astrosat_users.serializers import (
-    UserSerializer,
-    UserRoleSerializer,
-    UserPermissionSerializer,
-)
+from astrosat_users.serializers import UserSerializer
+
+
+##############
+#  api views #
+##############
 
 
 class IsAdminOrSelf(BasePermission):
@@ -33,31 +33,16 @@ class IsAdminOrSelf(BasePermission):
         return user.is_superuser or user == obj
 
 
-class ListRetrieveViewSet(
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
-):
-    """
-    A generic viewset for listing, retrieving, and updating models.
-    But not creating or deleting them.  Used by all ViewSets below.
-    Creating users is done via the KnoxRegisterView. And deleting
-    users is unsupported outside of the Django Admin.
-    """
-
-    pass
-
-
 class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
-        fields = ["is_active", "is_approved", "is_verified", "accepted_terms", "roles"]
+        fields = ["is_active", "is_approved", "accepted_terms", "is_verified"]
 
     is_active = BetterBooleanFilter()
     is_approved = BetterBooleanFilter()
     accepted_terms = BetterBooleanFilter()
     is_verified = filters.Filter(method="filter_is_verified")
+
     roles__any = filters.Filter(method="filter_roles_or")
     roles__all = filters.Filter(method="filter_roles_and")
     permissions__any = filters.Filter(method="filter_permissions_or")
@@ -78,14 +63,10 @@ class UserFilterSet(filters.FilterSet):
         return queryset
 
     def filter_roles_or(self, queryset, name, value):
-        # this is the default behavior of the "__in" lookup; it's pretty straightforward
         role_names = value.split(",")
         return queryset.filter(roles__name__in=role_names).distinct()
 
     def filter_roles_and(self, queryset, name, value):
-        # this uses annotations to match users w/ the same number of roles as the values
-        # I'm not sure why I can't do something clever w/ Q objects like:
-        # return queryset.filter(reduce(and_, map(lambda x: Q(roles__name=x), role_names)))
         role_names = value.split(",")
         return (
             queryset.filter(roles__name__in=role_names)
@@ -106,6 +87,22 @@ class UserFilterSet(filters.FilterSet):
         )
 
 
+class ListRetrieveViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    A generic viewset for listing, retrieving, and updating models.
+    But not creating or deleting them.  Used by all ViewSets below.
+    Creating users is done via the KnoxRegisterView. And deleting
+    users is intentionally unsupported outside of the Django Admin.
+    """
+
+    pass
+
+
 class UserViewSet(ListRetrieveViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
@@ -113,7 +110,7 @@ class UserViewSet(ListRetrieveViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = UserFilterSet
 
-    queryset = User.objects.all().prefetch_related("roles", "roles__permissions")
+    queryset = User.objects.prefetch_related("roles", "roles__permissions")
 
     lookup_field = "email"
     lookup_value_regex = (
@@ -141,17 +138,53 @@ class UserViewSet(ListRetrieveViewSet):
         return super().get_object(*args, **kwargs)
 
 
-class UserRoleViewSet(ListRetrieveViewSet):
+#################
+# backend views #
+#################
 
-    permission_classes = [IsAdminUser]
-    queryset = UserRole.objects.all()
-    serializer_class = UserRoleSerializer
-    lookup_field = "name"
+# just some lightweight views for clients that don't use the API
+# (not really expecting any of these to be used in anger)
 
 
-class UserPermissionViewSet(ListRetrieveViewSet):
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
+class UserListView(ListView):
 
-    permission_classes = [IsAdminUser]
-    queryset = UserPermission.objects.all()
-    serializer_class = UserPermissionSerializer
-    lookup_field = "name"
+    model = User
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(is_active=True)
+
+
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
+class UserDetailView(DetailView):
+
+    model = User
+    slug_field = "email"
+    slug_url_kwarg = "email"
+
+
+@method_decorator(
+    login_required(login_url=reverse_lazy("account_login")), name="dispatch"
+)
+class UserUpdateView(UpdateView):
+    model = User
+    fields = ("name", "description")
+    slug_field = "email"
+    slug_url_kwarg = "email"
+    template_name_suffix = (
+        "_update"
+    )  # override stupid default template_name_suffix of "_form"
+
+    def get_object(self, *args, **kwargs):
+
+        obj = super().get_object(*args, **kwargs)
+
+        current_user = self.request.user
+        if current_user != obj and not current_user.is_superuser:
+            raise PermissionDenied()
+        return obj

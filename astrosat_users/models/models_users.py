@@ -1,14 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.signals import user_logged_out
-from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account.models import EmailAddress
 
-from astrosat.mixins import SingletonMixin
 from astrosat.utils import validate_no_tags
 
 
@@ -23,20 +21,9 @@ def get_sentinel_user():
 
 class User(AbstractUser):
 
-    # objects = (
-    #     UserManager()
-    # )  # see the note in "managers.py" explaining why I'm not just using "UserQuerySet.as_manager()" here
+    # TODO: CUSTOM MANAGER ?
 
     PROFILE_KEYS = []
-
-    # a bit of cleverness here...
-    # jwt will use USERNAME_FIELD for logging in
-    # but astrosat_users uses the email address
-    # but that's already defined as a REQUIRED_FIELD in AbstractUser
-    # so I have to redefine _both_ REQUIRED_FIELD _and_ USERNAME_FIELD
-    # (and potentially ensure that email is unique)
-    # REQUIRED_FIELDS = ["username"]
-    # USERNAME_FIELD = "email"
 
     roles = models.ManyToManyField("UserRole", related_name="users", blank=True)
 

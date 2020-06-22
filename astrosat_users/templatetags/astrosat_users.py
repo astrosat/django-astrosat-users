@@ -2,8 +2,6 @@ from django import template
 from django.utils.html import mark_safe
 
 import astrosat_users
-from astrosat_users.models import User, get_profile_qs
-
 
 register = template.Library()
 
@@ -31,13 +29,3 @@ def astrosat_users_version():
 #####################
 # some other things #
 #####################
-
-
-@register.simple_tag
-def users():
-    return User.objects.filter(is_active=True)
-
-
-@register.simple_tag
-def profiles():
-    return get_profile_qs()

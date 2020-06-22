@@ -6,9 +6,9 @@ import factory
 from rest_framework import status
 from rest_framework.test import APIClient
 
-# (these next 3 variables are imported interlaly from "settings.py")
-from rest_auth.models import TokenModel
-from rest_auth.app_settings import TokenSerializer, create_token
+# (these next 3 variables are imported internaly from "settings.py")
+from dj_rest_auth.models import TokenModel
+from dj_rest_auth.app_settings import TokenSerializer, create_token
 
 from astrosat_users.tests.utils import *
 from astrosat_users.utils import rest_encode_user_pk, rest_decode_user_pk

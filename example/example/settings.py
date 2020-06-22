@@ -19,7 +19,7 @@ env = environ.Env()
 
 PROJECT_NAME = "Example Project"
 PROJECT_SLUG = slugify(PROJECT_NAME)
-PROJECT_EMAIL = "{role}@astrosat.space"
+PROJECT_EMAIL = "{role}@astrosat.net"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,9 +47,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "rest_auth",
-    "rest_auth.registration",
-    # "rest_framework.authtoken",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     # astrosat...
     "astrosat",
     "astrosat_users",
@@ -83,7 +82,7 @@ TEMPLATES = [
                 "templates",
             ),
         ],
-        # 'APP_DIRS': True,
+        # "APP_DIRS": True,
         "OPTIONS": {
             "loaders": [
                 # first look at files in DIR, then look in the standard place for each INSTALLED_APP
@@ -117,14 +116,15 @@ DATABASES = {
     }
 }
 
-# API
+# api
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         # "rest_framework.authentication.BasicAuthentication",  # insecure
         # "rest_framework.authentication.SessionAuthentication",  # CSRF
         # "rest_framework.authentication.TokenAuthentication",  # tokens
-        "knox.auth.TokenAuthentication"  # better tokens
+        # "dj_rest_auth.utils.JWTCookieAuthentication",  # JWT tokens
+        "knox.auth.TokenAuthentication"  # secure tokens
     ]
 }
 
@@ -134,8 +134,9 @@ SWAGGER_SETTINGS = {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": escape("Enter 'Token <key>'"),
-        }
+            "description": escape("Enter 'Token <token>'"),
+        },
+        "Basic": {"type": "basic"},
     },
     "DOC_EXPANSION": "none",
     "OPERATIONS_SORTER": None,
@@ -143,7 +144,15 @@ SWAGGER_SETTINGS = {
     "DEFAULT_MODEL_RENDERING": "example",
 }
 
-# Authentication / Users
+# Admin
+
+ADMIN_URL = "admin/"
+
+ADMIN_SITE_HEADER = f"{PROJECT_NAME} administration console"
+ADMIN_SITE_TITLE = f"{PROJECT_NAME} administration console"
+ADMIN_INDEX_TITLE = f"Welcome to the {PROJECT_NAME} administration console"
+
+# Users & Authentication
 
 LOGIN_URL = "account_login"
 LOGOUT_URL = "account_logout"
@@ -167,18 +176,26 @@ ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGOUT_ON_GET = False
 ACCOUNT_USERNAME_BLACKLIST = ["admin", "sentinel"]
 
+REST_AUTH_TOKEN_MODEL = (
+    "knox.models.AuthToken"
+)  # model class for tokens, default value rest_framework.authtoken.models
+REST_AUTH_TOKEN_CREATOR = (
+    "astrosat_users.utils.create_knox_token"
+)  # - callable to create tokens, default value rest_auth.utils.default_create_token.
+
+# custom forms...
 ACCOUNT_FORMS = {
     # "add_email": "allauth.account.forms.AddEmailForm",
-    # "change_password": "allauth.account.forms.ChangePasswordForm",
+    "change_password": "astrosat_users.forms.PasswordChangeForm",
     # "disconnect": "allauth.socialaccount.forms.DisconnectForm",
     "login": "astrosat_users.forms.LoginForm",
     "reset_password": "astrosat_users.forms.PasswordResetForm",
     # "reset_password_from_key": "allauth.account.forms.ResetPasswordKeyForm",
-    # "set_password": "allauth.account.forms.SetPasswordForm",
+    "set_password": "astrosat_users.forms.PasswordSetForm",
     "signup": "astrosat_users.forms.RegistrationForm",
-
 }
 
+# custom serializers...
 REST_AUTH_SERIALIZERS = {
     "TOKEN_SERIALIZER": "astrosat_users.serializers.KnoxTokenSerializer",
     "LOGIN_SERIALIZER": "astrosat_users.serializers.LoginSerializer",
@@ -187,20 +204,13 @@ REST_AUTH_SERIALIZERS = {
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "astrosat_users.serializers.PasswordResetConfirmSerializer",
 }
 
+# more custom serializers...
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "astrosat_users.serializers.RegisterSerializer"
 }
 
-REST_AUTH_TOKEN_MODEL = "knox.models.AuthToken"  # model class for tokens, default value rest_framework.authtoken.models
-REST_AUTH_TOKEN_CREATOR = "astrosat_users.utils.create_knox_token"  # - callable to create tokens, default value rest_auth.utils.default_create_token.
-# REST_SESSION_LOGIN - Enable session login in Login API view (default: True)
-# REST_USE_JWT - Enable JWT Authentication instead of Token/Session based. This is built on top of django-rest-framework-jwt (default: False)
-# OLD_PASSWORD_FIELD_ENABLED - set it to True if you want to have old password verification on password change enpoint (default: False)
-# LOGOUT_ON_PASSWORD_CHANGE - set to False if you want to keep the current user logged in after a password change
 
-
-# Password validation
-
+# Passwords
 
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 255
@@ -211,14 +221,14 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
     {
-        "NAME": "astrosat_users.utils.LengthPasswordValidator",
+        "NAME": "astrosat_users.validators.LengthPasswordValidator",
         "OPTIONS": {
             "min_length": PASSWORD_MIN_LENGTH,
             "max_length": PASSWORD_MAX_LENGTH,
         },
     },
     {
-        "NAME": "astrosat_users.utils.StrengthPasswordValidator",
+        "NAME": "astrosat_users.validators.StrengthPasswordValidator",
         "OPTIONS": {"strength": PASSWORD_STRENGTH},
     },
 ]
@@ -229,7 +239,7 @@ AUTH_PASSWORD_VALIDATORS = [
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # (...and don't really send it to/from these people...)
-ADMINS = [(PROJECT_NAME, PROJECT_EMAIL.format(role="noreply"))]
+ADMINS = [(PROJECT_NAME, PROJECT_EMAIL.format(role="techdev"))]
 MANAGERS = ADMINS
 
 DEFAULT_FROM_EMAIL = f"{PROJECT_NAME} <{PROJECT_EMAIL.format(role='noreply')}>"
@@ -245,7 +255,6 @@ USE_TZ = True
 LANGUAGES = [("en-us", _("American English")), ("en-gb", _("British English"))]
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
-
 
 # Static files (CSS, JavaScript, Images)
 
