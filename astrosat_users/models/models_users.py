@@ -9,6 +9,8 @@ from allauth.account.models import EmailAddress
 
 from astrosat.utils import validate_no_tags
 
+from astrosat_users.validators import ImageDimensionsValidator
+
 
 def get_sentinel_user():
     """
@@ -19,6 +21,10 @@ def get_sentinel_user():
     return user
 
 
+def user_avatar_path(instance, filename):
+    return f"users/{instance.username}/{filename}"
+
+
 class User(AbstractUser):
 
     # TODO: CUSTOM MANAGER ?
@@ -26,6 +32,13 @@ class User(AbstractUser):
     PROFILE_KEYS = []
 
     roles = models.ManyToManyField("UserRole", related_name="users", blank=True)
+
+    avatar = models.ImageField(
+        upload_to=user_avatar_path,
+        validators=[ImageDimensionsValidator()],
+        blank=True,
+        null=True,
+    )
 
     name = models.CharField(
         validators=[validate_no_tags], blank=True, null=True, max_length=255
@@ -97,3 +110,16 @@ class User(AbstractUser):
 
         primary_emailaddress.verified = True
         primary_emailaddress.save()
+
+    def delete(self, *args, **kwargs):
+        """
+        When a user is deleted, delete the corresponding avatar storage.
+        Doing it in a method instead of via signals to handle the case where objects are deleted in bulk.
+        """
+        if self.avatar:
+            avatar_name = self.avatar.name
+            avatar_storage = self.avatar.storage
+            if avatar_storage.exists(avatar_name):
+                avatar_storage.delete(avatar_name)
+
+        return super().delete(*args, **kwargs)

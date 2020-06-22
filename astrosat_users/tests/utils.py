@@ -74,17 +74,16 @@ def mock_storage(monkeypatch):
     """
     Mocks the backend storage system by not actually accessing media
     """
-
     def _mock_save(instance, name, content):
-        setattr(instance, "mock_exists", True)
+        setattr(instance, f"mock_{name}_exists", True)
         return str(name).replace("\\", "/")
 
     def _mock_delete(instance, name):
-        setattr(instance, "mock_exists", False)
+        setattr(instance, f"mock_{name}_exists", False)
         pass
 
     def _mock_exists(instance, name):
-        return getattr(instance, "mock_exists", False)
+        return getattr(instance, f"mock_{name}_exists", False)
 
     storage_class = get_storage_class()
     monkeypatch.setattr(storage_class, "_save", _mock_save)

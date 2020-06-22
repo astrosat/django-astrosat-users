@@ -1,6 +1,40 @@
 from django.core.exceptions import ValidationError
+from django.core.files.images import get_image_dimensions
+from django.utils.deconstruct import deconstructible
 
 from zxcvbn import zxcvbn
+
+
+#########################
+# user image validation #
+#########################
+
+
+@deconstructible
+class ImageDimensionsValidator:
+    """
+    Validates the user image file has the correct dimensions
+    """
+
+    def __init__(self, max_width=100, max_height=100):
+        assert max_width > 0 and max_height > 0, "Invalid AvatarDimensionsValidator"
+        self.max_width = max_width
+        self.max_height = max_height
+
+    def __call__(self, avatar):
+
+        width, height = get_image_dimensions(avatar)
+        if width > self.max_width or height > self.max_height:
+            raise ValidationError(
+                f"avatar must not be greater than {self.max_width} x {self.max_height} pixels"
+            )
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, ImageDimensionsValidator) and
+            (self.max_height == other.max_height) and
+            (self.max_width == other.max_width)
+        )
 
 
 #######################

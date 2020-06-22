@@ -24,6 +24,7 @@ class UserAdmin(auth_admin.UserAdmin):
             "User",
             {
                 "fields": (
+                    "avatar",
                     "name",
                     "description",
                     "change_password",

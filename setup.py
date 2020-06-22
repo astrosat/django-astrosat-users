@@ -16,7 +16,7 @@ dependencies = [
     "django~=3.0",  # django, duh
     "django-allauth>=0.39",  # users
     "djangorestframework~=3.0",  # api
-    "dj-rest-auth",  # api-users
+    "dj-rest-auth>=1.0",  # api-users
     "django-rest-knox",  # tokens
     "zxcvbn",  # paswords
 ]

@@ -16,9 +16,11 @@ django-allauth = "*"  # user authentication
 django-environ = "*"  # better env handling
 django-filter = "*"  # richer api filters
 django-rest-framework = "*" # api
+djangorestframework-simplejwt = "*"  
 django-rest-knox = "*"  # secure tokens
 dj-rest-auth = {extras = ["with_social"],version = "*"}  # user authentication via api
-drf-yasg = "*" # api documentation
+drf-yasg = "*"  # api documentation
+pillow = "*"  # images
 zxcvbn = "*"  # secure passwords
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
 django-astrosat-users = {editable = true,path = "./.."}
