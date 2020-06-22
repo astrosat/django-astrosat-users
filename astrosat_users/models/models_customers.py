@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -31,8 +33,6 @@ class CustomerQuerySet(models.QuerySet):
     def multiple(self):
         return self.filter(customer_type=CustomerType.MULTIPLE)
 
-# TODO: FK INSTEAD OF M2M; REAL MODEL INSTEAD OF THROUGH MODEL
-# TODO: abstract + 2 child classes
 
 class Customer(models.Model):
     class Meta:
@@ -46,12 +46,8 @@ class Customer(models.Model):
 
     is_active = models.BooleanField(default=True)
 
-    _users = models.ManyToManyField(
-        # I tend not to use this field directly (hence the "_" prefix)
-        # instead I use the properties below to access the Through Model
-        settings.AUTH_USER_MODEL,
-        through="CustomerUser",
-        related_name="customers",
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, through="CustomerUser", related_name="customers"
     )
 
     customer_type = models.CharField(
@@ -69,29 +65,29 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def users(self):
-        return self._users.through.objects.filter(customer=self)
+    #     @property
+    #     def n_licenses(self):
+    #         return self.users.count()
 
-    @property
-    def managers(self):
-        return self.users.managers()
+    def add_user(self, user, **kwargs):
+        user, created = self.customer_users.add_user(user, **kwargs)
+        if created:
+            customer_added_user.send(sender=self, user=user)
+        return (user, created)
 
-    @property
-    def members(self):
-        return self.users.members()
+    # def remove_user(self, user):
+    #     assert not user.is_manager
+    #     self.customer_users.remove_user(user)
+    #     customer_removed_user.send(sender=self, user=user)
 
 
-#     @property
-#     def n_licenses(self):
-#         return self.users.count()
-
-#     def add_user(self, user, customer_user_type=CustomerUserType.MEMBER):
-#         customer_added_user.send(sender=self, user=user)
-
-#     def remove_user(self, user):
-#         assert not user.is_manager
-#         customer_removed_user.send(sender=self, user=user)
+class CustomerUserManager(models.Manager):
+    def add_user(self, user, **kwargs):
+        defaults = {
+            "customer_user_type": kwargs.get("type", CustomerUserType.MEMBER),
+            "customer_user_status": kwargs.get("status", CustomerUserStatus.PENDING),
+        }
+        return self.update_or_create(user=user, defaults=defaults)
 
 
 class CustomerUserQuerySet(models.QuerySet):
@@ -111,10 +107,16 @@ class CustomerUserQuerySet(models.QuerySet):
 class CustomerUser(models.Model):
     # a "through" model for the relationship between customers & users
 
-    objects = CustomerUserQuerySet.as_manager()
+    objects = CustomerUserManager.from_queryset(CustomerUserQuerySet)()
 
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE, related_name="customer_users"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="customer_users",
+    )
 
     customer_user_type = models.CharField(
         max_length=64, choices=CustomerUserType.choices
@@ -122,6 +124,9 @@ class CustomerUser(models.Model):
     customer_user_status = models.CharField(
         max_length=64, choices=CustomerUserStatus.choices
     )
+
+    def __str__(self):
+        return f"{self.customer}: {self.user}"
 
 
 # class CustomerInvitation(models.Model):

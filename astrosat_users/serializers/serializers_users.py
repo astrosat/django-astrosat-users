@@ -17,29 +17,31 @@ class UserSerializerLite(serializers.ModelSerializer):
         read_only_fields = ("email", "name", "username", "change_password")
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializerBasic(serializers.ModelSerializer):
+    """
+    The serializer used by the customer user views; only includes
+    fields that a customer manager should access
+    """
+
     class Meta:
         model = User
-        fields = (
+        fields = [
             "id",
             "change_password",
             "email",
             "name",
             "description",
-            "is_active",
-            "is_verified",
-            "is_approved",
             "accepted_terms",
             "profiles",
             "roles",
             "permissions",
-            "customers",
-        )
+        ]
 
     profiles = serializers.SerializerMethodField()
-    roles = serializers.SlugRelatedField(many=True, queryset=UserRole.objects.all(), slug_field="name")
+    roles = serializers.SlugRelatedField(
+        allow_null=True, many=True, queryset=UserRole.objects.all(), slug_field="name"
+    )
     permissions = serializers.SerializerMethodField()
-    customers = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
 
     def get_profiles(self, obj):
         profiles = {}
@@ -76,8 +78,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         """
-        Puts back any non-model and/or non-writeable fields as needed,
-        so that their data is available in validated_data for create/update below.
+        Puts back any non-model fields as needed, so that their data
+        is available in validated_data for create/update below.
         """
 
         profiles_internal_value = {}
@@ -109,3 +111,32 @@ class UserSerializer(serializers.ModelSerializer):
         updated_instance = super().update(instance, validated_data)
 
         return updated_instance
+
+
+class UserSerializer(UserSerializerBasic):
+    """
+    The serializer used by the user views; includes all the basic
+    fields plus some extra details - most notably, customers
+    """
+
+    class Meta:
+        model = User
+        fields = UserSerializerBasic.Meta.fields + [
+            "is_active",
+            "is_verified",
+            "is_approved",
+            "customers",
+        ]
+
+    customers = serializers.SerializerMethodField()
+
+    def get_customers(self, obj):
+        # a very lightweight representation of the customer_user
+        return [
+            {
+                "type": customer_user.customer_user_type,
+                "status": customer_user.customer_user_status,
+                "name": customer_user.customer.name,
+            }
+            for customer_user in obj.customer_users.all()
+        ]

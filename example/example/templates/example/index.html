@@ -3,122 +3,123 @@
 
 <html>
 
-    <head>
-        <title>example project for django-astrosat-users</title>
-        <link rel="icon" href="{% static 'astrosat/img/favicon.png' %}">
-        <style>
-            body { padding: 2em; margin: 2em; }
-            .header { border-bottom: 1px solid #999; font-weight: bold; }
-            .footer { border-top: 1px solid #999; font-style: italic; }
-            .logo { height: 3rem; padding: 0.5rem; vertical-align: middle; }
-            .user { background-color: #ffff90; padding: 2px; }
-            pre { display: inline; background-color: #eee; }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <img class="logo" src="{% static 'astrosat/img/logo_light_background.png' %}" />
-            Behold Django-Astrosat-Users!
-        </div>
-        <div>
-            <p>
-                This is an example project demonstrating User Management.
-                It is meant to be used as a pure API (except where it isn't).
-            </p>
-            <p>
-                The current user is <span class="user">{{ request.user }}</span>.
-            </p>
-            <p>
-                Here are some useful links:
+<head>
+    <title>example project for django-astrosat-users</title>
+    <link rel="icon" href="{% static 'astrosat/img/favicon.png' %}">
+    <style>
+        body { padding: 2em; margin: 2em; }
+        .header { border-bottom: 1px solid #999; font-weight: bold; }
+        .footer { border-top: 1px solid #999; font-style: italic; }
+        .logo { height: 3rem; padding: 0.5rem; vertical-align: middle; }
+        .user { background-color: #ffff90; padding: 2px; }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img class="logo" src="{% static 'astrosat/img/logo_light_background.png' %}" />
+        Behold Django-Astrosat-Users!
+    </div>
+    <div>
+        <p>
+            This is an example project demonstrating User Management.
+            It is meant to be used as a pure API (except where it isn't).
+        </p>
+        <p>
+            The current user is <span class="user">{{ request.user }}</span>.
+        </p>
+        <p>
+            Here are some useful links:
+        <ul>
+            <li>admin:&nbsp;<a href="{% url 'admin:index' %}">{% url 'admin:index' %}</a></li>
+            <br />
+            <li>API Documentation:&nbsp;<a href="{% url 'swagger' %}">{% url 'swagger' %}</a></li>
+            <br />
+            <li>
+                api access <i>(a lot of these are POSTS, and so won't work from these links)</i>:
                 <ul>
-                    <li>admin:&nbsp;<a href="{% url 'admin:index' %}">{% url 'admin:index' %}</a></li>
-                    <br/>
-                    <li>API Documentation:&nbsp;<a href="{% url 'swagger' %}">{% url 'swagger' %}</a></li>
-                    <br/>
-                    <li>
-                        api access <i>(a lot of these are POSTS, and so won't work from these links)</i>:
+                    <li>signup: <a href="{% url 'rest_register' %}">{% url 'rest_register' %}</a></li>
+                    <li>login: </li>
+                    <li>logout: </li>
+                    <li>change password: </li>
+                    <li>reset password: </li>
+                    <li>reset password confirm: </li>
+                    <li>verify email: <a href="{% url 'rest_verify_email' %}">{% url 'rest_verify_email' %}</a> </li>
+                    <li>verify email confirm: <a href="{% url 'rest_send_email_verification' %}">{% url 'rest_send_email_verification' %}</a></li>
+                    <li>token: </li>
+                    <li>user views:
                         <ul>
-                            <li>signup: <a href="{% url 'rest_register' %}">{% url 'rest_register' %}</a></li>
-                            <li>login: </li>
-                            <li>logout: </li>
-                            <li>change password: </li>
-                            <li>reset password: </li>
-                            <li>reset password confirm: </li>
-                            <li>verify email: <a href="{% url 'rest_verify_email' %}">{% url 'rest_verify_email' %}</a> </li>
-                            <li>verify email confirm: <a href="{% url 'rest_send_email_verification' %}">{% url 'rest_send_email_verification' %}</a></li>
-                            <li>token: </li>
-                            <li>user views:
-                                <ul>
-                                    <li><a href="{% url 'users-list' %}">users-list</a></li>
-                                    {% for user in users %}
-                                        <li>users-detail: <a href="{% url 'users-detail' email=user.email %}">{{user.email}}</a></li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                            <li>customer views:
-                                <ul>
-                                    {% for customer in customers %}
-                                        <li>customers-detail: <a href="{% url 'customers-detail' name=customer.name %}">{{customer.name}}</a>
-                                            <ul>
-                                                <li>customer-users-list: <a href="{% url 'customer-users-list' name=customer.name %}">{{customer.name}} users</a></li>
-                                                {% for customer_user in customer.users %}
-                                                    <li>customer-users-detail: <a href="{% url 'customer-users-detail' name=customer.name email=customer_user.user.email %}">{{ customer_user.user }}</a></li>
-                                                {% endfor %}
-                                            </ul>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
+                            <li><a href="{% url 'users-list' %}">users-list</a></li>
+                            {% for user in users %}
+                                <li>users-detail: <a href="{% url 'users-detail' email=user.email %}">{{user.email}}</a></li>
+                            {% endfor %}
                         </ul>
                     </li>
-                    <br/>
-                    <li>
-                        backend access:
+                    <li>customer views:
                         <ul>
-                            <li>signup: <a href="{% url 'account_signup' %}">{% url 'account_signup' %}</a></li>
-                            <li>login: <a href="{% url 'account_login' %}">{% url 'account_login' %}</a></li>
-                            <li>logout: <a href="{% url 'account_logout' %}">{% url 'account_logout' %}</a></li>
-                            <li>change password: <a href="{% url 'account_change_password' %}">{% url 'account_change_password' %}</a></li>
-                            <li>set password: <a href="{% url 'account_set_password' %}">{% url 'account_set_password' %}</a></li>
-                            <li>inactive: <a href="{% url 'account_inactive' %}">{% url 'account_inactive' %}</a></li>
-                            <li>email: <a href="{% url 'account_email' %}">{% url 'account_email' %}</a></li>
-                            <li>email verification sent: <a href="{% url 'account_email_verification_sent' %}">{% url 'account_email_verification_sent' %}</a></li>
-                            <li>confirm email: <a href="{# url 'account_confirm_email' #}">{# url 'account_confirm_email' #}</a></li>
-                            <li>reset password: <a href="{% url 'account_reset_password' %}">{% url 'account_reset_password' %}</a></li>
-                            <li>reset password done: <a href="{% url 'account_reset_password_done' %}">{% url 'account_reset_password_done' %}</a></li>
-                            <li>reset password from key: <a href="{# url 'account_reset_password_from_key' #}">{# url 'account_reset_password_from_key' #}</a></li>
-                            <li>reset password from key done: <a href="{% url 'account_reset_password_from_key_done' %}">{% url 'account_reset_password_from_key_done' %}</a></li>
-                            <li>
-                                user views:
-                                <ul>
-                                    <li><a href="{% url 'user-list' %}">user-list</a></li>
-                                    {% for user in users %}
-                                        <li>user-detail: <a href="{% url 'user-detail' email=user.email %}">{{user.email}}</a></li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <br/>
-                    <li>errors <em>(exposed just for testing)</em>:
-                        <ul>
-                            <li><a href="/400">400</a></li>
-                            <li><a href="/403">403</a></li>
-                            <li><a href="/404">404</a></li>
-                            <li><a href="/500">500</a></li>
+                            {% for customer in customers %}
+                                <li>customers-detail: <a href="{% url 'customers-detail' name=customer.name %}">{{customer.name}}</a>
+                                    <ul>
+                                        <li>customer-users-list: <a href="{% url 'customer-users-list' name=customer.name %}">{{customer.name}} users</a></li>
+                                        {% for customer_user in customer.customer_users.all %}
+                                            <li>customer-users-detail: <a href="{% url 'customer-users-detail' name=customer.name email=customer_user.user.email %}">{{ customer_user.user }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </li>
                 </ul>
-            </p>
-        </div>
-        <div class="footer">
-            <ul>
-                <li>title:&nbsp;{% astrosat_users_title %}</li>
-                <li>author:&nbsp;{% astrosat_users_author %}</li>
-                <li>version:&nbsp;{% astrosat_users_version %}</li>
-                <li>source:&nbsp;<a href="https://github.com/astrosat/django-astrosat-users/">https://github.com/astrosat/thermcert/django-astrosat-users</a></li>
-                <li>documentation:&nbsp;TODO</li>
-            </ul>
-        </div>
-    </body>
+            </li>
+            <br />
+            <li>
+                backend access:
+                <ul>
+                    <li>signup: <a href="{% url 'account_signup' %}">{% url 'account_signup' %}</a></li>
+                    <li>login: <a href="{% url 'account_login' %}">{% url 'account_login' %}</a></li>
+                    <li>logout: <a href="{% url 'account_logout' %}">{% url 'account_logout' %}</a></li>
+                    <li>change password: <a href="{% url 'account_change_password' %}">{% url 'account_change_password' %}</a></li>
+                    <li>set password: <a href="{% url 'account_set_password' %}">{% url 'account_set_password' %}</a></li>
+                    <li>inactive: <a href="{% url 'account_inactive' %}">{% url 'account_inactive' %}</a></li>
+                    <li>email: <a href="{% url 'account_email' %}">{% url 'account_email' %}</a></li>
+                    <li>email verification sent: <a href="{% url 'account_email_verification_sent' %}">{% url 'account_email_verification_sent' %}</a></li>
+                    <li>confirm email: <a href="{# url 'account_confirm_email' #}">{# url 'account_confirm_email' #}</a></li>
+                    <li>reset password: <a href="{% url 'account_reset_password' %}">{% url 'account_reset_password' %}</a></li>
+                    <li>reset password done: <a href="{% url 'account_reset_password_done' %}">{% url 'account_reset_password_done' %}</a></li>
+                    <li>reset password from key: <a href="{# url 'account_reset_password_from_key' #}">{# url 'account_reset_password_from_key' #}</a></li>
+                    <li>reset password from key done: <a href="{% url 'account_reset_password_from_key_done' %}">{% url 'account_reset_password_from_key_done' %}</a></li>
+                    <li>
+                        user views:
+                        <ul>
+                            <li><a href="{% url 'user-list' %}">user-list</a></li>
+                            {% for user in users %}
+                                <li>user-detail: <a href="{% url 'user-detail' email=user.email %}">{{user.email}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <br />
+            <li>errors <em>(exposed just for testing)</em>:
+                <ul>
+                    <li><a href="/400">400</a></li>
+                    <li><a href="/403">403</a></li>
+                    <li><a href="/404">404</a></li>
+                    <li><a href="/500">500</a></li>
+                </ul>
+            </li>
+        </ul>
+        </p>
+    </div>
+    <div class="footer">
+        <ul>
+            <li>title:&nbsp;{% astrosat_users_title %}</li>
+            <li>author:&nbsp;{% astrosat_users_author %}</li>
+            <li>version:&nbsp;{% astrosat_users_version %}</li>
+            <li>source:&nbsp;<a href="https://github.com/astrosat/django-astrosat-users/">https://github.com/astrosat/thermcert/django-astrosat-users</a></li>
+            <li>documentation:&nbsp;TODO</li>
+        </ul>
+    </div>
+</body>
+
 </html>

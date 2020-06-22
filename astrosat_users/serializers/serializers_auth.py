@@ -61,7 +61,7 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
         except Exception as e:
             msg = {
                 "user": user_serializer.data,
-                drf_settings.NON_FIELD_ERRORS_KEY: str(e)
+                drf_settings.NON_FIELD_ERRORS_KEY: str(e),
             }
             raise ValidationError(msg)
 
@@ -142,7 +142,6 @@ class PasswordResetConfirmSerializer(
 
         return attrs
 
-
     def save(self):
         # TODO: ONCE I FIGURE OUT HOW TO USE THE ALLAUTH FORM, I CAN REMOVE THIS
         user = self.set_password_form.save()
@@ -150,6 +149,7 @@ class PasswordResetConfirmSerializer(
             user.change_password = False
             user.save()
         return user
+
 
 class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSerializer):
 

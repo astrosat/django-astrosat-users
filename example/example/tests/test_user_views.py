@@ -14,6 +14,7 @@ from astrosat_users.tests.utils import *
 
 from .factories import *
 
+
 @pytest.mark.django_db
 class TestApiViews:
 
@@ -35,14 +36,14 @@ class TestApiViews:
         assert len(content) == len(users) + 1  # (add 1 for the admin user)
 
         for response_data, db_data in zip(content, [admin] + users):
-            assert response_data["id"]  == db_data.id
+            assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
 
     def test_filter_approved_users(self, admin):
 
         token, key = create_auth_token(admin)
 
-        users = [UserFactory(is_approved=i%2) for i in range(10)]
+        users = [UserFactory(is_approved=i % 2) for i in range(10)]
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
@@ -64,7 +65,7 @@ class TestApiViews:
 
         token, key = create_auth_token(admin)
 
-        users = [UserFactory(accepted_terms=i%2) for i in range(10)]
+        users = [UserFactory(accepted_terms=i % 2) for i in range(10)]
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
@@ -88,7 +89,7 @@ class TestApiViews:
 
         users = [UserFactory() for i in range(10)]
         for i, user in enumerate(users):
-            if i%2:
+            if i % 2:
                 user.verify()
 
         client = APIClient()
@@ -144,7 +145,9 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
+        assert set(map(lambda x: x["id"], content)) == set(
+            map(lambda x: x.id, matching_users)
+        )
 
         url_params = urllib.parse.urlencode(
             {"roles__all": ",".join([role.name for role in roles[:2]])}
@@ -156,8 +159,9 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
-
+        assert set(map(lambda x: x["id"], content)) == set(
+            map(lambda x: x.id, matching_users)
+        )
 
     def test_filter_permissions_users(self, admin):
 
@@ -201,7 +205,9 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
+        assert set(map(lambda x: x["id"], content)) == set(
+            map(lambda x: x.id, matching_users)
+        )
 
         url_params = urllib.parse.urlencode(
             {
@@ -217,7 +223,9 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(map(lambda x: x.id, matching_users))
+        assert set(map(lambda x: x["id"], content)) == set(
+            map(lambda x: x.id, matching_users)
+        )
 
     def test_get_user(self, admin):
 

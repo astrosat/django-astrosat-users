@@ -15,17 +15,15 @@ class IsAdminOrManager(BasePermission):
     Only the admin or a Customer Manager can access this view.
     (Relies on the property "active_managers" in the views below.)
     """
+
     def has_permission(self, request, view):
         user = request.user
-        return (
-            user.is_superuser
-            or view.active_managers.filter(user=user).exists()
-        )
+        return user.is_superuser or view.active_managers.filter(user=user).exists()
 
 
 class CustomerDetailView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    # permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerSerializer
 
     queryset = Customer.objects.multiple()
@@ -35,17 +33,13 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
     @property
     def active_managers(self):
         customer = self.get_object()
-        return customer.users.managers().active()
+        return customer.customer_users.managers().active()
 
 
 class CustomerUserFilterSet(filters.FilterSet):
-
     class Meta:
         model = CustomerUser
-        fields = (
-            "type",
-            "status",
-        )
+        fields = ("type", "status")
 
     type = filters.CharFilter(field_name="customer_user_type", lookup_expr="iexact")
     status = filters.CharFilter(field_name="customer_user_status", lookup_expr="iexact")
@@ -63,7 +57,7 @@ class CustomerUserViewMixin(object):
 
     @property
     def active_managers(self):
-        return self.customer.users.managers().active()
+        return self.customer.customer_users.managers().active()
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
@@ -71,7 +65,7 @@ class CustomerUserViewMixin(object):
             # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
             return CustomerUser.objects.none()
 
-        return self.customer.users.select_related("user").all()
+        return self.customer.customer_users.select_related("user").all()
 
     def get_object(self):
         qs = self.get_queryset()
@@ -82,20 +76,29 @@ class CustomerUserViewMixin(object):
         self.check_object_permissions(self.request, obj)
         return obj
 
+    def get_serializer_context(self):
+        # the customer is a write_only field on the serializer
+        # therefore I don't always provide it, I use this extra context
+        # to compute a default field value using ContextVariableDefault
+        context = super().get_serializer_context()
+        context["customer_name"] = self.customer.name
+        return context
+
 
 class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    # permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerUserSerializer
 
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = CustomerUserFilterSet
 
 
+class CustomerUserDetailView(
+    CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
+):
 
-class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView):
-
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    # permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerUserSerializer
 
     lookup_value_regex = (

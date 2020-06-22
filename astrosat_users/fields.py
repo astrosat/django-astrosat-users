@@ -5,7 +5,9 @@ from django.forms import ModelChoiceField
 from django.utils.module_loading import import_string
 
 from astrosat_users.models import PROFILES_REGISTRY
-from astrosat_users.serializers import GenericProfileSerializerFactory
+from astrosat_users.serializers.serializers_profiles import (
+    GenericProfileSerializerFactory,
+)
 
 
 class UserProfileField(OneToOneField):

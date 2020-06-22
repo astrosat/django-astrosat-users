@@ -1,3 +1,4 @@
+from .serializers_profiles import GenericProfileSerializerFactory
 from .serializers_tokens import KnoxTokenSerializer
 from .serializers_auth import (
     LoginSerializer,
@@ -8,7 +9,6 @@ from .serializers_auth import (
     VerifyEmailSerializer,
     SendEmailVerificationSerializer,
 )
-from .serializers_profiles import GenericProfileSerializerFactory
 from .serializers_roles import UserPermissionSerializer, UserRoleSerializer
-from .serializers_users import UserSerializerLite, UserSerializer
+from .serializers_users import UserSerializerLite, UserSerializerBasic, UserSerializer
 from .serializers_customers import CustomerSerializer, CustomerUserSerializer

@@ -8,11 +8,15 @@ from factory.faker import (
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import slugify
 
+from astrosat.tests.providers import PrettyLoremProvider
 from astrosat.tests.utils import optional_declaration
 
 from allauth.account.models import EmailAddress
 from astrosat_users.models import User, UserRole, UserPermission, Customer
 from astrosat_users.tests.utils import *
+
+
+FactoryFaker.add_provider(PrettyLoremProvider)
 
 
 class UserFactory(factory.DjangoModelFactory):
