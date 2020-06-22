@@ -1,4 +1,5 @@
 import pytest
+import os
 from random import shuffle
 
 from django.core.files.storage import get_storage_class
@@ -74,18 +75,22 @@ def mock_storage(monkeypatch):
     """
     Mocks the backend storage system by not actually accessing media
     """
+
+    clean_name = lambda name: os.path.splitext(os.path.basename(name))[0]
+
     def _mock_save(instance, name, content):
-        setattr(instance, f"mock_{name}_exists", True)
+        setattr(instance, f"mock_{clean_name(name)}_exists", True)
         return str(name).replace("\\", "/")
 
     def _mock_delete(instance, name):
-        setattr(instance, f"mock_{name}_exists", False)
+        setattr(instance, f"mock_{clean_name(name)}_exists", False)
         pass
 
     def _mock_exists(instance, name):
-        return getattr(instance, f"mock_{name}_exists", False)
+        return getattr(instance, f"mock_{clean_name(name)}_exists", False)
 
     storage_class = get_storage_class()
+
     monkeypatch.setattr(storage_class, "_save", _mock_save)
     monkeypatch.setattr(storage_class, "delete", _mock_delete)
     monkeypatch.setattr(storage_class, "exists", _mock_exists)
