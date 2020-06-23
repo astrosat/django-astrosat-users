@@ -1,6 +1,8 @@
 import pytest
 import json
 
+from astrosat.tests.utils import *
+
 from astrosat_users.serializers import UserSerializer
 from astrosat_users.tests.factories import CustomerFactory
 from astrosat_users.tests.utils import *
@@ -10,7 +12,7 @@ from .factories import *
 
 @pytest.mark.django_db
 class TestUserSerializer:
-    def test_serialize_user(self):
+    def test_serialize_user(self, mock_storage):
 
         # create a user that is a manager of some customer
         # with some roles and permissions
@@ -27,5 +29,5 @@ class TestUserSerializer:
         # roles
         # permissions
         assert serializer_data["customers"] == [
-            {"type": "MANAGER", "status": "PENDING", "customer": customer.name}
+            {"type": "MANAGER", "status": "PENDING", "name": customer.name}
         ]

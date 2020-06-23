@@ -105,6 +105,7 @@ venv.bak/
 
 ### django stuff
 example/static
+example/media
 
 ### in-progress files
 *.bak

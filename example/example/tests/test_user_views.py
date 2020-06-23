@@ -9,6 +9,8 @@ from rest_framework.test import APIClient
 from dj_rest_auth.models import TokenModel
 from dj_rest_auth.app_settings import TokenSerializer, create_token
 
+from astrosat.tests.utils import *
+
 from astrosat_users.models import User
 from astrosat_users.tests.utils import *
 
@@ -20,7 +22,7 @@ class TestApiViews:
 
     users_list_url = reverse("users-list")
 
-    def test_list_users(self, admin):
+    def test_list_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -39,7 +41,7 @@ class TestApiViews:
             assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
 
-    def test_filter_approved_users(self, admin):
+    def test_filter_approved_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -61,7 +63,7 @@ class TestApiViews:
             assert response_data["email"] == db_data.email
             assert response_data["is_approved"] == True
 
-    def test_filter_accepted_terms_users(self, admin):
+    def test_filter_accepted_terms_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -83,7 +85,7 @@ class TestApiViews:
             assert response_data["email"] == db_data.email
             assert response_data["accepted_terms"] == True
 
-    def test_filter_verified_users(self, admin):
+    def test_filter_verified_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -108,7 +110,7 @@ class TestApiViews:
             assert response_data["email"] == db_data.email
             assert response_data["is_verified"] == True
 
-    def test_filter_roles_users(self, admin):
+    def test_filter_roles_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -163,7 +165,7 @@ class TestApiViews:
             map(lambda x: x.id, matching_users)
         )
 
-    def test_filter_permissions_users(self, admin):
+    def test_filter_permissions_users(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -227,7 +229,7 @@ class TestApiViews:
             map(lambda x: x.id, matching_users)
         )
 
-    def test_get_user(self, admin):
+    def test_get_user(self, admin, mock_storage):
 
         token, key = create_auth_token(admin)
 
@@ -243,14 +245,14 @@ class TestApiViews:
         assert data["id"] == test_user.id
         assert data["email"] == test_user.email
 
-    def test_put_user(self, admin):
+    def test_put_user(self, admin, mock_storage):
         """
         Tests that I can update the user.
         And the updates get persisted.
         """
         token, key = create_auth_token(admin)
 
-        test_user = UserFactory(name="before")
+        test_user = UserFactory(name="before", avatar=None)
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
@@ -273,7 +275,7 @@ class TestApiViews:
         test_user.refresh_from_db()
         assert test_user.name == "after"
 
-    def test_get_current_user(self):
+    def test_get_current_user(self, mock_storage):
         """
         Tests that using the reserved username "current"
         will return the current user.

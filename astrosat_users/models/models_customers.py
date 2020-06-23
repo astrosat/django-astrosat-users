@@ -80,6 +80,18 @@ class Customer(models.Model):
     #     self.customer_users.remove_user(user)
     #     customer_removed_user.send(sender=self, user=user)
 
+    def delete(self, *args, **kwargs):
+        """
+        When a customer is deleted, delete the corresponding logo storage.
+        """
+        if self.logo:
+            logo_name = self.logo.name
+            logo_storage = self.logo.storage
+            if logo_storage.exists(logo_name):
+                logo_storage.delete(logo_name)
+
+        return super().delete(*args, **kwargs)
+
 
 class CustomerUserManager(models.Manager):
     def add_user(self, user, **kwargs):

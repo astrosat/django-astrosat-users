@@ -11,6 +11,8 @@ from rest_framework import status
 from rest_framework.settings import api_settings as drf_settings
 from rest_framework.test import APIClient
 
+from astrosat.tests.utils import *
+
 from astrosat_users.conf import app_settings
 from astrosat_users.tests.utils import create_auth_token
 

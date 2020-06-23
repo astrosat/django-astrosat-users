@@ -125,6 +125,7 @@ class UserSerializer(UserSerializerBasic):
             "is_active",
             "is_verified",
             "is_approved",
+            "avatar",
             "customers",
         ]
 

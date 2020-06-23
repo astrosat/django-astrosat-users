@@ -34,6 +34,13 @@ class UserFactory(factory.DjangoModelFactory):
     def username(self):
         return self.email.split("@")[0]
 
+    @factory.lazy_attribute
+    def avatar(self):
+        return SimpleUploadedFile(
+            name=f"{self.username}_avatar.png",
+            content=b"I am a fake image",
+            content_type="image/png",
+        )
     @factory.post_generation
     def password(self, create: bool, extracted: Sequence[Any], **kwargs):
         password = generate_password()

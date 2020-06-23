@@ -18,7 +18,7 @@ from .factories import UserFactory
 
 
 @pytest.fixture
-def user_data():
+def user_data(mock_storage):
     """
     Provides a dictionary of user data.
     """
@@ -37,7 +37,7 @@ def user_data():
 
 
 @pytest.fixture
-def user():
+def user(mock_storage):
     user = UserFactory()
     # user.verify()
     return user

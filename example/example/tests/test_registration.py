@@ -12,6 +12,8 @@ from allauth.utils import build_absolute_uri
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from astrosat.tests.utils import *
+
 from astrosat_users.conf import app_settings
 from astrosat_users.tests.utils import *
 from astrosat_users.views.views_auth import REGISTRATION_CLOSED_MSG

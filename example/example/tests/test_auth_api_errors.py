@@ -5,6 +5,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from astrosat.tests.utils import *
 from astrosat_users.tests.utils import *
 from astrosat_users.utils import rest_decode_user_pk, rest_encode_user_pk
 
@@ -108,7 +109,7 @@ class TestRegistrationErrors:
         assert status.is_client_error(response.status_code)
         assert response.json() == NON_MATCHING_PASSWORD_ERROR_RESPONSE
 
-    def test_existing_user(self, user):
+    def test_existing_user(self, user, mock_storage):
 
         client = APIClient()
 
@@ -195,7 +196,7 @@ class TestLoginErrors:
         assert status.is_client_error(response.status_code)
         assert response.json() == MISSING_FIELD_ERROR_RESPONSE
 
-    def test_inactive_user(self, user_settings):
+    def test_inactive_user(self, user_settings, mock_storage):
 
         client = APIClient()
 
@@ -220,7 +221,7 @@ class TestLoginErrors:
         assert status.is_client_error(response.status_code)
         assert response.json() == INACTIVE_USER_ERROR_RESPONSE
 
-    def test_unverified_user(self, user_settings):
+    def test_unverified_user(self, user_settings, mock_storage):
 
         client = APIClient()
 
@@ -244,7 +245,7 @@ class TestLoginErrors:
         # UNVERIFIED_USER_ERROR_RESPONSE is only a subset of the response
         assert UNVERIFIED_USER_ERROR_RESPONSE.items() <= response.json().items()
 
-    def test_unapproved_user(self, user_settings):
+    def test_unapproved_user(self, user_settings, mock_storage):
 
         client = APIClient()
 
@@ -268,7 +269,7 @@ class TestLoginErrors:
         # UNAPPROVED_USER_ERROR_RESPONSE is only a subset of the response
         assert UNAPPROVED_USER_ERROR_RESPONSE.items() <= response.json().items()
 
-    def test_unaccepted_user(self, user_settings):
+    def test_unaccepted_user(self, user_settings, mock_storage):
 
         client = APIClient()
 

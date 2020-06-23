@@ -15,6 +15,7 @@ from astrosat_users.conf import app_settings
 from astrosat_users.utils import rest_encode_user_pk, rest_decode_user_pk
 from astrosat_users.validators import LengthPasswordValidator, StrengthPasswordValidator
 
+from astrosat.tests.utils import *
 from astrosat_users.tests.utils import *
 
 from .factories import *
