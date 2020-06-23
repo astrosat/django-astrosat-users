@@ -54,11 +54,11 @@ django-astrosat-users comes w/ an example project to help w/ developing/testing
 1. `git clone <repo> django-astrosat-users`
 2. `cd django-astrosat-users/example`
 3. activate virtual environments as desired
-4. `pipenv install`
-5. `python manage.py makemigrations && python manage.py migrate` as needed
-6. `python manage.py collectstatic --noinput` as needed
-7. `pytest` and enjoy
-8. `python manage.py runserver` goto "http://localhost:8000" and enjoy
+4. `pipenv install --dev`
+5. `pipenv run ./manage.py makemigrations && python manage.py migrate` as needed
+6. `pipenv run ./manage.py collectstatic --noinput` as needed
+7. `pipenv run pytest` and enjoy
+8. `pipenv run ./manage.py runserver` goto "http://localhost:8000" and enjoy
 
 note that the reference to django-astrosat-core in the Pipfile was created with: `pipenv install -e git+git@github.com/astrosat/django-astrosat-core.git@master#egg=django-astrosat-core`. This uses SSH to connect to github. Appropriate security settings should be used in your project. This will fetch the latest commit on the master branch and use that hash as the key in Pipfile.lock. This means that if django-astrosat-core changes, the Pipfile.lock must be rebuilt in order to use the latest version.
 
