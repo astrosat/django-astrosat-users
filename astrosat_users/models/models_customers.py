@@ -62,6 +62,10 @@ class Customer(models.Model):
 
     #     max_licenses = models.PositiveIntegerField(default=1)
 
+    country = models.CharField(max_length=255, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    postcode = models.CharField(max_length=50, blank=True, null=True)
+
     def __str__(self):
         return self.name
 
