@@ -1,6 +1,8 @@
 import pytest
 import json
 
+from astrosat.tests.utils import *
+
 from astrosat_users.serializers import UserSerializer
 from astrosat_users.tests.factories import CustomerFactory
 from astrosat_users.tests.utils import *

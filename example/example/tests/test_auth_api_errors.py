@@ -5,6 +5,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from astrosat.tests.utils import *
 from astrosat_users.tests.utils import *
 from astrosat_users.utils import rest_decode_user_pk, rest_encode_user_pk
 

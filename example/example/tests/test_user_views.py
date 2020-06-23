@@ -9,6 +9,8 @@ from rest_framework.test import APIClient
 from dj_rest_auth.models import TokenModel
 from dj_rest_auth.app_settings import TokenSerializer, create_token
 
+from astrosat.tests.utils import *
+
 from astrosat_users.models import User
 from astrosat_users.tests.utils import *
 
