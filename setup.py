@@ -18,6 +18,7 @@ dependencies = [
     "djangorestframework~=3.0",  # api
     "dj-rest-auth>=1.0",  # api-users
     "django-rest-knox",  # tokens
+    "Pillow>=7.1.2",  # image manipulation
     "zxcvbn",  # paswords
 ]
 
