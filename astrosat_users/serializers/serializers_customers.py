@@ -29,7 +29,7 @@ class ContextVariableDefault(object):
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("type", "name", "title", "description", "logo", "url", "roles")
+        fields = ("type", "name", "title", "description", "logo", "url", "roles", "country", "address", "postcode")
 
     type = serializers.CharField(source="customer_type")
     roles = serializers.SlugRelatedField(
