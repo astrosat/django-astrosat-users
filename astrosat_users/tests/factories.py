@@ -128,7 +128,7 @@ class CustomerFactory(factory.DjangoModelFactory):
 
     name = factory.LazyAttributeSequence(lambda o, n: f"{slugify(o.title)}-{n}")
     title = FactoryFaker("pretty_sentence", nb_words=2)
-    description = optional_declaration(FactoryFaker("text"), chance=50)
+    description = FactoryFaker("text")
     url = FactoryFaker("url")
 
     @factory.lazy_attribute
