@@ -23,7 +23,7 @@ class IsAdminOrManager(BasePermission):
 
 class CustomerDetailView(generics.RetrieveUpdateAPIView):
 
-    # permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerSerializer
 
     queryset = Customer.objects.multiple()
@@ -81,13 +81,13 @@ class CustomerUserViewMixin(object):
         # therefore I don't always provide it, I use this extra context
         # to compute a default field value using ContextVariableDefault
         context = super().get_serializer_context()
-        context["customer_name"] = self.customer.name
+        context["customer"] = self.customer
         return context
 
 
 class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
-    # permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerUserSerializer
 
     filter_backends = (filters.DjangoFilterBackend,)

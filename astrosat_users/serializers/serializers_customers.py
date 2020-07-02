@@ -1,40 +1,19 @@
 from rest_framework import serializers
 
+from astrosat.serializers import ContextVariableDefault
+
 from astrosat_users.models import Customer, CustomerUser, User, UserRole
+
 from .serializers_users import UserSerializerBasic
 from .serializers_auth import RegisterSerializer
-
-# TODO: MOVE THIS TO django-astrosat-core
-class ContextVariableDefault(object):
-    """
-    May be applied as a `default=...` value on a serializer field
-    Returns the "variable_name" item from the serializer context.
-    Raise an error on a missing item only if "raise_error" is True.
-    """
-
-    requires_context = True
-
-    def __init__(self, variable_name, raise_error=False):
-        self.variable_name = variable_name
-        self.raise_error = raise_error
-
-    def __call__(self, serializer_field):
-        try:
-            return serializer_field.context[self.variable_name]
-        except KeyError as e:
-            if self.raise_error:
-                raise e
 
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("type", "name", "title", "description", "logo", "url", "roles", "country", "address", "postcode")
+        fields = ("type", "name", "title", "description", "logo", "url", "country", "address", "postcode")
 
     type = serializers.CharField(source="customer_type")
-    roles = serializers.SlugRelatedField(
-        many=True, queryset=UserRole.objects.all(), slug_field="name"
-    )
 
 
 class CustomerUserSerializer(serializers.ModelSerializer):
@@ -45,7 +24,7 @@ class CustomerUserSerializer(serializers.ModelSerializer):
     type = serializers.CharField(source="customer_user_type")
     status = serializers.CharField(source="customer_user_status")
     customer = serializers.SlugRelatedField(
-        default=ContextVariableDefault("customer_name", raise_error=True),
+        default=ContextVariableDefault("customer", raise_error=True),
         queryset=Customer.objects.all(),
         slug_field="name",
         write_only=True,
@@ -54,9 +33,15 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         UserSerializerBasic()
     )  # note I don't use the full UserSerializer b/c I don't need to serialize the customer
 
+    def update(self, instance, validated_data):
+        user_serializer = self.fields["user"]
+        user_data = validated_data.pop(user_serializer.source)
+        user_serializer.update(instance.user, user_data)
+        customer_user = super().update(instance, validated_data)
+        return customer_user
+
     # def create(self, validated_data):
 
-    #     print("IFAFDAFDSF", flush=True)
     #     return None
     #     user_serializer = self.fields["user"]
     #     user_data = validated_data.pop(user_serializer.source)
