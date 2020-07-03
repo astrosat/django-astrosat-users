@@ -26,14 +26,28 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerSerializer
 
-    queryset = Customer.objects.multiple()
-
     lookup_field = "name"
 
     @property
     def active_managers(self):
         customer = self.get_object()
         return customer.customer_users.managers().active()
+
+    def get_object(self):
+        if getattr(self, "swagger_fake_view", False):
+            # object just for schema generation metadata (when there are no kwargs)
+            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
+            return None
+
+        return super().get_object()
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            # queryset just for schema generation metadata
+            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
+            return Customer.objects.none()
+
+        return Customer.objects.multiple()
 
 
 class CustomerUserFilterSet(filters.FilterSet):
@@ -59,15 +73,12 @@ class CustomerUserViewMixin(object):
     def active_managers(self):
         return self.customer.customer_users.managers().active()
 
-    def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            # queryset just for schema generation metadata (when there are no kwargs)
-            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
-            return CustomerUser.objects.none()
-
-        return self.customer.customer_users.select_related("user").all()
-
     def get_object(self):
+        if getattr(self, "swagger_fake_view", False):
+            # object just for schema generation metadata (when there are no kwargs)
+            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
+            return None
+
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
         user_email = self.kwargs["email"]
@@ -76,12 +87,23 @@ class CustomerUserViewMixin(object):
         self.check_object_permissions(self.request, obj)
         return obj
 
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            # queryset just for schema generation metadata (when there are no kwargs)
+            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
+            return CustomerUser.objects.none()
+
+        return self.customer.customer_users.select_related("user").all()
+
     def get_serializer_context(self):
         # the customer is a write_only field on the serializer
         # therefore I don't always provide it, I use this extra context
         # to compute a default field value using ContextVariableDefault
         context = super().get_serializer_context()
-        context["customer"] = self.customer
+        if getattr(self, "swagger_fake_view", False):
+            context["customer"] = None
+        else:
+            context["customer"] = self.customer
         return context
 
 
