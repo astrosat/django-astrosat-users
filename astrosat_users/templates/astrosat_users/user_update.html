@@ -8,14 +8,14 @@
 
 {% block content %}
 
-  <h2>Update {{ object }}</h2>
+<h2>Update {{ object }}</h2>
 
-  <form method="post" action="{% url 'user-update' email=object.email %}">
-    {% csrf_token %}
+<form method="post" action="{% url 'user-update' id=object.uuid %}">
+  {% csrf_token %}
 
-    {{ form.as_p }}
+  {{ form.as_p }}
 
-    <button type="submit">Update</button>
-  </form>
+  <button type="submit">Update</button>
+</form>
 
 {% endblock content %}
