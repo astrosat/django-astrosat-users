@@ -45,15 +45,15 @@ api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path(
-        "customers/<slug:name>/", CustomerDetailView.as_view(), name="customers-detail"
+        "customers/<slug:id>/", CustomerDetailView.as_view(), name="customers-detail"
     ),
     path(
-        "customers/<slug:name>/users/",
+        "customers/<slug:id>/users/",
         CustomerUserListView.as_view(),
         name="customer-users-list",
     ),
     path(
-        "customers/<slug:name>/users/<str:email>/",
+        "customers/<slug:id>/users/<str:email>/",
         CustomerUserDetailView.as_view(),
         name="customer-users-detail",
     ),

@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -39,6 +41,8 @@ class Customer(models.Model):
         verbose_name_plural = "Customers"
 
     objects = CustomerQuerySet.as_manager()
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     is_active = models.BooleanField(default=True)
 

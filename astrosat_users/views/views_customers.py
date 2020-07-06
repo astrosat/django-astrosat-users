@@ -26,7 +26,7 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerSerializer
 
-    lookup_field = "name"
+    lookup_field = "id"
 
     @property
     def active_managers(self):
@@ -65,8 +65,8 @@ class CustomerUserViewMixin(object):
 
     @cached_property
     def customer(self):
-        customer_name = self.kwargs["name"]
-        customer = get_object_or_404(Customer, name=customer_name)
+        customer_id = self.kwargs["id"]
+        customer = get_object_or_404(Customer, id=customer_id)
         return customer
 
     @property
@@ -120,7 +120,7 @@ class CustomerUserDetailView(
     CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
 ):
 
-    # permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerUserSerializer
 
     lookup_value_regex = (
