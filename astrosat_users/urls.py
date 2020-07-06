@@ -45,15 +45,15 @@ api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path(
-        "customers/<slug:id>/", CustomerDetailView.as_view(), name="customers-detail"
+        "customers/<slug:customer_id>/", CustomerDetailView.as_view(), name="customers-detail"
     ),
     path(
-        "customers/<slug:id>/users/",
+        "customers/<slug:customer_id>/users/",
         CustomerUserListView.as_view(),
         name="customer-users-list",
     ),
     path(
-        "customers/<slug:id>/users/<str:email>/",
+        "customers/<slug:customer_id>/users/<slug:user_id>/",
         CustomerUserDetailView.as_view(),
         name="customer-users-detail",
     ),
@@ -137,12 +137,12 @@ urlpatterns = [
     # user stuff...
     path("users/", check_backend_access(UserListView.as_view()), name="user-list"),
     path(
-        "users/<str:email>/",
+        "users/<slug:id>/",
         check_backend_access(UserDetailView.as_view()),
         name="user-detail",
     ),
     path(
-        "users/<str:email>/update/",
+        "users/<slug:id>/update/",
         check_backend_access(UserUpdateView.as_view()),
         name="user-update",
     ),

@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.signals import user_logged_out
@@ -32,6 +34,8 @@ class User(AbstractUser):
     PROFILE_KEYS = []
 
     roles = models.ManyToManyField("UserRole", related_name="users", blank=True)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)  # note that this is not the pk
 
     avatar = models.ImageField(
         upload_to=user_avatar_path,

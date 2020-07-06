@@ -51,7 +51,7 @@ class TestCustomerViews:
         response = client.get(url, format="json")
         content = response.json()
 
-        new_name = shuffle_string(content["name"])
+        new_name = shuffle_string(content["name"]).strip()
         content["name"] = new_name
 
         response = client.put(url, content, format="json")
@@ -96,13 +96,13 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.email])
+        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
 
         response = client.get(url, format="json")
         content = response.json()
 
         assert status.is_success(response.status_code)
-        assert content["user"]["id"] == test_user.id
+        assert content["user"]["email"] == test_user.email
 
     def test_update_customer_user(self, admin, mock_storage):
 
@@ -119,12 +119,12 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.email])
+        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
 
         response = client.get(url, format="json")
         content = response.json()
 
-        new_name = shuffle_string(content["user"]["name"])
+        new_name = shuffle_string(content["user"]["name"]).strip()
         content["user"]["name"] = new_name
 
         response = client.put(url, content, format="json")
@@ -147,7 +147,7 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.email])
+        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
 
         response = client.delete(url)
         assert status.is_success(response.status_code)

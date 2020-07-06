@@ -27,6 +27,7 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = CustomerSerializer
 
     lookup_field = "id"
+    lookup_url_kwarg = "customer_id"
 
     @property
     def active_managers(self):
@@ -65,7 +66,7 @@ class CustomerUserViewMixin(object):
 
     @cached_property
     def customer(self):
-        customer_id = self.kwargs["id"]
+        customer_id = self.kwargs["customer_id"]
         customer = get_object_or_404(Customer, id=customer_id)
         return customer
 
@@ -81,9 +82,9 @@ class CustomerUserViewMixin(object):
 
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
-        user_email = self.kwargs["email"]
+        user_uuid = self.kwargs["user_id"]
 
-        obj = get_object_or_404(qs, user__email=user_email)
+        obj = get_object_or_404(qs, user__uuid=user_uuid)
         self.check_object_permissions(self.request, obj)
         return obj
 
@@ -122,7 +123,3 @@ class CustomerUserDetailView(
 
     permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerUserSerializer
-
-    lookup_value_regex = (
-        "[^/]+"  # the default regex was "[^/.]+" which wasn't matching email addresses
-    )
