@@ -12,9 +12,7 @@
 <ul>
   {% for object in object_list %}
   <li>
-    <a href="{% url 'user-detail' email=object.email %}"
-      ><strong>{{ object.email }}</strong> [{{ object.username }}]</a
-    >
+    <a href="{% url 'user-detail' id=object.uuid %}"><strong>{{ object.email }}</strong> [{{ object.username }}]</a>
   </li>
   {% endfor %}
 </ul>

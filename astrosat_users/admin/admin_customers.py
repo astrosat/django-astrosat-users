@@ -21,4 +21,5 @@ class CustomerAdmin(admin.ModelAdmin):
     inlines = (CustomerUserAdminInline,)
     list_display = ("name", "customer_type",)
     list_filter = ("customer_type",)
+    readonly_fields = ("id",)
     search_fields = ("name", "title")

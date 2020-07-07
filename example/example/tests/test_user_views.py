@@ -38,7 +38,6 @@ class TestApiViews:
         assert len(content) == len(users) + 1  # (add 1 for the admin user)
 
         for response_data, db_data in zip(content, [admin] + users):
-            assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
 
     def test_filter_approved_users(self, admin, mock_storage):
@@ -59,7 +58,6 @@ class TestApiViews:
         assert len(content) == 5
 
         for response_data, db_data in zip(content, users[1::2]):
-            assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
             assert response_data["is_approved"] == True
 
@@ -81,7 +79,6 @@ class TestApiViews:
         assert len(content) == 5
 
         for response_data, db_data in zip(content, users[1::2]):
-            assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
             assert response_data["accepted_terms"] == True
 
@@ -106,7 +103,6 @@ class TestApiViews:
         assert len(content) == 5 + 1  # (don't forget the admin)
 
         for response_data, db_data in zip(content[1:], users[1::2]):
-            assert response_data["id"] == db_data.id
             assert response_data["email"] == db_data.email
             assert response_data["is_verified"] == True
 
@@ -147,8 +143,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(
-            map(lambda x: x.id, matching_users)
+        assert set(map(lambda x: x["email"], content)) == set(
+            map(lambda x: x.email, matching_users)
         )
 
         url_params = urllib.parse.urlencode(
@@ -161,8 +157,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(
-            map(lambda x: x.id, matching_users)
+        assert set(map(lambda x: x["email"], content)) == set(
+            map(lambda x: x.email, matching_users)
         )
 
     def test_filter_permissions_users(self, admin, mock_storage):
@@ -207,8 +203,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(
-            map(lambda x: x.id, matching_users)
+        assert set(map(lambda x: x["email"], content)) == set(
+            map(lambda x: x.email, matching_users)
         )
 
         url_params = urllib.parse.urlencode(
@@ -225,8 +221,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["id"], content)) == set(
-            map(lambda x: x.id, matching_users)
+        assert set(map(lambda x: x["email"], content)) == set(
+            map(lambda x: x.email, matching_users)
         )
 
     def test_get_user(self, admin, mock_storage):
@@ -237,12 +233,11 @@ class TestApiViews:
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("users-detail", kwargs={"email": test_user.email})
+        url = reverse("users-detail", kwargs={"id": test_user.uuid})
         response = client.get(url)
         data = response.json()
 
         assert status.is_success(response.status_code)
-        assert data["id"] == test_user.id
         assert data["email"] == test_user.email
 
     def test_put_user(self, admin, mock_storage):
@@ -256,7 +251,7 @@ class TestApiViews:
 
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("users-detail", kwargs={"email": test_user.email})
+        url = reverse("users-detail", kwargs={"id": test_user.uuid})
 
         response = client.get(url)
         data = response.json()
@@ -286,7 +281,7 @@ class TestApiViews:
         for user in users:
             token, key = create_auth_token(user)
             client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-            url = reverse("users-detail", kwargs={"email": "current"})
+            url = reverse("users-detail", kwargs={"id": "current"})
             response = client.get(url)
             content = response.json()
             assert status.is_success(response.status_code)

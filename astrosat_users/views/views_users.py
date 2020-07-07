@@ -17,9 +17,9 @@ from astrosat_users.models import User, UserRole, UserPermission
 from astrosat_users.serializers import UserSerializer
 
 
-##############
-#  api views #
-##############
+#############
+# api views #
+#############
 
 
 class IsAdminOrSelf(BasePermission):
@@ -112,10 +112,8 @@ class UserViewSet(ListRetrieveViewSet):
 
     queryset = User.objects.prefetch_related("roles", "roles__permissions")
 
-    lookup_field = "email"
-    lookup_value_regex = (
-        "[^/]+"  # the default regex was "[^/.]+" which wasn't matching email addresses
-    )
+    lookup_field = "uuid"
+    lookup_url_kwarg = "id"
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -132,7 +130,7 @@ class UserViewSet(ListRetrieveViewSet):
         If you passed the reserved word "current",
         return the user making the request.
         """
-        if self.kwargs.get(self.lookup_field).upper() == "CURRENT":
+        if self.kwargs[self.lookup_url_kwarg].upper() == "CURRENT":
             return self.request.user
 
         return super().get_object(*args, **kwargs)
@@ -164,8 +162,8 @@ class UserListView(ListView):
 class UserDetailView(DetailView):
 
     model = User
-    slug_field = "email"
-    slug_url_kwarg = "email"
+    slug_field = "uuid"
+    slug_url_kwarg = "id"
 
 
 @method_decorator(
@@ -174,8 +172,8 @@ class UserDetailView(DetailView):
 class UserUpdateView(UpdateView):
     model = User
     fields = ("name", "description")
-    slug_field = "email"
-    slug_url_kwarg = "email"
+    slug_field = "uuid"
+    slug_url_kwarg = "id"
     template_name_suffix = (
         "_update"
     )  # override stupid default template_name_suffix of "_form"

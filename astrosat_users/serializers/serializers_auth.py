@@ -35,6 +35,7 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     # some extra fields...
+    id = serializers.UUIDField(read_only=True, source="uuid")
     is_verified = serializers.BooleanField(read_only=True)
     is_approved = serializers.BooleanField(read_only=True)
     accepted_terms = serializers.BooleanField(read_only=True)
