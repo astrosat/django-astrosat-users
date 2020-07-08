@@ -4,46 +4,16 @@ from django.db import migrations, models
 import uuid
 
 
-def fill_customer_tmp_id(apps, schema_editor):
-    CustomerModel = apps.get_model("astrosat_users", "Customer")
-    for customer in CustomerModel.objects.all():
-        customer.tmp_id = uuid.uuid4()
-        customer.save()
-
-
 class Migration(migrations.Migration):
 
-    dependencies = [("astrosat_users", "0011_remove_customer_roles")]
-
-    # it's a bit cumbersome to migrate from a standard integer pk to a uuid pk...
+    dependencies = [
+        ('astrosat_users', '0011_remove_customer_roles'),
+    ]
 
     operations = [
-        # first add a temporary (nullable) field to fill w/ uuids...
-        migrations.AddField(
-            model_name="customer", name="tmp_id", field=models.UUIDField(null=True)
-        ),
-        # then fill that fields...
-        migrations.RunPython(
-            fill_customer_tmp_id, reverse_code=migrations.RunPython.noop
-        ),
-        # then make the field a bit like a primary key...
         migrations.AlterField(
-            model_name="customer",
-            name="tmp_id",
-            field=models.UUIDField(
-                default=uuid.uuid4, editable=False, serialize=False, unique=True
-            ),
-        ),
-        # then remove the current pk (id)...
-        migrations.RemoveField(model_name="customer", name="id"),
-        # then rename the tmp field...
-        migrations.RenameField(model_name="customer", old_name="tmp_id", new_name="id"),
-        # finally make the newly-renamed field the pk...
-        migrations.AlterField(
-            model_name="customer",
-            name="id",
-            field=models.UUIDField(
-                default=uuid.uuid4, editable=False, primary_key=True, serialize=False
-            ),
+            model_name='customer',
+            name='id',
+            field=models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
         ),
     ]

@@ -5,7 +5,7 @@ from astrosat.admin import get_clickable_m2m_list_display
 
 from astrosat_users.admin.admin_roles import update_roles_action
 from astrosat_users.forms import UserAdminChangeForm, UserAdminCreationForm
-from astrosat_users.models import User, Customer, UserRole
+from astrosat_users.models import User, UserRole, Customer
 
 
 @admin.register(User)
