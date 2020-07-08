@@ -7,7 +7,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('astrosat_users', '0012_auto_20200706_1033'),
+        ('astrosat_users', '0011_remove_customer_roles'),
     ]
 
     operations = [
