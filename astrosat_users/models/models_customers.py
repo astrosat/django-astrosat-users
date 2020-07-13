@@ -69,9 +69,6 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
-    #     @property
-    #     def n_licenses(self):
-    #         return self.users.count()
 
     def add_user(self, user, **kwargs):
         user, created = self.customer_users.add_user(user, **kwargs)
@@ -135,11 +132,13 @@ class CustomerUser(models.Model):
     )
 
     customer_user_type = models.CharField(
-        max_length=64, choices=CustomerUserType.choices
+        max_length=64, choices=CustomerUserType.choices, default=CustomerUserType.MEMBER
     )
     customer_user_status = models.CharField(
-        max_length=64, choices=CustomerUserStatus.choices
+        max_length=64, choices=CustomerUserStatus.choices, default=CustomerUserStatus.PENDING
     )
+
+    invitation_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.customer}: {self.user}"

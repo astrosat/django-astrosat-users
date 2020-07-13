@@ -40,7 +40,7 @@ class UserSerializerBasic(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True, source="uuid")
     profiles = serializers.SerializerMethodField()
     roles = serializers.SlugRelatedField(
-        allow_null=True, many=True, queryset=UserRole.objects.all(), slug_field="name"
+        allow_null=True, many=True, queryset=UserRole.objects.all(), required=False, slug_field="name"
     )
     permissions = serializers.SerializerMethodField()
 
