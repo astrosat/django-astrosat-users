@@ -116,6 +116,11 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = CustomerUserFilterSet
 
+    def perform_create(self, serializer):
+        customer_user = serializer.save()
+        # TODO: SEND INVITATION HERE ?
+        return customer_user
+
 
 class CustomerUserDetailView(
     CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView

@@ -1,5 +1,8 @@
 from rest_framework import serializers
 
+from allauth.account import app_settings as allauth_settings
+from allauth.account.utils import complete_signup
+
 from astrosat.serializers import ContextVariableDefault
 
 from astrosat_users.models import Customer, CustomerUser, User, UserRole
@@ -22,8 +25,9 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         model = CustomerUser
         fields = ("id", "type", "status", "user", "customer")
 
-    type = serializers.CharField(source="customer_user_type")
-    status = serializers.CharField(source="customer_user_status")
+    type = serializers.CharField(source="customer_user_type", required=False)
+    status = serializers.CharField(source="customer_user_status", required=False)
+
     customer = serializers.SlugRelatedField(
         default=ContextVariableDefault("customer", raise_error=True),
         queryset=Customer.objects.all(),
@@ -41,34 +45,30 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         customer_user = super().update(instance, validated_data)
         return customer_user
 
-    # def create(self, validated_data):
+    def create(self, validated_data):
 
-    #     return None
-    #     user_serializer = self.fields["user"]
-    #     user_data = validated_data.pop(user_serializer.source)
-    #     try:
-    #         # existing user, just update them...
-    #         user = User.objects.get(email=user_data["email"])
-    #         user_serializer.update(user, user_data)
-    #     except User.DoesNotExist:
-    #         # new user, perform registration...
-    #         user_registration_data = user_data.copy()
-    #         user_registration_data.update(
-    #             {"password1": "superpassword23", "password2": "superpassword23",}
-    #         )
+        user_serializer = self.fields["user"]
+        user_data = validated_data.pop(user_serializer.source).copy()
 
-    #         # import pdb; pdb.set_trace()
-    #         from django.http import QueryDict
+        try:
+            user = User.objects.get(email=user_data["email"])
+        except User.DoesNotExist:
+            # new user, perform registration...
+            default_password = User.objects.make_random_password()
+            user_data.update({
+                "change_password": True,
+                "accepted_terms": True,
+                "password1": default_password,
+                "password2": default_password,
+            })
+            register_serializer = RegisterSerializer(data=user_data)
+            if register_serializer.is_valid():
+                request = self.context["request"]
+                user = register_serializer.save(request)
+                complete_signup(request, user, allauth_settings.EMAIL_VERIFICATION, None)
+            # no else block is needed; UserSerializerBasic will catch any errors
 
-    #         request = self.context["request"]
-    #         # request.POST = QueryDict("", mutable=True)
-    #         # request.POST.update(user_registration_data)
-    #         request._data = user_registration_data
-    #         user = RegisterSerializer(request).save()
-    #         # complete_signup(
-    #         #     self.request._request, user, allauth_settings.EMAIL_VERIFICATION, None
-    #         # )
-    #         user_serializer.update(user, user_data)
-    #     validated_data["user"] = user
-    #     validated_data[""]
-    #     return super().create(validated_data)
+        user_serializer.update(user, user_data)
+        validated_data["user"] = user
+
+        return super().create(validated_data)
