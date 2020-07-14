@@ -23,10 +23,11 @@ class CustomerSerializer(serializers.ModelSerializer):
 class CustomerUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUser
-        fields = ("id", "type", "status", "user", "customer")
+        fields = ("id", "type", "status", "invitation_date", "user", "customer")
 
     type = serializers.CharField(source="customer_user_type", required=False)
     status = serializers.CharField(source="customer_user_status", required=False)
+    invitation_date = serializers.DateTimeField(read_only=True)
 
     customer = serializers.SlugRelatedField(
         default=ContextVariableDefault("customer", raise_error=True),

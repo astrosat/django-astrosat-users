@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from astrosat_users.signals import customer_added_user, customer_removed_user
@@ -143,6 +144,10 @@ class CustomerUser(models.Model):
     def __str__(self):
         return f"{self.customer}: {self.user}"
 
+    def invite(self):
+        # TODO: for now I'm just setting the date, need to actually do the invite
+        self.invitation_date = timezone.now()  # (passes a datetime object using the timezone from settings.py)
+        self.save()
 
 # class CustomerInvitation(models.Model):
 #     pass
