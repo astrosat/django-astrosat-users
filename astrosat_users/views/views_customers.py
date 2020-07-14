@@ -118,7 +118,7 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         customer_user = serializer.save()
-        # TODO: SEND INVITATION HERE ?
+        customer_user.invite()
         return customer_user
 
 
