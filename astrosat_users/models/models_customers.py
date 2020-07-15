@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -143,6 +144,10 @@ class CustomerUser(models.Model):
 
     def __str__(self):
         return f"{self.customer}: {self.user}"
+
+    def clean(self):
+        if self.pk is None and self.user in self.customer.users.all():
+            raise ValidationError("User is already a member of Customer.")
 
     def invite(self):
         # TODO: for now I'm just setting the date, need to actually do the invite
