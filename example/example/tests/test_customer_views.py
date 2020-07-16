@@ -1,6 +1,7 @@
 import pytest
 import urllib
 
+from django.core import mail
 from django.urls import resolve, reverse
 
 from rest_framework import status
@@ -270,3 +271,55 @@ class TestCustomerViews:
         assert content["user"] == {"email": ["Enter a valid email address."]}
 
         assert customer.customer_users.count() == 0
+
+    def test_cannot_add_duplicate_customer_user(self, admin, user_data, mock_storage):
+        customer = CustomerFactory(logo=None)
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url = reverse("customer-users-list", args=[customer.id])
+
+        data = {
+            # no need to specify type/status - they have default values
+            "customer": customer.name,
+            "user": user_data,
+        }
+        response = client.post(url, data, format="json")  # this should succeed
+        response = client.post(url, data, format="json")  # but this should fail
+        content = response.json()
+
+        assert status.is_client_error(response.status_code)
+        assert content["non_field_errors"] == ["User is already a member of Customer."]
+        assert customer.customer_users.count() == 1
+
+
+    def test_add_new_customer_user_sends_email(self, admin, user_data, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url = reverse("customer-users-list", args=[customer.id])
+        assert len(mail.outbox) == 0
+
+        data = {
+            # no need to specify type/status - they have default values
+            "customer": customer.name,
+            "user": user_data,
+        }
+        response = client.post(url, data, format="json")
+
+        adapter = get_adapter_from_response(response)
+        password_reset_url = adapter.get_password_confirmation_url(
+            response.wsgi_request,
+            User.objects.get(email=user_data["email"]),
+        )
+
+        email = mail.outbox[0]
+        assert len(mail.outbox) == 1
+        assert user_data["email"] in email.to
+        assert password_reset_url in email.body

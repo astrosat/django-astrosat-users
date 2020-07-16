@@ -144,11 +144,23 @@ class PasswordResetConfirmSerializer(
         return attrs
 
     def save(self):
-        # TODO: ONCE I FIGURE OUT HOW TO USE THE ALLAUTH FORM, I CAN REMOVE THIS
+        # the password_reset_confirm view is called when a user resets their password
+        # either on their own, or w/in the context of joining a customer; in the latter
+        # case this method also sets their status to "ACTIVE" and verifies their email
+
         user = self.set_password_form.save()
+
+        pending_customer_users_qs = user.customer_users.pending()
+        if pending_customer_users_qs.exists():
+            pending_customer_users_qs.update(customer_user_status="ACTIVE")
+
+        if not user.is_verified:
+            user.verify()
+
         if user.change_password:
             user.change_password = False
             user.save()
+
         return user
 
 

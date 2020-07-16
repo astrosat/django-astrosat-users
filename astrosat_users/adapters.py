@@ -249,12 +249,14 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
 
         url = self.get_password_confirmation_url(self.request, user, token_key)
 
-        context = {
+        template_prefix = kwargs.get("template_prefix", "account/email/password_reset_key")
+        context = kwargs.get("context", {})
+        context.update({
             "current_site": get_current_site(self.request),
             "user": user,
             "password_reset_url": url,
             "request": self.request,
-        }
+        })
 
         if (
             allauth_app_settings.AUTHENTICATION_METHOD
@@ -262,7 +264,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         ):
             context["username"] = user_username(user)
 
-        self.send_mail("account/email/password_reset_key", email, context)
+        self.send_mail(template_prefix, email, context)
 
     def set_password(self, user, password):
         user.set_password(password)

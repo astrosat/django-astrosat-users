@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from allauth.account import app_settings as allauth_settings
-from allauth.account.utils import complete_signup
+from allauth.account.adapter import get_adapter
 
 from astrosat.serializers import ContextVariableDefault
 
@@ -39,6 +38,15 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         UserSerializerBasic()
     )  # note I don't use the full UserSerializer b/c I don't need to serialize the customer
 
+    def validate(self, data):
+        if not self.instance:
+            customer = data["customer"]
+            user_email = data["user"]["email"]
+            if customer.users.filter(email=user_email).exists():
+                raise serializers.ValidationError("User is already a member of Customer.")
+
+        return data
+
     def update(self, instance, validated_data):
         user_serializer = self.fields["user"]
         user_data = validated_data.pop(user_serializer.source)
@@ -66,7 +74,18 @@ class CustomerUserSerializer(serializers.ModelSerializer):
             if register_serializer.is_valid():
                 request = self.context["request"]
                 user = register_serializer.save(request)
-                complete_signup(request, user, allauth_settings.EMAIL_VERIFICATION, None)
+                # ...but instead of sending a verify-email email, send a reset-password email
+                adapter = get_adapter(request)
+                adapter.send_password_confirmation_email(
+                    user,
+                    user.email,
+                    template_prefix="astrosat_users/email/customer_user_password_reset_key",
+                    context={
+                        "customer": validated_data["customer"],
+                        "manager": request.user,
+                        "user": user,
+                    },
+                )
             # no else block is needed; UserSerializerBasic will catch any errors
 
         user_serializer.update(user, user_data)
