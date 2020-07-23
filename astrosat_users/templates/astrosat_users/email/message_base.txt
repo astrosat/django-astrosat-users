@@ -1,0 +1,31 @@
+{% block header %}
+
+{% endblock %}
+
+{% block body %}
+
+{% endblock %}
+
+{% block footer %}
+
+This e-mail and any files attached with it are strictly confidential and intended solely for the addressee. It may
+contain information which is covered by legal, professional or other privilege and will be protected by copyright. If
+you have received this e-mail in error, please notify the sender immediately. If you are not the intended addressee, you
+must delete this e-mail and not disclose, copy or take any action on reliance of this transmission. To the extent that
+this e-mail is passed on by the intended addressee, care must be taken to ensure that it is in a form which accurately
+reflects the information contained in the original e-mail. E-mail is an informal means of communication and may be
+subject to data corruption accidentally or deliberately. This email is not intended to have contractual effect and does
+not form part of any contract. Although we have taken reasonable precautions to ensure that any attachment has does not
+contain viruses we cannot accept liability for any loss or damage caused by software viruses. Any and all communications
+sent to us may be monitored and/or stored by us to ensure compliance with relevant legislation, rules, and policies. All
+communications are handled in full compliance with current data protection legislation including, but not limited to, EU
+Regulation 2016/679 General Data Protection Regulation (“GDPR”). For further information please contact us at
+info@astrosat.space for details of our Privacy Policy. Stevenson Astrosat is the trading name of Stevenson Astrosat
+Limited which is a limited company incorporated in Scotland under the Companies Act 2006 with registered number SC
+423073 and having its registered office at Copernicus Kirk, 200 High Street, Musselburgh, EH21 7DX. If you care about
+the environment like we do, please consider the necessity before printing this email. It helps to keep the environment
+forested and litter-free. Please be aware of cyber-crime. Criminals are known to target e-mails in an attempt to alter
+bank details and thereby divert funds. Please telephone us before instructing the transfer of any funds to allow us to
+verify these details with you. We will not take responsibility if you transfer funds to the wrong account
+
+{% endblock %}
