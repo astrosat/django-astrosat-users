@@ -323,3 +323,46 @@ class TestCustomerViews:
         assert len(mail.outbox) == 1
         assert user_data["email"] in email.to
         assert password_reset_url in email.body
+
+    def test_customer_user_cannot_delete_self(self, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+        user_1 = UserFactory(avatar=None)
+        user_2 = UserFactory(avatar=None)
+
+        (customer_user_1, _) = customer.add_user(user_1, type="MANAGER", status="ACTIVE")
+        (customer_user_2, _) = customer.add_user(user_2, type="MANAGER", status="ACTIVE")
+
+        _, key = create_auth_token(user_1)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        # user_1 cannot delete customer_user_1
+        url = reverse("customer-users-detail", args=[customer.id, user_1.uuid])
+        response = client.delete(url)
+        assert status.is_client_error(response.status_code)
+        assert customer.customer_users.count() == 2
+
+        # user_1 can delete customer_user_2
+        url = reverse("customer-users-detail", args=[customer.id, user_2.uuid])
+        response = client.delete(url)
+        assert status.is_success(response.status_code)
+        assert customer.customer_users.count() == 1
+
+    def test_delete_customer_user_sends_email(self, admin, user, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customer-users-detail", args=[customer.id, user.uuid])
+
+        assert len(mail.outbox) == 0
+        response = client.delete(url)
+
+        email = mail.outbox[0]
+        assert len(mail.outbox) == 1
+        assert user.email in email.to

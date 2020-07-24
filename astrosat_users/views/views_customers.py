@@ -4,6 +4,8 @@ from django.utils.functional import cached_property
 from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated, BasePermission
 
+from allauth.account.adapter import get_adapter
+
 from django_filters import rest_framework as filters
 
 from astrosat_users.models import Customer, CustomerUser
@@ -20,6 +22,15 @@ class IsAdminOrManager(BasePermission):
         user = request.user
         return user.is_superuser or view.active_managers.filter(user=user).exists()
 
+
+class CannotDeleteSelf(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if request.method == "DELETE":
+            return user != obj.user
+
+        return True
 
 class CustomerDetailView(generics.RetrieveUpdateAPIView):
 
@@ -126,5 +137,21 @@ class CustomerUserDetailView(
     CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
 ):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsAdminOrManager, CannotDeleteSelf]
     serializer_class = CustomerUserSerializer
+
+    def perform_destroy(self, instance):
+        user = instance.user
+        customer = instance.customer
+        destroyed_value = super().perform_destroy(instance)
+        # notify the user that they've been removed from the customer
+        adapter = get_adapter(self.request)
+        adapter.send_mail(
+            "astrosat_users/email/user_left_customer",
+            user.email,
+            {
+                "user": user,
+                "customer": customer,
+            },
+        )
+        return destroyed_value
