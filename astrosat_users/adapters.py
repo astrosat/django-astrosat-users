@@ -19,8 +19,10 @@ from allauth.account.utils import (
     send_email_confirmation,
     user_pk_to_url_str,
     url_str_to_user_pk,
+    user_email,
     user_username,
 )
+
 from allauth.account.utils import user_username
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.utils import build_absolute_uri
@@ -195,6 +197,21 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             raise
 
         return super().login(request, user)
+
+    def populate_username(self, request, user):
+        """
+        Fills in a valid username, if missing.  If the username
+        is already present it is assumed to be valid.  In astrosat,
+        we simply use the email address as the username.
+        """
+        email = user_email(user)
+        username = user_username(user)
+        if allauth_app_settings.USER_MODEL_USERNAME_FIELD:
+            # the original code does some fancy logic to generate a unique username
+            # this code just uses either the value explicitly passed by the fronted
+            # or defaults to the email address
+            user_username(user, username or email)
+
 
     def respond_email_verification_sent(self, request, user):
         """
