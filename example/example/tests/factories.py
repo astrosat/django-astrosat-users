@@ -14,7 +14,7 @@ from astrosat_users.tests.factories import (
 from example.models import ExampleProfile
 
 
-class ExampleProfileFactory(factory.DjangoModelFactory):
+class ExampleProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExampleProfile
 

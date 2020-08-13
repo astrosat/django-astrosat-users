@@ -19,7 +19,7 @@ from astrosat_users.tests.utils import *
 FactoryFaker.add_provider(PrettyLoremProvider)
 
 
-class UserFactory(factory.DjangoModelFactory):
+class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
         django_get_or_create = ["email"]
@@ -65,7 +65,7 @@ class UserFactory(factory.DjangoModelFactory):
             )
 
 
-class EmailAddressFactory(factory.DjangoModelFactory):
+class EmailAddressFactory(factory.django.DjangoModelFactory):
     """
     I don't really use this on its own.  Instead I create an (unverified) email address when a user is created above.
     This is done by default when I create a user via the registration views.  But if I am bypassing that,
@@ -81,7 +81,7 @@ class EmailAddressFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory, emailaddress_set=None)
 
 
-class UserRoleFactory(factory.DjangoModelFactory):
+class UserRoleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserRole
 
@@ -108,7 +108,7 @@ class UserRoleFactory(factory.DjangoModelFactory):
                 self.permissions.add(permission)
 
 
-class UserPermissionFactory(factory.DjangoModelFactory):
+class UserPermissionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserPermission
 
@@ -120,7 +120,7 @@ class UserPermissionFactory(factory.DjangoModelFactory):
         return f"can_{'_'.join(words)}_{n}"
 
 
-class CustomerFactory(factory.DjangoModelFactory):
+class CustomerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Customer
 
