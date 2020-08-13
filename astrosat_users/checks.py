@@ -42,7 +42,7 @@ def check_dependencies(app_configs, **kwargs):
 
 
 @register(Tags.compatibility)
-def check_settings(app_configs):
+def check_settings(app_configs, **kwargs):
     """
     Makes sure that some required settings are set as expected.
     """
@@ -107,7 +107,7 @@ def check_settings(app_configs):
 
 
 @register(Tags.compatibility)
-def check_third_party_settings(app_configs):
+def check_third_party_settings(app_configs, **kwargs):
 
     errors = []
 
