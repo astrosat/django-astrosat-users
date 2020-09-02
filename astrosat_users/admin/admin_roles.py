@@ -65,7 +65,7 @@ def update_roles_action(modeladmin, request, queryset):
 
     update_roles_form = UpdateRolesForm(
         request.POST or None,
-        initial={"_selected_action": request.POST.getlist(admin.ACTION_CHECKBOX_NAME)},
+        initial={"_selected_action": request.POST.getlist(admin.helpers.ACTION_CHECKBOX_NAME)},
     )
 
     if "apply" in request.POST:
