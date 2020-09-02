@@ -18,8 +18,21 @@ class CustomerUserAdminInline(admin.TabularInline):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
+    fields = (
+        "id",
+        "is_active",
+        "customer_type",
+        "name",
+        "title",
+        "description",
+        "logo",
+        "url",
+        "country",
+        "address",
+        "postcode",
+    )
     inlines = (CustomerUserAdminInline,)
-    list_display = ("name", "customer_type",)
+    list_display = ("name", "customer_type")
     list_filter = ("customer_type",)
     readonly_fields = ("id",)
     search_fields = ("name", "title")
