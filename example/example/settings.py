@@ -12,7 +12,7 @@ from django.utils.html import escape
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from astrosat.utils import DynamicSetting
+from astrosat_users.conf import app_settings as astrosat_users_settings
 
 
 env = environ.Env()
@@ -212,10 +212,6 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 # Passwords
 
-PASSWORD_MIN_LENGTH = 8
-PASSWORD_MAX_LENGTH = 255
-PASSWORD_STRENGTH = 2
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
@@ -223,13 +219,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "astrosat_users.validators.LengthPasswordValidator",
         "OPTIONS": {
-            "min_length": PASSWORD_MIN_LENGTH,
-            "max_length": PASSWORD_MAX_LENGTH,
+            "min_length": astrosat_users_settings.PASSWORD_MIN_LENGTH,
+            "max_length": astrosat_users_settings.PASSWORD_MAX_LENGTH,
         },
     },
     {
         "NAME": "astrosat_users.validators.StrengthPasswordValidator",
-        "OPTIONS": {"strength": PASSWORD_STRENGTH},
+        "OPTIONS": {"strength": astrosat_users_settings.PASSWORD_STRENGTH},
     },
 ]
 

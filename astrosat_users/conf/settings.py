@@ -22,10 +22,32 @@ ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = getattr(
     settings, "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", "confirm-pwd/?key={key}&uid={uid}"
 )
 
+PASSWORD_MIN_LENGTH = getattr(
+    settings,
+    "PASSWORD_MIN_LENGTH",
+    DynamicSetting(
+        "astrosat_users.UserSettings.password_min_length",
+        env("DJANGO_PASSWORD_MIN_LENGTH", default=8),
+    ),
+)
 
-PASSWORD_MIN_LENGTH = getattr(settings, "PASSWORD_MIN_LENGTH", 8)
-PASSWORD_MAX_LENGTH = getattr(settings, "PASSWORD_MAX_LENGTH", 255)
-PASSWORD_STRENGTH = getattr(settings, "PASSWORD_STRENGTH", 2)
+PASSWORD_MAX_LENGTH = getattr(
+    settings,
+    "PASSWORD_MAX_LENGTH",
+    DynamicSetting(
+        "astrosat_users.UserSettings.password_max_length",
+        env("DJANGO_PASSWORD_MAX_LENGTH", default=255),
+    ),
+)
+
+PASSWORD_STRENGTH = getattr(
+    settings,
+    "PASSWORD_STRENGTH",
+    DynamicSetting(
+        "astrosat_users.UserSettings.password_strength",
+        env("DJANGO_PASSWORD_STRENGTH", default=2),
+    ),
+)
 
 ASTROSAT_USERS_REQUIRE_VERIFICATION = getattr(
     settings,
