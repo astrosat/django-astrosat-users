@@ -4,6 +4,8 @@ from django.utils.deconstruct import deconstructible
 
 from zxcvbn import zxcvbn
 
+from astrosat_users.conf import app_settings as astrosat_users_settings
+
 
 #########################
 # user image validation #
@@ -47,9 +49,9 @@ class LengthPasswordValidator:
     Validates the password length is inside a range.
     """
 
-    def __init__(self, min_length=8, max_length=255):
+    def __init__(self, min_length=astrosat_users_settings.PASSWORD_MIN_LENGTH, max_length=astrosat_users_settings.PASSWORD_MAX_LENGTH):
         assert (
-            max_length > min_length and min_length >= 1 and max_length <= 255
+            max_length > min_length and min_length > 0 and max_length > 0
         ), "Invalid LengthPasswordValidator"
         self.min_length = min_length
         self.max_length = max_length
@@ -85,8 +87,8 @@ class StrengthPasswordValidator:
         4 # very unguessable: strong protection from offline slow-hash scenario. (guesses >= 10^10)
     """
 
-    def __init__(self, strength=2):
-        assert 0 <= strength <= 4, "Invaid StrongPasswordValidator strength."
+    def __init__(self, strength=astrosat_users_settings.PASSWORD_STRENGTH):
+        assert 0 <= strength <= 4, "Invalid StrongPasswordValidator strength."
         self.strength = strength
 
     def validate(self, password, user=None):
