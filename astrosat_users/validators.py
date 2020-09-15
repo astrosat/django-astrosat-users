@@ -33,9 +33,9 @@ class ImageDimensionsValidator:
 
     def __eq__(self, other):
         return (
-            isinstance(other, ImageDimensionsValidator) and
-            (self.max_height == other.max_height) and
-            (self.max_width == other.max_width)
+            isinstance(other, ImageDimensionsValidator)
+            and (self.max_height == other.max_height)
+            and (self.max_width == other.max_width)
         )
 
 
@@ -49,7 +49,11 @@ class LengthPasswordValidator:
     Validates the password length is inside a range.
     """
 
-    def __init__(self, min_length=astrosat_users_settings.PASSWORD_MIN_LENGTH, max_length=astrosat_users_settings.PASSWORD_MAX_LENGTH):
+    def __init__(
+        self,
+        min_length=astrosat_users_settings.PASSWORD_MIN_LENGTH,
+        max_length=astrosat_users_settings.PASSWORD_MAX_LENGTH,
+    ):
         assert (
             max_length > min_length and min_length > 0 and max_length > 0
         ), "Invalid LengthPasswordValidator"
@@ -98,8 +102,9 @@ class StrengthPasswordValidator:
         password_results = zxcvbn(password, user_inputs=user_inputs)
 
         if password_results["score"] < self.strength:
-            error_msg = password_results["feedback"]["warning"]
-            error_msg += "; ".join(password_results["feedback"]["suggestions"])
+            error_msg = "The password must not be weak."
+            # error_msg += password_results["feedback"]["warning"]
+            # error_msg += "; ".join(password_results["feedback"]["suggestions"])
             raise ValidationError(error_msg, code="password_too_weak")
 
     def get_help_text(self):
