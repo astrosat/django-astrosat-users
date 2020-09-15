@@ -127,12 +127,13 @@ class PasswordResetConfirmSerializer(
             uid = rest_decode_user_pk(attrs["uid"])
             self.user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            raise ValidationError({"uid": ["Invalid value"]})
+            raise ValidationError({"uid": ["The link is broken or expired."]})
 
         # this is the different bit...
+        # (I use a custom token_generator - which could potentially be overridden in the adapter)
         token_generator = get_adapter().default_token_generator
         if not token_generator.check_token(self.user, attrs["token"]):
-            raise ValidationError({"token": ["Invalid value"]})
+            raise ValidationError({"token": ["The link is broken or expired."]})
 
         self.custom_validation(attrs)
         self.set_password_form = self.set_password_form_class(

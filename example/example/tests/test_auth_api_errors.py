@@ -82,7 +82,7 @@ class TestRegistrationErrors:
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
                 "password1": [
-                    "This is a top-10 common password.Add another word or two. Uncommon words are better."
+                    "The password must not be weak."
                 ]
             }
         }
@@ -375,7 +375,7 @@ class TestPasswordErrors:
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
                 "new_password2": [
-                    "This is a top-10 common password.Add another word or two. Uncommon words are better."
+                    "The password must not be weak."
                 ]
             }
         }
@@ -425,7 +425,7 @@ class TestPasswordErrors:
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
                 "new_password2": [
-                    "This is a top-10 common password.Add another word or two. Uncommon words are better."
+                    "The password must not be weak."
                 ]
             }
         }
@@ -449,7 +449,7 @@ class TestPasswordErrors:
             "token": shuffle_string(token_key),
         }
 
-        INVALID_KEY_ERROR_RESPONSE = {"errors": {"token": ["Invalid value"]}}
+        INVALID_KEY_ERROR_RESPONSE = {"errors": {"token": ["The link is broken or expired."]}}
 
         response = client.post(self.reset_confirm_url, test_data)
         assert status.is_client_error(response.status_code)
