@@ -1,6 +1,8 @@
 import re
 from typing import Any
 
+from urllib.parse import urljoin
+
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
@@ -139,7 +141,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         else:
             path = reverse("account_confirm_email", args=[emailconfirmation.key])
 
-        url = build_absolute_uri(request, path)
+        url = urljoin(request.META['HTTP_ORIGIN'], path)
         return url
 
     def get_password_confirmation_url(self, request, user, token=None):
@@ -162,7 +164,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 kwargs={"key": token_key, "uidb36": user_pk_to_url_str(user)},
             )
 
-        url = build_absolute_uri(request, path)
+        url = urljoin(request.META['HTTP_ORIGIN'], path)
         return url
 
     def login(self, request, user):
