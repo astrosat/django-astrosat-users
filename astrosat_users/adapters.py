@@ -141,7 +141,11 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         else:
             path = reverse("account_confirm_email", args=[emailconfirmation.key])
 
-        url = urljoin(request.META['HTTP_ORIGIN'], path)
+        if self.is_api and "HTTP_ORIGIN" in request.META:
+            # request originates from a client on a different domain...
+            url = urljoin(request.META['HTTP_ORIGIN'], path)
+        else:
+            url = build_absolute_uri(request, path)
         return url
 
     def get_password_confirmation_url(self, request, user, token=None):
@@ -164,7 +168,11 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 kwargs={"key": token_key, "uidb36": user_pk_to_url_str(user)},
             )
 
-        url = urljoin(request.META['HTTP_ORIGIN'], path)
+        if self.is_api and "HTTP_ORIGIN" in request.META:
+            # request originates from a client on a different domain...
+            url = urljoin(request.META['HTTP_ORIGIN'], path)
+        else:
+            url = build_absolute_uri(request, path)
         return url
 
     def login(self, request, user):
