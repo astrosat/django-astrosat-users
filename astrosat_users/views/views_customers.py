@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.response import Response
 
 from allauth.account.adapter import get_adapter
 
@@ -129,7 +131,7 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         customer_user = serializer.save()
-        customer_user.invite()
+        customer_user.invite(adapter=get_adapter(self.request))
         return customer_user
 
 
@@ -155,3 +157,19 @@ class CustomerUserDetailView(
             },
         )
         return destroyed_value
+
+class CustomerUserInviteView(
+    CustomerUserViewMixin, generics.GenericAPIView
+):
+    """
+    A special view just for re-sending invitations.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    serializer_class = CustomerUserSerializer
+
+    def post(self, request, *args, **kwargs):
+        customer_user = self.get_object()
+        customer_user.invite(adapter=get_adapter(self.request))
+        serializer = self.get_serializer(customer_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

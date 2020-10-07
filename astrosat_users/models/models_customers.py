@@ -6,6 +6,10 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from allauth.account import app_settings as allauth_app_settings
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import user_username
+
 from astrosat_users.signals import customer_added_user, customer_removed_user
 
 
@@ -149,10 +153,38 @@ class CustomerUser(models.Model):
         if self.pk is None and self.user in self.customer.users.all():
             raise ValidationError("User is already a member of Customer.")
 
-    def invite(self):
-        # TODO: for now I'm just setting the date, need to actually do the invite
-        self.invitation_date = timezone.now()  # (passes a datetime object using the timezone from settings.py)
-        self.save()
+    def invite(self, **kwargs):
+        """
+        Makes the user aware that they are now a member of the customer
+        by sending an invitation email to their registered address.  If
+        they are a newly-created user, they will have to update their
+        password; the email will contain instructions on how to do this.
+        """
 
-# class CustomerInvitation(models.Model):
-#     pass
+        adapter = kwargs.get("adapter", get_adapter())
+        context = kwargs.get("context", {})
+        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/invitation")
+
+        user = self.user
+        customer = self.customer
+        context.update({
+            "user": user,
+            "customer": customer,
+        })
+
+        if user.change_password:
+            token_generator = kwargs.get("token_generator", adapter.default_token_generator)
+            token_key = token_generator.make_token(user)
+            url = adapter.get_password_confirmation_url(adapter.request, user, token_key)
+            context["password_reset_url"] = url
+
+        if (
+            allauth_app_settings.AUTHENTICATION_METHOD
+            != allauth_app_settings.AuthenticationMethod.EMAIL
+        ):
+            context["username"] = user_username(user)
+
+        adapter.send_mail(template_prefix, user.email, context)
+
+        self.invitation_date = timezone.now()
+        self.save()

@@ -74,18 +74,6 @@ class CustomerUserSerializer(serializers.ModelSerializer):
             if register_serializer.is_valid():
                 request = self.context["request"]
                 user = register_serializer.save(request)
-                # ...but instead of sending a verify-email email, send a reset-password email
-                adapter = get_adapter(request)
-                adapter.send_password_confirmation_email(
-                    user,
-                    user.email,
-                    template_prefix="astrosat_users/email/customer_user_password_reset_key",
-                    context={
-                        "customer": validated_data["customer"],
-                        "manager": request.user,
-                        "user": user,
-                    },
-                )
             # no else block is needed; UserSerializerBasic will catch any errors
 
         user_serializer.update(user, user_data)
