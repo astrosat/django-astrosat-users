@@ -1,10 +1,11 @@
-from factory.faker import Faker as FactoryFaker
+from faker import Faker
 
 from allauth.account.adapter import get_adapter
 
 from dj_rest_auth.models import TokenModel
 from dj_rest_auth.app_settings import TokenSerializer, create_token
 
+fake = Faker()
 
 def generate_password(**kwargs):
     """
@@ -19,8 +20,7 @@ def generate_password(**kwargs):
     }
     password_kwargs.update(kwargs)
     assert password_kwargs["length"] >= 4  # faker will break if the pwd is _too_ short
-    password_faker = FactoryFaker("password", **password_kwargs)
-    return password_faker.generate(extra_kwargs={})
+    return fake.password(**password_kwargs)
 
 
 def get_adapter_from_response(response):
