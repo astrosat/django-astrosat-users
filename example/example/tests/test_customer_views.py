@@ -23,6 +23,7 @@ from .factories import *
 
 @pytest.mark.django_db
 class TestCustomerViews:
+
     def test_get_customer(self, user, mock_storage):
 
         # make sure user is a MANAGER of customer
@@ -294,7 +295,6 @@ class TestCustomerViews:
         assert content["non_field_errors"] == ["User is already a member of Customer."]
         assert customer.customer_users.count() == 1
 
-
     def test_add_new_customer_user_sends_email(self, admin, user_data, mock_storage):
 
         customer = CustomerFactory(logo=None)
@@ -366,3 +366,65 @@ class TestCustomerViews:
         email = mail.outbox[0]
         assert len(mail.outbox) == 1
         assert user.email in email.to
+
+    def test_resend_invitation_new_customer_user(self, admin, user_data, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url = reverse("customer-users-list", args=[customer.id])
+        data = {
+            "customer": customer.name,
+            "user": user_data,
+        }
+        response = client.post(url, data, format="json")
+        assert status.is_success(response.status_code)
+        old_content = response.json()
+
+        assert old_content["invitation_date"] is not None
+        assert old_content["user"]["change_password"] is True
+
+        url = reverse("customer-users-invite", args=[customer.id, old_content["user"]["id"]])
+        response = client.post(url, {}, format="json")
+        assert status.is_success(response.status_code)
+        new_content = response.json()
+
+        assert new_content["invitation_date"] != old_content["invitation_date"]
+        assert new_content["invitation_date"] is not None
+        assert new_content["user"]["change_password"] is True
+
+        RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
+
+        assert len(mail.outbox) == 2
+        assert RESET_PASSWORD_TEXT in mail.outbox[0].body
+        assert RESET_PASSWORD_TEXT in mail.outbox[1].body
+
+
+    def test_resend_invitation_existing_customer_user(self, admin, user, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        (customer_user, _) = customer.add_user(user, type="MEMBER", status="PENDING")
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customer-users-invite", args=[customer.id, user.uuid])
+
+        assert customer_user.invitation_date is None
+        assert customer_user.user.change_password is False
+
+        response = client.post(url, {}, format="json")
+        content = response.json()
+
+        assert status.is_success(response.status_code)
+        assert content["invitation_date"] is not None
+        assert content["user"]["change_password"] is False
+
+        RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
+
+        assert len(mail.outbox) == 1
+        assert RESET_PASSWORD_TEXT not in mail.outbox[0].body
