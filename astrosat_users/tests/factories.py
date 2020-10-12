@@ -13,6 +13,7 @@ from astrosat.tests.utils import optional_declaration
 
 from allauth.account.models import EmailAddress
 from astrosat_users.models import User, UserRole, UserPermission, Customer
+from astrosat_users.models.models_customers import CustomerType
 from astrosat_users.tests.utils import *
 
 
@@ -124,7 +125,7 @@ class CustomerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Customer
 
-    # customer_type = models.CharField(max_length=64, choices=CustomerType.choices, default=CustomerType.MULTIPLE)
+    customer_type = CustomerType.MULTIPLE
 
     name = factory.LazyAttributeSequence(lambda o, n: f"{slugify(o.title)}-{n}")
     title = FactoryFaker("pretty_sentence", nb_words=2)

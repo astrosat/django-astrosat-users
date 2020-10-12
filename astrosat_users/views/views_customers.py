@@ -25,7 +25,6 @@ class IsAdminOrManager(BasePermission):
 
 
 class CannotDeleteSelf(BasePermission):
-
     def has_object_permission(self, request, view, obj):
         user = request.user
         if request.method == "DELETE":
@@ -33,13 +32,10 @@ class CannotDeleteSelf(BasePermission):
 
         return True
 
-class CustomerDetailView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
-    serializer_class = CustomerSerializer
+class CustomerViewMixin(object):
 
-    lookup_field = "id"
-    lookup_url_kwarg = "customer_id"
+    # DRY way of customizing object retrieval for the 2 views below
 
     @property
     def active_managers(self):
@@ -61,6 +57,24 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
             return Customer.objects.none()
 
         return Customer.objects.multiple()
+
+
+class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
+
+    lookup_field = "id"
+    lookup_url_kwarg = "customer_id"
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CustomerSerializer
+
+
+class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
+
+    lookup_field = "id"
+    lookup_url_kwarg = "customer_id"
+
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    serializer_class = CustomerSerializer
 
 
 class CustomerUserFilterSet(filters.FilterSet):
@@ -134,9 +148,7 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
         return customer_user
 
 
-class CustomerUserDetailView(
-    CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
-):
+class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrManager, CannotDeleteSelf]
     serializer_class = CustomerUserSerializer
@@ -150,16 +162,12 @@ class CustomerUserDetailView(
         adapter.send_mail(
             "astrosat_users/email/user_left_customer",
             user.email,
-            {
-                "user": user,
-                "customer": customer,
-            },
+            {"user": user, "customer": customer},
         )
         return destroyed_value
 
-class CustomerUserInviteView(
-    CustomerUserViewMixin, generics.GenericAPIView
-):
+
+class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):
     """
     A special view just for re-sending invitations.
     """

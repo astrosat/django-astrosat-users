@@ -15,7 +15,7 @@ from astrosat.tests.utils import *
 from astrosat_users.tests.factories import CustomerFactory
 from astrosat_users.tests.utils import *
 
-from astrosat_users.models import User
+from astrosat_users.models import User, Customer
 from astrosat_users.serializers import UserSerializerBasic
 
 from .factories import *
@@ -23,6 +23,24 @@ from .factories import *
 
 @pytest.mark.django_db
 class TestCustomerViews:
+
+    def test_create_customer(self, user, mock_storage):
+
+        customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
+        customer_data["type"] = customer_data.pop("customer_type")
+        customer_data.pop("logo")
+
+        _, key = create_auth_token(user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customers-list")
+
+        response = client.post(url, customer_data, format="json")
+        content = response.json()
+
+        assert status.is_success(response.status_code)
+        assert Customer.objects.count() == 1
+        assert str(Customer.objects.first().id) == content["id"]
 
     def test_get_customer(self, user, mock_storage):
 

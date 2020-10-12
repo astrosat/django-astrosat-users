@@ -26,7 +26,8 @@ from .views import (
     VerifyEmailView,
     SendEmailVerificationView,
     UserViewSet,
-    CustomerDetailView,
+    CustomerCreateView,
+    CustomerUpdateView,
     CustomerUserListView,
     CustomerUserDetailView,
     CustomerUserInviteView,
@@ -46,7 +47,10 @@ api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path(
-        "customers/<slug:customer_id>/", CustomerDetailView.as_view(), name="customers-detail"
+        "customers/", CustomerCreateView.as_view(), name="customers-list"
+    ),
+    path(
+        "customers/<slug:customer_id>/", CustomerUpdateView.as_view(), name="customers-detail"
     ),
     path(
         "customers/<slug:customer_id>/users/",
