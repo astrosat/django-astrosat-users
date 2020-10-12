@@ -33,13 +33,10 @@ class CannotDeleteSelf(BasePermission):
 
         return True
 
-class CustomerDetailView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
-    serializer_class = CustomerSerializer
+class CustomerViewMixin(object):
 
-    lookup_field = "id"
-    lookup_url_kwarg = "customer_id"
+    # DRY way of customizing object retrieval for the 2 views below
 
     @property
     def active_managers(self):
@@ -61,6 +58,24 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
             return Customer.objects.none()
 
         return Customer.objects.multiple()
+
+
+class CustomerListView(CustomerViewMixin, generics.CreateAPIView):
+
+    lookup_field = "id"
+    lookup_url_kwarg = "customer_id"
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CustomerSerializer
+
+
+class CustomerDetailView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    serializer_class = CustomerSerializer
+
+    lookup_field = "id"
+    lookup_url_kwarg = "customer_id"
 
 
 class CustomerUserFilterSet(filters.FilterSet):

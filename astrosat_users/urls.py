@@ -26,6 +26,7 @@ from .views import (
     VerifyEmailView,
     SendEmailVerificationView,
     UserViewSet,
+    CustomerListView,
     CustomerDetailView,
     CustomerUserListView,
     CustomerUserDetailView,
@@ -45,6 +46,9 @@ api_router = SimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path(
+        "customers/", CustomerListView.as_view(), name="customers-list"
+    ),
     path(
         "customers/<slug:customer_id>/", CustomerDetailView.as_view(), name="customers-detail"
     ),
