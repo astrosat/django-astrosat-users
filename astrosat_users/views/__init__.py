@@ -10,8 +10,8 @@ from .views_auth import (
     SendEmailVerificationView,
 )
 from .views_customers import (
-    CustomerListView,
-    CustomerDetailView,
+    CustomerCreateView,
+    CustomerUpdateView,
     CustomerUserListView,
     CustomerUserDetailView,
     CustomerUserInviteView,

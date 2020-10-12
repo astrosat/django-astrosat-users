@@ -59,7 +59,7 @@ class CustomerViewMixin(object):
         return Customer.objects.multiple()
 
 
-class CustomerListView(CustomerViewMixin, generics.CreateAPIView):
+class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
 
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
@@ -68,7 +68,7 @@ class CustomerListView(CustomerViewMixin, generics.CreateAPIView):
     serializer_class = CustomerSerializer
 
 
-class CustomerDetailView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
+class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
 
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
