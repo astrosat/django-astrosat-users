@@ -13,8 +13,8 @@ class UserSerializerLite(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "name", "username", "change_password")
-        read_only_fields = ("email", "name", "username", "change_password")
+        fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms")
+        read_only_fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms")
 
 
 class UserSerializerBasic(serializers.ModelSerializer):
