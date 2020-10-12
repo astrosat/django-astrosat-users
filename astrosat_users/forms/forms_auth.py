@@ -67,6 +67,7 @@ class RegistrationForm(AllAuthRegistrationForm):
     field_order = ["email", "password1", "password2", "accepted_terms"]
 
     accepted_terms = forms.BooleanField(label="Accept Terms & Conditions")
+    pending_customer = forms.BooleanField(label="User is Registering as part of a Customer")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

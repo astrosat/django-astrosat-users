@@ -114,6 +114,7 @@ _register_schema = openapi.Schema(
                 openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
             ),
             ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+            ("pending_customer", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
         )
     ),
 )

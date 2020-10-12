@@ -13,8 +13,8 @@ class UserSerializerLite(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms")
-        read_only_fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms")
+        fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms", "pending_customer")
+        read_only_fields = fields  # this marks _all_ fields as read_only
 
 
 class UserSerializerBasic(serializers.ModelSerializer):
@@ -126,6 +126,7 @@ class UserSerializer(UserSerializerBasic):
             "is_active",
             "is_verified",
             "is_approved",
+            "pending_customer",
             "avatar",
             "customers",
         ]
