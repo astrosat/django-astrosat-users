@@ -25,7 +25,10 @@ from .factories import *
 @pytest.mark.django_db
 class TestCustomerViews:
 
-    def test_create_customer(self, user, mock_storage):
+    def test_create_customer_permission(self, user, mock_storage):
+        """
+        ensures that a user w/out a pending_customer cannot create a customer
+        """
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
         customer_data["type"] = customer_data.pop("customer_type")
@@ -36,8 +39,6 @@ class TestCustomerViews:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
 
-        # a user w/out pending_customer cannot create a customer...
-
         assert user.pending_customer is False
 
         response = client.post(url, customer_data, format="json")
@@ -47,7 +48,19 @@ class TestCustomerViews:
         assert Customer.objects.count() == 0
         assert content["detail"] == HasPendingCustomer.message
 
-        # a user w/ pending_customer can create a customer...
+    def test_create_customer(self, user, mock_storage):
+        """
+        ensures that a user w/ a pending_customer can create a customer
+        """
+
+        customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
+        customer_data["type"] = customer_data.pop("customer_type")
+        customer_data.pop("logo")
+
+        _, key = create_auth_token(user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customers-list")
 
         user.pending_customer = True
         user.save()
