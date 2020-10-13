@@ -13,6 +13,16 @@ from astrosat_users.models import Customer, CustomerUser
 from astrosat_users.serializers import CustomerSerializer, CustomerUserSerializer
 
 
+class HasPendingCustomer(BasePermission):
+    """
+    Only a user w/ a pending_customer can create a customer
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+        return user.pending_customer
+
+
 class IsAdminOrManager(BasePermission):
     """
     Only the admin or a Customer Manager can access this view.
@@ -64,9 +74,16 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasPendingCustomer]
     serializer_class = CustomerSerializer
 
+    def perform_create(self, serializer):
+        customer = serializer.save()
+        user = self.request.user
+        if user.pending_customer is True:
+            user.pending_customer = False
+            user.save()
+        return customer
 
 class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
 
