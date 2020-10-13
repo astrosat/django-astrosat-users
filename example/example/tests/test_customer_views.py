@@ -17,6 +17,7 @@ from astrosat_users.tests.utils import *
 
 from astrosat_users.models import User, Customer
 from astrosat_users.serializers import UserSerializerBasic
+from astrosat_users.views.views_customers import HasPendingCustomer, IsAdminOrManager
 
 from .factories import *
 
@@ -44,6 +45,7 @@ class TestCustomerViews:
 
         assert status.is_client_error(response.status_code)
         assert Customer.objects.count() == 0
+        assert content["detail"] == HasPendingCustomer.message
 
         # a user w/ pending_customer can create a customer...
 
@@ -200,7 +202,7 @@ class TestCustomerViews:
         assert test_user.customer_users.count() == 0
 
     def test_member_cannot_access_customers(self, user, mock_storage):
-        # tests that a customer MEMBER (not MANAGER) cannot access the Customers API
+        # tests that a customer MEMBER (not MANAGER) cannot access the Customers nor CustomerUsers API
 
         customer = CustomerFactory(logo=None)
         (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
@@ -215,12 +217,12 @@ class TestCustomerViews:
         response = client.get(customer_url, format="json")
         content = response.json()
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == "You do not have permission to perform this action."
+        assert content["detail"] == IsAdminOrManager.message
 
         response = client.get(customer_users_url, format="json")
         content = response.json()
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == "You do not have permission to perform this action."
+        assert content["detail"] == IsAdminOrManager.message
 
     def test_add_existing_customer_user(self, admin, mock_storage):
 

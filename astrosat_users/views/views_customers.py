@@ -18,6 +18,8 @@ class HasPendingCustomer(BasePermission):
     Only a user w/ a pending_customer can create a customer
     """
 
+    message = "Only a user that registered as a 'team' can perform this action."
+
     def has_permission(self, request, view):
         user = request.user
         return user.pending_customer
@@ -28,6 +30,8 @@ class IsAdminOrManager(BasePermission):
     Only the admin or a Customer Manager can access this view.
     (Relies on the property "active_managers" in the views below.)
     """
+
+    message = "Only a customer manager can perform this action."
 
     def has_permission(self, request, view):
         user = request.user
