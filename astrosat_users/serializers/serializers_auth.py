@@ -39,7 +39,7 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
     is_verified = serializers.BooleanField(read_only=True)
     is_approved = serializers.BooleanField(read_only=True)
     accepted_terms = serializers.BooleanField(read_only=True)
-    pending_customer = serializers.BooleanField(read_only=True)
+    requires_customer_registration_completion = serializers.BooleanField(read_only=True)
     change_password = serializers.BooleanField(read_only=True)
 
     # (even though I don't need the 'username' field, the 'validate()' fn checks its value)
@@ -178,7 +178,7 @@ class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSeri
 
     # add extra fields...
     accepted_terms = serializers.BooleanField()
-    pending_customer = serializers.BooleanField(default=False)
+    requires_customer_registration_completion = serializers.BooleanField(default=False)
 
     def validate_accepted_terms(self, value):
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not value:

@@ -13,16 +13,16 @@ from astrosat_users.models import Customer, CustomerUser
 from astrosat_users.serializers import CustomerSerializer, CustomerUserSerializer
 
 
-class HasPendingCustomer(BasePermission):
+class RequiresCustomerRegistrationCompletion(BasePermission):
     """
-    Only a user w/ a pending_customer can create a customer
+    Only a user w/ requires_customer_registration_completion can create a customer
     """
 
     message = "Only a user that registered as a 'team' can perform this action."
 
     def has_permission(self, request, view):
         user = request.user
-        return user.pending_customer
+        return user.requires_customer_registration_completion
 
 
 class IsAdminOrManager(BasePermission):
@@ -78,14 +78,14 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
 
-    permission_classes = [IsAuthenticated, HasPendingCustomer]
+    permission_classes = [IsAuthenticated, RequiresCustomerRegistrationCompletion]
     serializer_class = CustomerSerializer
 
     def perform_create(self, serializer):
         customer = serializer.save()
         user = self.request.user
-        if user.pending_customer is True:
-            user.pending_customer = False
+        if user.requires_customer_registration_completion is True:
+            user.requires_customer_registration_completion = False
             user.save()
         return customer
 

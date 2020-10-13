@@ -64,10 +64,10 @@ class PasswordResetForm(AllAuthPasswordResetForm):
 
 class RegistrationForm(AllAuthRegistrationForm):
 
-    field_order = ["email", "password1", "password2", "pending_customer", "accepted_terms"]
+    field_order = ["email", "password1", "password2", "requires_customer_registration_completion", "accepted_terms"]
 
     accepted_terms = forms.BooleanField(label="Accept Terms & Conditions")
-    pending_customer = forms.BooleanField(label="User is Registering as part of a Customer", required=False)
+    requires_customer_registration_completion = forms.BooleanField(label="User is Registering as part of a Team", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -17,7 +17,7 @@ from astrosat_users.tests.utils import *
 
 from astrosat_users.models import User, Customer
 from astrosat_users.serializers import UserSerializerBasic
-from astrosat_users.views.views_customers import HasPendingCustomer, IsAdminOrManager
+from astrosat_users.views.views_customers import RequiresCustomerRegistrationCompletion, IsAdminOrManager
 
 from .factories import *
 
@@ -27,7 +27,7 @@ class TestCustomerViews:
 
     def test_create_customer_permission(self, user, mock_storage):
         """
-        ensures that a user w/out a pending_customer cannot create a customer
+        ensures that a user w/out requires_customer_registration_completion cannot create a customer
         """
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
@@ -39,18 +39,18 @@ class TestCustomerViews:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
 
-        assert user.pending_customer is False
+        assert user.requires_customer_registration_completion is False
 
         response = client.post(url, customer_data, format="json")
         content = response.json()
 
         assert status.is_client_error(response.status_code)
         assert Customer.objects.count() == 0
-        assert content["detail"] == HasPendingCustomer.message
+        assert content["detail"] == RequiresCustomerRegistrationCompletion.message
 
     def test_create_customer(self, user, mock_storage):
         """
-        ensures that a user w/ a pending_customer can create a customer
+        ensures that a user w/ requires_customer_registration_completion can create a customer
         """
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
@@ -62,7 +62,7 @@ class TestCustomerViews:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
 
-        user.pending_customer = True
+        user.requires_customer_registration_completion = True
         user.save()
 
         response = client.post(url, customer_data, format="json")

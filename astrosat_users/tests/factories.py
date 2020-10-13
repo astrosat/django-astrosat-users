@@ -28,8 +28,8 @@ class UserFactory(factory.django.DjangoModelFactory):
     email = FactoryFaker("email")
     name = FactoryFaker("name")
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    requires_customer_registration_completion = False
     accepted_terms = True
-    pending_customer = False
     is_approved = False
 
     @factory.lazy_attribute
