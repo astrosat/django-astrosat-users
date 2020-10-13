@@ -57,6 +57,9 @@ class User(AbstractUser):
     accepted_terms = models.BooleanField(
         default=False, help_text=_("Has this user accepted the terms & conditions?")
     )
+    requires_customer_registration_completion = models.BooleanField(
+        default=False, help_text=_("Is this user in the middle of creating a customer? Did they register as a 'team'?")
+    )
     latest_confirmation_key = models.CharField(
         blank=True,
         null=True,

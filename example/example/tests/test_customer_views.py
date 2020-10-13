@@ -17,6 +17,7 @@ from astrosat_users.tests.utils import *
 
 from astrosat_users.models import User, Customer
 from astrosat_users.serializers import UserSerializerBasic
+from astrosat_users.views.views_customers import RequiresCustomerRegistrationCompletion, IsAdminOrManager
 
 from .factories import *
 
@@ -24,7 +25,10 @@ from .factories import *
 @pytest.mark.django_db
 class TestCustomerViews:
 
-    def test_create_customer(self, user, mock_storage):
+    def test_create_customer_permission(self, user, mock_storage):
+        """
+        ensures that a user w/out requires_customer_registration_completion cannot create a customer
+        """
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
         customer_data["type"] = customer_data.pop("customer_type")
@@ -34,6 +38,32 @@ class TestCustomerViews:
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
+
+        assert user.requires_customer_registration_completion is False
+
+        response = client.post(url, customer_data, format="json")
+        content = response.json()
+
+        assert status.is_client_error(response.status_code)
+        assert Customer.objects.count() == 0
+        assert content["detail"] == RequiresCustomerRegistrationCompletion.message
+
+    def test_create_customer(self, user, mock_storage):
+        """
+        ensures that a user w/ requires_customer_registration_completion can create a customer
+        """
+
+        customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
+        customer_data["type"] = customer_data.pop("customer_type")
+        customer_data.pop("logo")
+
+        _, key = create_auth_token(user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customers-list")
+
+        user.requires_customer_registration_completion = True
+        user.save()
 
         response = client.post(url, customer_data, format="json")
         content = response.json()
@@ -185,7 +215,7 @@ class TestCustomerViews:
         assert test_user.customer_users.count() == 0
 
     def test_member_cannot_access_customers(self, user, mock_storage):
-        # tests that a customer MEMBER (not MANAGER) cannot access the Customers API
+        # tests that a customer MEMBER (not MANAGER) cannot access the Customers nor CustomerUsers API
 
         customer = CustomerFactory(logo=None)
         (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
@@ -200,12 +230,12 @@ class TestCustomerViews:
         response = client.get(customer_url, format="json")
         content = response.json()
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == "You do not have permission to perform this action."
+        assert content["detail"] == IsAdminOrManager.message
 
         response = client.get(customer_users_url, format="json")
         content = response.json()
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == "You do not have permission to perform this action."
+        assert content["detail"] == IsAdminOrManager.message
 
     def test_add_existing_customer_user(self, admin, mock_storage):
 

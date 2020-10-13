@@ -36,11 +36,12 @@ class IsAdminOrSelf(BasePermission):
 class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
-        fields = ["is_active", "is_approved", "accepted_terms", "is_verified"]
+        fields = ["is_active", "is_approved", "accepted_terms", "requires_customer_registration_completion", "is_verified"]
 
     is_active = BetterBooleanFilter()
     is_approved = BetterBooleanFilter()
     accepted_terms = BetterBooleanFilter()
+    requires_customer_registration_completion = BetterBooleanFilter()
     is_verified = filters.Filter(method="filter_is_verified")
 
     roles__any = filters.Filter(method="filter_roles_or")
