@@ -134,11 +134,12 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         can be `None` here.
         """
         if self.is_api:
-            # TODO: ASK MARK WHAT THIS SHOULD BE?!?
+            # if the user registered via the API, then get the URL that the client should use
             path = app_settings.ACCOUNT_CONFIRM_EMAIL_CLIENT_URL.format(
                 key=emailconfirmation.key
             )
         else:
+            # otherwise, just use the builtin allauth view
             path = reverse("account_confirm_email", args=[emailconfirmation.key])
 
         if self.is_api and "HTTP_ORIGIN" in request.META:
