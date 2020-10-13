@@ -99,16 +99,18 @@ class TestApiRegistration:
         response = client.post(self.registration_url, test_data)
         assert status.is_success(response.status_code)
 
-    def test_registration_sends_confirmation_email(self, user_data):
+    def test_registration_sends_confirmation_email_individual(self, user_data):
         """
-        Tests that registering a user sends a single email
+        Tests that registering a user sends an email w/ the correct client url
         """
-        client = APIClient()
+                client = APIClient()
 
         test_data = {
             "email": user_data["email"],
             "password1": user_data["password"],
             "password2": user_data["password"],
+            "requires_customer_registration_completion": False
+
         }
 
         assert len(mail.outbox) == 0
@@ -118,7 +120,39 @@ class TestApiRegistration:
 
         confirmation_url = build_absolute_uri(
             response.wsgi_request,
-            app_settings.ACCOUNT_CONFIRM_EMAIL_CLIENT_URL.format(
+            app_settings.ACCOUNT_CONFIRM_EMAIL_FOR_INDIVIDUAL_CUSTOMER_CLIENT_URL.format(
+                key=user.latest_confirmation_key
+            ),
+        )
+        assert len(mail.outbox) == 1
+        email = mail.outbox[0]
+
+        assert test_data["email"] in email.to
+        assert confirmation_url in email.body
+
+    def test_registration_sends_confirmation_email_multiple(self, user_data):
+        """
+        Tests that registering a user who signed up w/ the intention of creating a
+        "multiple" customer sends an email w/ the correct client url
+        """
+        client = APIClient()
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+            "requires_customer_registration_completion": True
+
+        }
+
+        assert len(mail.outbox) == 0
+        response = client.post(self.registration_url, test_data)
+
+        user = UserModel.objects.get(email=test_data["email"])
+
+        confirmation_url = build_absolute_uri(
+            response.wsgi_request,
+            app_settings.ACCOUNT_CONFIRM_EMAIL_FOR_MULTIPLE_CUSTOMER_CLIENT_URL.format(
                 key=user.latest_confirmation_key
             ),
         )

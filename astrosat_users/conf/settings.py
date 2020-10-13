@@ -15,12 +15,18 @@ PROJECT_SLUG = getattr(settings, "PROJECT_SLUG", slugify(PROJECT_NAME))
 PROJECT_EMAIL = getattr(settings, "PROJECT_EMAIL", "{role}@astrosat.net")
 
 
-ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = getattr(
-    settings, "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", "verify-email/?key={key}"
+ACCOUNT_CONFIRM_EMAIL_FOR_INDIVIDUAL_CUSTOMER_CLIENT_URL = getattr(
+    settings, "ACCOUNT_CONFIRM_EMAIL_FOR_INDIVIDUAL_CUSTOMER_CLIENT_URL", "verify-email/individual/?key={key}"
 )
+
+ACCOUNT_CONFIRM_EMAIL_FOR_MULTIPLE_CUSTOMER_CLIENT_URL = getattr(
+    settings, "ACCOUNT_CONFIRM_EMAIL_FOR_MULTIPLE_CUSTOMER_CLIENT_URL", "verify-email/multiple/?key={key}"
+)
+
 ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = getattr(
     settings, "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", "confirm-pwd/?key={key}&uid={uid}"
 )
+
 
 PASSWORD_MIN_LENGTH = getattr(
     settings,
@@ -49,6 +55,7 @@ PASSWORD_STRENGTH = getattr(
     ),
 )
 
+
 ASTROSAT_USERS_REQUIRE_VERIFICATION = getattr(
     settings,
     "ASTROSAT_USERS_REQUIRE_VERIFICATION",
@@ -76,6 +83,7 @@ ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE = getattr(
     ),
 )
 
+
 ASTROSAT_USERS_ALLOW_REGISTRATION = getattr(
     settings,
     "ASTROSAT_USERS_ALLOW_REGISTRATION",
@@ -93,6 +101,7 @@ ASTROSAT_USERS_ENABLE_BACKEND_ACCESS = getattr(
         env("DJANGO_ASTROSAT_USERS_ENABLE_BACKEND_ACCESS", default=True),
     ),
 )
+
 
 ASTROSAT_USERS_NOTIFY_SIGNUPS = getattr(
     settings,

@@ -133,12 +133,21 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         confirmations are sent outside of the request context `request`
         can be `None` here.
         """
+
         if self.is_api:
-            # TODO: ASK MARK WHAT THIS SHOULD BE?!?
-            path = app_settings.ACCOUNT_CONFIRM_EMAIL_CLIENT_URL.format(
-                key=emailconfirmation.key
-            )
+            # if the user registered via the API, then get the URL that the client should use
+            # (this can differ based on whether they are setting up a "multiple" or "individual" customer)
+            user = emailconfirmation.email_address.user
+            if user.requires_customer_registration_completion:
+                path = app_settings.ACCOUNT_CONFIRM_EMAIL_FOR_MULTIPLE_CUSTOMER_CLIENT_URL.format(
+                    key=emailconfirmation.key
+                )
+            else:
+                path = app_settings.ACCOUNT_CONFIRM_EMAIL_FOR_INDIVIDUAL_CUSTOMER_CLIENT_URL.format(
+                    key=emailconfirmation.key
+                )
         else:
+            # otherwise, just use the builtin allauth view
             path = reverse("account_confirm_email", args=[emailconfirmation.key])
 
         if self.is_api and "HTTP_ORIGIN" in request.META:
