@@ -180,6 +180,9 @@ class TestApiRegistration:
         assert status.is_success(response.status_code)
         assert user.is_verified is True
 
+        content = response.json()
+        assert user.username == content["user"]["username"]
+
     def test_resend_verify_email(self, user):
 
         assert user.is_verified is False

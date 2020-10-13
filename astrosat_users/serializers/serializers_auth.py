@@ -209,6 +209,7 @@ class VerifyEmailSerializer(ConsolidatedErrorsSerializerMixin, serializers.Seria
             )  # little hack here b/c I'm using a view outside a request
             emailconfirmation = view.get_object()
             data["confirmation"] = emailconfirmation
+            data["user"] = emailconfirmation.email_address.user
         except Exception:
             raise serializers.ValidationError("This is an invalid key.")
 

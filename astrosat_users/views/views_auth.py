@@ -251,7 +251,12 @@ class VerifyEmailView(RestAuthVerifyEmailView):
         confirmation = serializer.validated_data["confirmation"]
         confirmation.confirm(self.request)
 
-        return Response({"detail": _("ok")}, status=status.HTTP_200_OK)
+        response = {
+            "detail": _("ok"),
+            "user": UserSerializerLite(instance=serializer.validated_data["user"]).data,
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class SendEmailVerificationView(GenericAPIView):
