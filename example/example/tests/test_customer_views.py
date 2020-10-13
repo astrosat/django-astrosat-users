@@ -35,6 +35,21 @@ class TestCustomerViews:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
 
+        # a user w/out pending_customer cannot create a customer...
+
+        assert user.pending_customer is False
+
+        response = client.post(url, customer_data, format="json")
+        content = response.json()
+
+        assert status.is_client_error(response.status_code)
+        assert Customer.objects.count() == 0
+
+        # a user w/ pending_customer can create a customer...
+
+        user.pending_customer = True
+        user.save()
+
         response = client.post(url, customer_data, format="json")
         content = response.json()
 
