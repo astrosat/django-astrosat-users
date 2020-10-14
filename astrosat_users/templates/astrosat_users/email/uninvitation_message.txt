@@ -1,0 +1,15 @@
+{# used for notifying a user that they have been removed from a customer #}
+
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi, you are no longer a member of {{ customer.title }}.
+
+  {% endautoescape %}
+
+{% endblock %}

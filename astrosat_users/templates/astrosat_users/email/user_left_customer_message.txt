@@ -1,9 +1,0 @@
-{% extends "astrosat_users/email/message_base.txt" %}
-
-{% block body %}
-
-    Hi,
-
-    You are no longer a member of {{ customer.title }}.
-
-{% endblock %}

@@ -167,10 +167,8 @@ class CustomerUser(models.Model):
 
         user = self.user
         customer = self.customer
-        context.update({
-            "user": user,
-            "customer": customer,
-        })
+        context["user"] = user
+        context["customer"] = customer
 
         if user.change_password:
             token_generator = kwargs.get("token_generator", adapter.default_token_generator)
@@ -188,3 +186,21 @@ class CustomerUser(models.Model):
 
         self.invitation_date = timezone.now()
         self.save()
+
+    def uninvite(self, **kwargs):
+
+        adapter = kwargs.get("adapter", get_adapter())
+        context = kwargs.get("context", {})
+        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/uninvitation")
+
+        user = self.user
+        customer = self.customer
+        context["user"] = user
+        context["customer"] = customer
+
+        adapter.send_mail(template_prefix, user.email, context)
+
+        # Note: "CustomerUserDetailView.perform_destroy" usually does the actual deletion
+        # This fn only deletes the CustomerUser if "force_deletion=True"
+        if kwargs.get("force_deletion", False):
+            return self.delete()
