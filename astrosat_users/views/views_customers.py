@@ -175,8 +175,9 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
     serializer_class = CustomerUserSerializer
 
     def perform_destroy(self, instance):
-        instance.uninvite(adapter=get_adapter(self.request))
-        return super().perform_destroy(instance)
+        deleted_instances = instance.uninvite(adapter=get_adapter(self.request))
+        if not(deleted_instances):  # only proceed w/ the deletion if "uninvite" hasn't already done it
+            return super().perform_destroy(instance)
 
 
 class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):

@@ -204,5 +204,7 @@ class CustomerUser(models.Model):
 
         adapter.send_mail(template_prefix, user.email, context)
 
-        # Note: This fn just sends the uninvitation notification;
-        # CustomerUserDetailView.perform_destroy does the actual deletion
+        # Note: "CustomerUserDetailView.perform_destroy" usually does the actual deletion
+        # This fn only deletes the CustomerUser if "force_deletion=True"
+        if kwargs.get("force_deletion", False):
+            return self.delete()
