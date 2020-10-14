@@ -167,10 +167,8 @@ class CustomerUser(models.Model):
 
         user = self.user
         customer = self.customer
-        context.update({
-            "user": user,
-            "customer": customer,
-        })
+        context["user"] = user
+        context["customer"] = customer
 
         if user.change_password:
             token_generator = kwargs.get("token_generator", adapter.default_token_generator)
@@ -197,10 +195,8 @@ class CustomerUser(models.Model):
 
         user = self.user
         customer = self.customer
-        context.update({
-            "user": user,
-            "customer": customer,
-        })
+        context["user"] = user
+        context["customer"] = customer
 
         adapter.send_mail(template_prefix, user.email, context)
 
