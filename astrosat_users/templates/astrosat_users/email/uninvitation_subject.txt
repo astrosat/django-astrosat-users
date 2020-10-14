@@ -1,0 +1,11 @@
+{# used for notifying a user that they have been removd from a customer #}
+
+{% load i18n %}
+
+{% autoescape off %}
+
+{% blocktrans %}
+  Update on your account
+{% endblocktrans %}
+
+{% endautoescape %}

@@ -188,3 +188,21 @@ class CustomerUser(models.Model):
 
         self.invitation_date = timezone.now()
         self.save()
+
+    def uninvite(self, **kwargs):
+
+        adapter = kwargs.get("adapter", get_adapter())
+        context = kwargs.get("context", {})
+        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/uninvitation")
+
+        user = self.user
+        customer = self.customer
+        context.update({
+            "user": user,
+            "customer": customer,
+        })
+
+        adapter.send_mail(template_prefix, user.email, context)
+
+        # Note: This fn just sends the uninvitation notification;
+        # CustomerUserDetailView.perform_destroy does the actual deletion

@@ -175,17 +175,8 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
     serializer_class = CustomerUserSerializer
 
     def perform_destroy(self, instance):
-        user = instance.user
-        customer = instance.customer
-        destroyed_value = super().perform_destroy(instance)
-        # notify the user that they've been removed from the customer
-        adapter = get_adapter(self.request)
-        adapter.send_mail(
-            "astrosat_users/email/user_left_customer",
-            user.email,
-            {"user": user, "customer": customer},
-        )
-        return destroyed_value
+        instance.uninvite(adapter=get_adapter(self.request))
+        return super().perform_destroy(instance)
 
 
 class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):

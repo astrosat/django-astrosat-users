@@ -1,24 +1,30 @@
 {# used for notifying a user that they have been added to a customer #}
 {# and potentially telling them to reset their password #}
 
+{% extends "astrosat_users/email/message_base.txt" %}
+
 {% load i18n %}
 
-{% autoescape off %}
+{% block body %}
 
-  Hi, you have been invited to {{ customer.title }}.
+  {% autoescape off %}
 
-  {% if password_reset_url %}
+    Hi, you have been invited to {{ customer.title }}.
 
-    Please follow the link below to create a User Account and Password.
+    {% if password_reset_url %}
 
-    {{ password_reset_url }}
+      Please follow the link below to create a User Account and Password.
 
-  {% endif %}
+      {{ password_reset_url }}
 
-  {% if username %}
-    {% blocktrans %}
-      In case you forgot, your username is {{ username }}.
-    {% endblocktrans %}
-  {% endif %}
+    {% endif %}
 
-{% endautoescape %}
+    {% if username %}
+      {% blocktrans %}
+        In case you forgot, your username is {{ username }}.
+      {% endblocktrans %}
+    {% endif %}
+
+  {% endautoescape %}
+
+{% endblock %}
