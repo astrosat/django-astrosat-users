@@ -8,7 +8,7 @@
 
   {% autoescape off %}
 
-    Hi, you are no longer a member of {{ customer.title }}.
+    Hi, you are no longer a member of {{ customer.name }}.
 
   {% endautoescape %}
 

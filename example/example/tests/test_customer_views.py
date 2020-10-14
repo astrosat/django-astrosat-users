@@ -55,6 +55,7 @@ class TestCustomerViews:
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
         customer_data["type"] = customer_data.pop("customer_type")
+        customer_data["comp_type"] = customer_data.pop("company_type")
         customer_data.pop("logo")
 
         _, key = create_auth_token(user)
@@ -449,7 +450,6 @@ class TestCustomerViews:
         assert len(mail.outbox) == 2
         assert RESET_PASSWORD_TEXT in mail.outbox[0].body
         assert RESET_PASSWORD_TEXT in mail.outbox[1].body
-
 
     def test_resend_invitation_existing_customer_user(self, admin, user, mock_storage):
 
