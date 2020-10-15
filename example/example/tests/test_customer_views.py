@@ -55,7 +55,6 @@ class TestCustomerViews:
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
         customer_data["type"] = customer_data.pop("customer_type")
-        customer_data["comp_type"] = customer_data.pop("company_type")
         customer_data.pop("logo")
 
         _, key = create_auth_token(user)

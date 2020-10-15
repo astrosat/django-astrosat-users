@@ -13,11 +13,10 @@ from .serializers_auth import RegisterSerializer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("id", "type", "name", "official_name", "comp_type", "registered_id","description", "logo", "url", "country", "address", "postcode")
+        fields = ("id", "type", "name", "official_name", "company_type", "registered_id","description", "logo", "url", "country", "address", "postcode")
 
     id = serializers.UUIDField(read_only=True)
     type = serializers.CharField(source="customer_type")
-    comp_type = serializers.CharField(source="company_type")
 
 
 class CustomerUserSerializer(serializers.ModelSerializer):
