@@ -81,7 +81,6 @@ class Customer(models.Model):
     official_name = models.CharField(unique=True, blank=True, null=True, max_length=128)
     company_type = models.CharField(
         choices=CompanyTypes.choices,
-        unique=True,
         blank=True,
         null=True,
         max_length=64
