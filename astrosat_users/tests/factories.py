@@ -16,7 +16,6 @@ from astrosat_users.models import User, UserRole, UserPermission, Customer
 from astrosat_users.models.models_customers import CustomerType
 from astrosat_users.tests.utils import *
 
-
 FactoryFaker.add_provider(PrettyLoremProvider)
 
 
@@ -43,6 +42,7 @@ class UserFactory(factory.django.DjangoModelFactory):
             content=b"I am a fake image",
             content_type="image/png",
         )
+
     @factory.post_generation
     def password(self, create: bool, extracted: Sequence[Any], **kwargs):
         password = generate_password()
@@ -128,8 +128,12 @@ class CustomerFactory(factory.django.DjangoModelFactory):
 
     customer_type = CustomerType.MULTIPLE
 
-    name = factory.LazyAttributeSequence(lambda o, n: f"{slugify(o.title)}-{n}")
-    title = FactoryFaker("pretty_sentence", nb_words=2)
+    name = FactoryFaker("name")
+    official_name = FactoryFaker("name")
+    company_type = Customer.CompanyTypes.NON_PROFIT
+    registered_id = factory.LazyAttributeSequence(
+        lambda o, n: f"{slugify(o.name)}-{n}"
+    )
     description = FactoryFaker("text")
     url = FactoryFaker("url")
 

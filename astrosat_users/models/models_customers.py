@@ -46,6 +46,23 @@ class Customer(models.Model):
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
 
+    class CompanyTypes(models.TextChoices):
+        NON_PROFIT = 'NON_PROFIT', _('Non-Profit Organisation')
+        LOCAL_AUTHORITY = 'LOCAL_AUTHORITY', _('Local Authority')
+        GOV_AND_EXEC_AGENCIES = 'GOV_AND_EXEC_AGENCIES', _(
+            'Government & Executive Agencies'
+        )
+        NON_DEPT_PUBLIC_BODY = 'NON_DEPT_PUBLIC_BODY', _(
+            'Non Departmental Public Body'
+        )
+        PUBLIC_CORP = 'PUBLIC_CORP', _('Public Corporation')
+        HEALTH_AND_CARE = 'HEALTH_AND_CARE', _('Health & Care')
+        CHARITY = 'CHARITY', _('Charity')
+        ACADEMICS_OR_EDUCATION = 'ACADEMICS_OR_EDUCATION', _(
+            'Academics, School or any kind of Education'
+        )
+        OTHER = 'OTHER', _('Other')
+
     objects = CustomerQuerySet.as_manager()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -60,8 +77,16 @@ class Customer(models.Model):
         max_length=64, choices=CustomerType.choices, default=CustomerType.MULTIPLE
     )
 
-    name = models.SlugField(unique=True, blank=False, null=False)
-    title = models.CharField(max_length=128, blank=False, null=False)
+    name = models.CharField( unique=True, blank=False, null=False, max_length=128)
+    official_name = models.CharField(unique=True, blank=True, null=True, max_length=128)
+    company_type = models.CharField(
+        choices=CompanyTypes.choices,
+        unique=True,
+        blank=True,
+        null=True,
+        max_length=64
+    )
+    registered_id = models.CharField(unique=True, blank=True, null=True, max_length=128)
     description = models.TextField(blank=True, null=True)
     logo = models.FileField(upload_to=customer_logo_path, blank=True, null=True)
     url = models.URLField(blank=True, null=True)
@@ -74,7 +99,6 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
-
 
     def add_user(self, user, **kwargs):
         user, created = self.customer_users.add_user(user, **kwargs)

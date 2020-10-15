@@ -23,7 +23,9 @@ class CustomerAdmin(admin.ModelAdmin):
         "is_active",
         "customer_type",
         "name",
-        "title",
+        "official_name",
+        "company_type",
+        "registered_id",
         "description",
         "logo",
         "url",
@@ -35,4 +37,4 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ("name", "customer_type")
     list_filter = ("customer_type",)
     readonly_fields = ("id",)
-    search_fields = ("name", "title")
+    search_fields = ("name", "official_name")

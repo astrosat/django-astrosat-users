@@ -9,7 +9,7 @@
 
   {% autoescape off %}
 
-    Hi, you have been invited to {{ customer.title }}.
+    Hi, you have been invited to {{ customer.name }}.
 
     {% if password_reset_url %}
 
