@@ -13,7 +13,7 @@ from astrosat.tests.utils import optional_declaration
 
 from allauth.account.models import EmailAddress
 from astrosat_users.models import User, UserRole, UserPermission, Customer
-from astrosat_users.models.models_customers import CompanyTypes, CustomerType
+from astrosat_users.models.models_customers import CustomerType
 from astrosat_users.tests.utils import *
 
 FactoryFaker.add_provider(PrettyLoremProvider)
@@ -130,7 +130,7 @@ class CustomerFactory(factory.django.DjangoModelFactory):
 
     name = FactoryFaker("name")
     official_name = FactoryFaker("name")
-    company_type = CompanyTypes.NON_PROFIT
+    company_type = Customer.CompanyTypes.NON_PROFIT
     registered_id = factory.LazyAttributeSequence(
         lambda o, n: f"{slugify(o.name)}-{n}"
     )

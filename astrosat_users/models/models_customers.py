@@ -40,29 +40,28 @@ class CustomerQuerySet(models.QuerySet):
         return self.filter(customer_type=CustomerType.MULTIPLE)
 
 
-class CompanyTypes(models.TextChoices):
-    NON_PROFIT = 'NON_PROFIT', _('Non-Profit Organisation')
-    LOCAL_AUTHORITY = 'LOCAL_AUTHORITY', _('Local Authority')
-    GOV_AND_EXEC_AGENCIES = 'GOV_AND_EXEC_AGENCIES', _(
-        'Government & Executive Agencies'
-    )
-    NON_DEPT_PUBLIC_BODY = 'NON_DEPT_PUBLIC_BODY', _(
-        'Non Departmental Public Body'
-    )
-    PUBLIC_CORP = 'PUBLIC_CORP', _('Public Corporation')
-    HEALTH_AND_CARE = 'HEALTH_AND_CARE', _('Health & Care')
-    CHARITY = 'CHARITY', _('Charity')
-    ACADEMICS_OR_EDUCATION = 'ACADEMICS_OR_EDUCATION', _(
-        'Academics, School or any kind of Education'
-    )
-    OTHER = 'OTHER', _('Other')
-
-
 class Customer(models.Model):
     class Meta:
         # abstract = True
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
+
+    class CompanyTypes(models.TextChoices):
+        NON_PROFIT = 'NON_PROFIT', _('Non-Profit Organisation')
+        LOCAL_AUTHORITY = 'LOCAL_AUTHORITY', _('Local Authority')
+        GOV_AND_EXEC_AGENCIES = 'GOV_AND_EXEC_AGENCIES', _(
+            'Government & Executive Agencies'
+        )
+        NON_DEPT_PUBLIC_BODY = 'NON_DEPT_PUBLIC_BODY', _(
+            'Non Departmental Public Body'
+        )
+        PUBLIC_CORP = 'PUBLIC_CORP', _('Public Corporation')
+        HEALTH_AND_CARE = 'HEALTH_AND_CARE', _('Health & Care')
+        CHARITY = 'CHARITY', _('Charity')
+        ACADEMICS_OR_EDUCATION = 'ACADEMICS_OR_EDUCATION', _(
+            'Academics, School or any kind of Education'
+        )
+        OTHER = 'OTHER', _('Other')
 
     objects = CustomerQuerySet.as_manager()
 
