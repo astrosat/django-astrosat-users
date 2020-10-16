@@ -1,0 +1,31 @@
+name: TEST
+
+on:
+  push: {}
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.7.7
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Container
+        run: |
+          apt-get update && apt-get install -y postgresql-client python3-gdal
+          pip3 install --upgrade --no-cache-dir "pip==19.1.1"
+          pip3 install --upgrade --no-cache-dir pipenv
+
+      - name: Setup Environment
+        working-directory: example
+        run: |
+          pipenv install --dev
+          pipenv run ./manage.py migrate --noinput
+          pipenv run ./manage.py collectstatic --noinput
+
+      - name: Run Tests
+        working-directory: example
+        run: |
+          pipenv run pytest
