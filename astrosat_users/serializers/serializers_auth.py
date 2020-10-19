@@ -24,10 +24,6 @@ from astrosat_users.conf import app_settings
 from astrosat_users.models import User
 from astrosat_users.utils import rest_decode_user_pk
 
-from .serializers_users import (
-    UserSerializerLite,
-)  # explicit import to prevent circular dependencies
-
 
 class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer):
 
@@ -48,26 +44,19 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
     def validate(self, attrs):
         """
         Does the usual login validation, but as w/ LoginForm it adds some explicit checks for astrosat_users-specific stuff
-        (this is the right place to put it; the KnoxLoginView has its own KnoxTokenSerializer for users _and_ tokens,
-        but it uses this serializer for the user and so validation will be checked when processing the view.)
+        (this is the right place to put it; the KnoxLoginView has its own KnoxTokenSerializer for users and tokens,
+        but that uses this serializer for the user and so validation will be checked when processing the view.)
         """
-
-        instance = super().validate(attrs)
-
-        user = instance["user"]
-        user_serializer = UserSerializerLite(user)
+        self.instance = super().validate(attrs)
 
         adapter = get_adapter(self.context.get("request"))
         try:
-            adapter.check_user(user)
+            adapter.check_user(self.instance["user"])
         except Exception as e:
-            msg = {
-                "user": user_serializer.data,
-                drf_settings.NON_FIELD_ERRORS_KEY: str(e),
-            }
+            msg = {drf_settings.NON_FIELD_ERRORS_KEY: str(e)}
             raise ValidationError(msg)
 
-        return instance
+        return self.instance
 
 
 class PasswordChangeSerializer(
