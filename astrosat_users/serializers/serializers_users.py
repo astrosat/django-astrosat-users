@@ -13,7 +13,16 @@ class UserSerializerLite(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "name", "username", "change_password", "is_verified", "is_approved", "accepted_terms", "requires_customer_registration_completion")
+        fields = (
+            "email",
+            "name",
+            "username",
+            "change_password",
+            "is_verified",
+            "is_approved",
+            "accepted_terms",
+            "requires_customer_registration_completion",
+        )
         read_only_fields = fields  # this marks _all_ fields as read_only
 
 
@@ -40,7 +49,11 @@ class UserSerializerBasic(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True, source="uuid")
     profiles = serializers.SerializerMethodField()
     roles = serializers.SlugRelatedField(
-        allow_null=True, many=True, queryset=UserRole.objects.all(), required=False, slug_field="name"
+        allow_null=True,
+        many=True,
+        queryset=UserRole.objects.all(),
+        required=False,
+        slug_field="name",
     )
     permissions = serializers.SerializerMethodField()
 

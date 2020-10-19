@@ -114,7 +114,10 @@ _register_schema = openapi.Schema(
                 openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
             ),
             ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
-            ("requires_customer_registration_completion", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+            (
+                "requires_customer_registration_completion",
+                openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            ),
         )
     ),
 )
@@ -140,17 +143,34 @@ class LoginView(RestAuthLoginView):
 
     permission_classes = [IsNotAuthenticated]
 
-    def get_response(self):
-        # note that this uses the KnoxTokenSerializer
-        # which has custom token validation
-        # which includes the LoginSerializer
-        # which adds extra astrosat_users validation
+    def get_success_response(self):
+        # this creates a response based on the KnoxTokenSerializer
+        # (and its nested LoginSerializer)
         serializer_class = self.get_response_serializer()
-
         data = {"user": self.user, "token": self.token}
         serializer = serializer_class(instance=data, context={"request": self.request})
-
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_error_response(self):
+        # this creates a response based on the state of the LoginSerializer
+        # (w/ some minimal user info as needed)
+        error_details = self.serializer.errors
+        if self.serializer.instance is not None:
+            user_serializer_lite = UserSerializerLite(
+                self.serializer.instance.get("user")
+            )
+            error_details["user"] = user_serializer_lite.data
+        return Response(error_details, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, *args, **kwargs):
+        self.request = request
+        self.serializer = self.get_serializer(data=self.request.data)
+        # the base class automatically raises an error on an invalid request
+        if self.serializer.is_valid():
+            self.login()
+            return self.get_success_response()
+        # but this class manually creates the invalid response
+        return self.get_error_response()
 
 
 class LogoutView(RestAuthLogoutView):
