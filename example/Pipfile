@@ -5,21 +5,25 @@ verify_ssl = true
 
 [scripts]
 test = "pipenv run pytest"
+watch = "pipenv run ptw"
 
 [dev-packages]
 django-debug-toolbar = "*"
 factory-boy = "==3.0.1"
+pylint = "*"
 pytest = "*"
 pytest-django = "*"
 pytest-sugar = "*"
+pytest-watch = "*"
+yapf = "*"
 
 [packages]
 django = "~=3.0"  # django, duh
 django-allauth = "*"  # user authentication
 django-environ = "*"  # better env handling
 django-filter = "*"  # richer api filters
-djangorestframework = "*" # api
-djangorestframework-simplejwt = "*"  
+django-rest-framework = "*" # api
+djangorestframework-simplejwt = "*"
 django-rest-knox = "*"  # secure tokens
 dj-rest-auth = {extras = ["with_social"],version = "*"}  # user authentication via api
 drf-yasg2 = "*"  # api documentation
@@ -29,4 +33,4 @@ django-astrosat-core = {editable = true,git = "https://github.com/astrosat/djang
 django-astrosat-users = {editable = true,path = "./.."}
 
 [requires]
-python_version = "3.7"
+python_version = "3.7.7"

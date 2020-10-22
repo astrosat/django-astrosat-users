@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Launch Django",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceRoot}/example/manage.py",
+      "args": ["runserver"],
+      "django": true
+    },
+    {
+      "name": "PyTest",
+      "type": "python",
+      "request": "launch",
+      "stopOnEntry": false,
+      "pythonPath": "${workspaceRoot}/example/.venv/bin/python",
+      "module": "pytest",
+      "args": ["-sv"],
+      "cwd": "${workspaceRoot}/example",
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "example.settings"
+      },
+      "envFile": "${workspaceRoot}/example/.venv"
+    }
+  ]
+}
