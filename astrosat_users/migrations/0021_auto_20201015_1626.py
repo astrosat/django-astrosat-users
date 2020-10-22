@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('astrosat_users', '0020_user_requires_customer_registration_completion'),
+        (
+            'astrosat_users',
+            '0020_user_requires_customer_registration_completion'
+        ),
     ]
 
     operations = [
@@ -17,17 +20,40 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customer',
             name='company_type',
-            field=models.CharField(blank=True, choices=[('NON_PROFIT', 'Non-Profit Organisation'), ('LOCAL_AUTHORITY', 'Local Authority'), ('GOV_AND_EXEC_AGENCIES', 'Government & Executive Agencies'), ('NON_DEPT_PUBLIC_BODY', 'Non Departmental Public Body'), ('PUBLIC_CORP', 'Public Corporation'), ('HEALTH_AND_CARE', 'Health & Care'), ('CHARITY', 'Charity'), ('ACADEMICS_OR_EDUCATION', 'Academics, School or any kind of Education'), ('OTHER', 'Other')], max_length=64, null=True),
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ('NON_PROFIT', 'Non-Profit Organisation'),
+                    ('LOCAL_AUTHORITY', 'Local Authority'),
+                    (
+                        'GOV_AND_EXEC_AGENCIES',
+                        'Government & Executive Agencies'
+                    ), ('NON_DEPT_PUBLIC_BODY', 'Non Departmental Public Body'),
+                    ('PUBLIC_CORP', 'Public Corporation'),
+                    ('HEALTH_AND_CARE', 'Health & Care'),
+                    ('CHARITY', 'Charity'),
+                    (
+                        'ACADEMICS_OR_EDUCATION',
+                        'Academics, School or any kind of Education'
+                    ), ('OTHER', 'Other')
+                ],
+                max_length=64,
+                null=True
+            ),
         ),
         migrations.AddField(
             model_name='customer',
             name='official_name',
-            field=models.CharField(blank=True, max_length=128, null=True, unique=True),
+            field=models.CharField(
+                blank=True, max_length=128, null=True, unique=True
+            ),
         ),
         migrations.AddField(
             model_name='customer',
             name='registered_id',
-            field=models.CharField(blank=True, max_length=128, null=True, unique=True),
+            field=models.CharField(
+                blank=True, max_length=128, null=True, unique=True
+            ),
         ),
         migrations.AlterField(
             model_name='customer',

@@ -101,7 +101,8 @@ class TestApiPassword:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
         valid_email = user.email
-        invalid_email = shuffle_string(user.username) + "@" + valid_email.split("@")[1]
+        invalid_email = shuffle_string(user.username
+                                      ) + "@" + valid_email.split("@")[1]
 
         # an invalid email doesn't work...
         response = client.post(url, {"email": invalid_email})

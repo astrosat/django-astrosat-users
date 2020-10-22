@@ -37,21 +37,19 @@ from .views import (
 # API views that still authenticate w/ backend...
 from .views import token_view
 
-
 ##############
 # api routes #
 ##############
-
 
 api_router = SimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path("customers/", CustomerCreateView.as_view(), name="customers-list"),
     path(
-        "customers/", CustomerCreateView.as_view(), name="customers-list"
-    ),
-    path(
-        "customers/<slug:customer_id>/", CustomerUpdateView.as_view(), name="customers-detail"
+        "customers/<slug:customer_id>/",
+        CustomerUpdateView.as_view(),
+        name="customers-detail"
     ),
     path(
         "customers/<slug:customer_id>/users/",
@@ -95,7 +93,11 @@ api_urlpatterns = [
         name="rest_password_reset_confirm",
     ),
     # a "special" api_urlpattern that authenticates using django-allauth NOT django-rest-auth
-    path("authentication/registration/", RegisterView.as_view(), name="rest_register"),
+    path(
+        "authentication/registration/",
+        RegisterView.as_view(),
+        name="rest_register"
+    ),
     path(
         "authentication/registration/verify-email/",
         VerifyEmailView.as_view(),
@@ -132,7 +134,9 @@ for urlresolver in allauth_urlpatterns:
         elif isinstance(urlpattern.pattern, RoutePattern):
             pattern_fn = path
         else:
-            raise NotImplementedError(f"unable to decode pattern {urlpattern.pattern}")
+            raise NotImplementedError(
+                f"unable to decode pattern {urlpattern.pattern}"
+            )
 
         conditional_backend_url_patterns.append(
             pattern_fn(
@@ -151,7 +155,11 @@ urlpatterns = [
         name="disabled",
     ),
     # user stuff...
-    path("users/", check_backend_access(UserListView.as_view()), name="user-list"),
+    path(
+        "users/",
+        check_backend_access(UserListView.as_view()),
+        name="user-list"
+    ),
     path(
         "users/<slug:id>/",
         check_backend_access(UserDetailView.as_view()),

@@ -17,17 +17,51 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Customer',
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    'id',
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False
+                    )
+                ),
                 ('is_active', models.BooleanField(default=True)),
-                ('customer_type', models.CharField(choices=[('SINGLE', 'Single'), ('MULTIPLE', 'Multiple')], default='MULTIPLE', max_length=64)),
+                (
+                    'customer_type',
+                    models.CharField(
+                        choices=[
+                            ('SINGLE', 'Single'), ('MULTIPLE', 'Multiple')
+                        ],
+                        default='MULTIPLE',
+                        max_length=64
+                    )
+                ),
                 ('name', models.SlugField(unique=True)),
                 ('title', models.CharField(max_length=128)),
                 ('description', models.TextField(blank=True, null=True)),
-                ('logo', models.FileField(blank=True, null=True, upload_to=astrosat_users.models.models_customers.customer_logo_path)),
+                (
+                    'logo',
+                    models.FileField(
+                        blank=True,
+                        null=True,
+                        upload_to=astrosat_users.models.models_customers.
+                        customer_logo_path
+                    )
+                ),
                 ('url', models.URLField(blank=True, null=True)),
-                ('country', models.CharField(blank=True, max_length=255, null=True)),
-                ('address', models.CharField(blank=True, max_length=255, null=True)),
-                ('postcode', models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    'country',
+                    models.CharField(blank=True, max_length=255, null=True)
+                ),
+                (
+                    'address',
+                    models.CharField(blank=True, max_length=255, null=True)
+                ),
+                (
+                    'postcode',
+                    models.CharField(blank=True, max_length=50, null=True)
+                ),
             ],
             options={
                 'verbose_name': 'Customer',
@@ -37,16 +71,54 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CustomerUser',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('customer_user_type', models.CharField(choices=[('MANAGER', 'Manager'), ('MEMBER', 'Member')], max_length=64)),
-                ('customer_user_status', models.CharField(choices=[('ACTIVE', 'Active'), ('PENDING', 'Pending')], max_length=64)),
-                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer_users', to='astrosat_users.Customer')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer_users', to=settings.AUTH_USER_MODEL)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID'
+                    )
+                ),
+                (
+                    'customer_user_type',
+                    models.CharField(
+                        choices=[('MANAGER', 'Manager'), ('MEMBER', 'Member')],
+                        max_length=64
+                    )
+                ),
+                (
+                    'customer_user_status',
+                    models.CharField(
+                        choices=[('ACTIVE', 'Active'), ('PENDING', 'Pending')],
+                        max_length=64
+                    )
+                ),
+                (
+                    'customer',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='customer_users',
+                        to='astrosat_users.Customer'
+                    )
+                ),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='customer_users',
+                        to=settings.AUTH_USER_MODEL
+                    )
+                ),
             ],
         ),
         migrations.AddField(
             model_name='customer',
             name='users',
-            field=models.ManyToManyField(related_name='customers', through='astrosat_users.CustomerUser', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                related_name='customers',
+                through='astrosat_users.CustomerUser',
+                to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

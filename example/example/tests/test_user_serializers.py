@@ -29,5 +29,9 @@ class TestUserSerializer:
         # roles
         # permissions
         assert serializer_data["customers"] == [
-            {"type": "MANAGER", "status": "PENDING", "id": str(customer.id)}
+            {
+                "type": "MANAGER",
+                "status": "PENDING",
+                "id": str(customer.id)
+            }
         ]

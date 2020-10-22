@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
             name="latest_confirmation_key",
             field=models.CharField(
                 blank=True,
-                help_text="A record of the most recent key used to verify the user's email address.",
+                help_text=
+                "A record of the most recent key used to verify the user's email address.",
                 max_length=64,
                 null=True,
             ),

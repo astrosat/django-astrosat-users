@@ -18,10 +18,6 @@ class Migration(migrations.Migration):
             model_name='customeruser',
             name='user',
         ),
-        migrations.DeleteModel(
-            name='Customer',
-        ),
-        migrations.DeleteModel(
-            name='CustomerUser',
-        ),
+        migrations.DeleteModel(name='Customer', ),
+        migrations.DeleteModel(name='CustomerUser', ),
     ]

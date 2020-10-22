@@ -9,7 +9,7 @@ class GenericProfileListSerializer(serializers.ListSerializer):
 def GenericProfileSerializerFactory(profile_class):
     class GenericProfileSerializer(serializers.ModelSerializer):
         class Meta:
-            exclude = ("user",)
+            exclude = ("user", )
             list_serializer_class = GenericProfileListSerializer
             model = profile_class
 

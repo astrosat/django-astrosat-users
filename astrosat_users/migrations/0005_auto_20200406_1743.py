@@ -13,11 +13,18 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='accepted_terms',
-            field=models.BooleanField(default=False, help_text='Has this user accepted the terms & conditions?'),
+            field=models.BooleanField(
+                default=False,
+                help_text='Has this user accepted the terms & conditions?'
+            ),
         ),
         migrations.AddField(
             model_name='usersettings',
             name='require_terms_acceptance',
-            field=models.BooleanField(default=False, help_text='Require a user to accept the terms & conditions during the sign up process.'),
+            field=models.BooleanField(
+                default=False,
+                help_text=
+                'Require a user to accept the terms & conditions during the sign up process.'
+            ),
         ),
     ]

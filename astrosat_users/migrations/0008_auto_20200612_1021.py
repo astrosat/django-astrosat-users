@@ -15,21 +15,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customer',
             name='roles',
-            field=models.ManyToManyField(blank=True, related_name='customers', to='astrosat_users.UserRole'),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name='customers',
+                to='astrosat_users.UserRole'
+            ),
         ),
         migrations.AddField(
             model_name='customer',
             name='users',
-            field=models.ManyToManyField(related_name='customers', through='astrosat_users.CustomerUser', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                related_name='customers',
+                through='astrosat_users.CustomerUser',
+                to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
             model_name='customeruser',
             name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer_users', to='astrosat_users.Customer'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='customer_users',
+                to='astrosat_users.Customer'
+            ),
         ),
         migrations.AlterField(
             model_name='customeruser',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer_users', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='customer_users',
+                to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

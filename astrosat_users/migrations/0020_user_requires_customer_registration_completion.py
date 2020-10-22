@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='requires_customer_registration_completion',
-            field=models.BooleanField(default=False, help_text="Is this user in the middle of creating a customer? Did they register as a 'team'?"),
+            field=models.BooleanField(
+                default=False,
+                help_text=
+                "Is this user in the middle of creating a customer? Did they register as a 'team'?"
+            ),
         ),
     ]

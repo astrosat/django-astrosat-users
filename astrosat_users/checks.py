@@ -8,7 +8,6 @@ from django.core.checks import register, Error, Tags
 from . import APP_NAME
 from .conf import app_settings
 
-
 # apps required by astrosat_users
 APP_DEPENDENCIES = [
     "astrosat",
@@ -64,8 +63,7 @@ def check_settings(app_configs, **kwargs):
         validator["NAME"] for validator in settings.AUTH_PASSWORD_VALIDATORS
     ]
     if not all(
-        validator in password_validators
-        for validator in [
+        validator in password_validators for validator in [
             "astrosat_users.validators.LengthPasswordValidator",
             "astrosat_users.validators.StrengthPasswordValidator",
         ]

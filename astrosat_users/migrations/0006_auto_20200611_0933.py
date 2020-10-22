@@ -13,16 +13,26 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='usersettings',
             name='allow_registration',
-            field=models.BooleanField(default=True, help_text="Allow users to register via the 'sign up' views."),
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow users to register via the 'sign up' views."
+            ),
         ),
         migrations.AlterField(
             model_name='usersettings',
             name='enable_backend_access',
-            field=models.BooleanField(default=True, help_text='Enable user management via the backend views (as opposed to only via the API).'),
+            field=models.BooleanField(
+                default=True,
+                help_text=
+                'Enable user management via the backend views (as opposed to only via the API).'
+            ),
         ),
         migrations.AlterField(
             model_name='usersettings',
             name='notify_signups',
-            field=models.BooleanField(default=False, help_text='Send an email to the MANAGERS when a user signs up.'),
+            field=models.BooleanField(
+                default=False,
+                help_text='Send an email to the MANAGERS when a user signs up.'
+            ),
         ),
     ]

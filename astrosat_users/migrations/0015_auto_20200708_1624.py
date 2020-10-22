@@ -13,11 +13,19 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customeruser',
             name='customer_user_status',
-            field=models.CharField(choices=[('ACTIVE', 'Active'), ('PENDING', 'Pending')], default='PENDING', max_length=64),
+            field=models.CharField(
+                choices=[('ACTIVE', 'Active'), ('PENDING', 'Pending')],
+                default='PENDING',
+                max_length=64
+            ),
         ),
         migrations.AlterField(
             model_name='customeruser',
             name='customer_user_type',
-            field=models.CharField(choices=[('MANAGER', 'Manager'), ('MEMBER', 'Member')], default='MEMBER', max_length=64),
+            field=models.CharField(
+                choices=[('MANAGER', 'Manager'), ('MEMBER', 'Member')],
+                default='MEMBER',
+                max_length=64
+            ),
         ),
     ]

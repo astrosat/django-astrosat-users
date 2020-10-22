@@ -2,7 +2,6 @@ from itertools import chain
 
 from django.core.exceptions import ImproperlyConfigured
 
-
 # UserProfiles are defined in other apps via the UserProfileField
 # but a registry of them is stored and manipulated here
 
@@ -57,6 +56,7 @@ def get_profiles_qs():
     combines all distinct UserProfile models into a single queryset
     """
     profile_querysets = [
-        profile_class.objects.all() for profile_class in PROFILES_REGISTRY.values()
+        profile_class.objects.all()
+        for profile_class in PROFILES_REGISTRY.values()
     ]
     return chain(*profile_querysets)
