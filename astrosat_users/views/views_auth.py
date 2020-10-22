@@ -39,9 +39,9 @@ from astrosat_users.serializers import (
 )
 from astrosat_users.utils import create_knox_token
 
-
-REGISTRATION_CLOSED_MSG = _("We are sorry, but the sign up is currently closed.")
-
+REGISTRATION_CLOSED_MSG = _(
+    "We are sorry, but the sign up is currently closed."
+)
 
 ###############
 # permissions #
@@ -72,7 +72,6 @@ class AllowRegistrationPermission(BasePermission):
 # swagger stuff #
 #################
 
-
 # b/c ACCOUNT_USERNAME_REQURED is False and ACCOUNT_EMAIL_REQUIRED is True, not all fields
 # from the LoginSerializer/RegisterSerializer are used in the LoginView/RegisterView
 # therefore, I overide the swagger documentation w/ the following schemas...
@@ -90,11 +89,13 @@ _login_schema = openapi.Schema(
                     example="admin@astrosat.net",
                 ),
             ),
-            ("password", openapi.Schema(type=openapi.TYPE_STRING, example="password")),
+            (
+                "password",
+                openapi.Schema(type=openapi.TYPE_STRING, example="password")
+            ),
         )
     ),
 )
-
 
 _register_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
@@ -103,25 +104,30 @@ _register_schema = openapi.Schema(
             # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
             (
                 "email",
-                openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL),
+                openapi.Schema(
+                    type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL
+                ),
             ),
             (
                 "password1",
-                openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
+                openapi.Schema(
+                    type=openapi.TYPE_STRING, example="superpassword23"
+                ),
             ),
             (
                 "password2",
-                openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
+                openapi.Schema(
+                    type=openapi.TYPE_STRING, example="superpassword23"
+                ),
             ),
             ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
             (
-                "requires_customer_registration_completion",
-                openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                "registration_status",
+                openapi.Schema(type=openapi.TYPE_STRING),
             ),
         )
     ),
 )
-
 
 #########
 # views #
@@ -130,7 +136,8 @@ _register_schema = openapi.Schema(
 
 @method_decorator(
     swagger_auto_schema(
-        request_body=_login_schema, responses={status.HTTP_200_OK: KnoxTokenSerializer}
+        request_body=_login_schema,
+        responses={status.HTTP_200_OK: KnoxTokenSerializer}
     ),
     name="post",
 )
@@ -148,7 +155,9 @@ class LoginView(RestAuthLoginView):
         # (and its nested LoginSerializer)
         serializer_class = self.get_response_serializer()
         data = {"user": self.user, "token": self.token}
-        serializer = serializer_class(instance=data, context={"request": self.request})
+        serializer = serializer_class(
+            instance=data, context={"request": self.request}
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_error_response(self):
@@ -220,7 +229,9 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
     pass
 
 
-@method_decorator(sensitive_post_parameters("password1", "password2"), name="dispatch")
+@method_decorator(
+    sensitive_post_parameters("password1", "password2"), name="dispatch"
+)
 @method_decorator(
     swagger_auto_schema(
         request_body=_register_schema,
@@ -242,7 +253,8 @@ class RegisterView(RestAuthRegisterView):
         user = serializer.save(self.request)
         self.token = create_knox_token(None, user, None)
         complete_signup(
-            self.request._request, user, allauth_settings.EMAIL_VERIFICATION, None
+            self.request._request, user, allauth_settings.EMAIL_VERIFICATION,
+            None
         )
         return user
 
@@ -258,7 +270,6 @@ class VerifyEmailView(RestAuthVerifyEmailView):
     }
     ```
     """
-
     def get_serializer(self, *args, **kwargs):
         # NOTE THAT dj-rest-auth DOESN'T SUPPORT OVERWRITING THIS SERIALIZER, SO I HARD-CODE IT HERE
         return VerifyEmailSerializer(*args, **kwargs)
@@ -272,8 +283,11 @@ class VerifyEmailView(RestAuthVerifyEmailView):
         confirmation.confirm(self.request)
 
         response = {
-            "detail": _("ok"),
-            "user": UserSerializerLite(instance=serializer.validated_data["user"]).data,
+            "detail":
+                _("ok"),
+            "user":
+                UserSerializerLite(instance=serializer.validated_data["user"]
+                                  ).data,
         }
 
         return Response(response, status=status.HTTP_200_OK)

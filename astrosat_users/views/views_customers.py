@@ -10,19 +10,9 @@ from allauth.account.adapter import get_adapter
 from django_filters import rest_framework as filters
 
 from astrosat_users.models import Customer, CustomerUser
+from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import CustomerSerializer, CustomerUserSerializer
-
-
-class RequiresCustomerRegistrationCompletion(BasePermission):
-    """
-    Only a user w/ requires_customer_registration_completion can create a customer
-    """
-
-    message = "Only a user that registered as a 'team' can perform this action."
-
-    def has_permission(self, request, view):
-        user = request.user
-        return user.requires_customer_registration_completion
+from astrosat_users.views.views_users import UserRegistrationStagePermission
 
 
 class IsAdminOrManager(BasePermission):
@@ -78,14 +68,17 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
 
-    permission_classes = [IsAuthenticated, RequiresCustomerRegistrationCompletion]
+    permission_classes = (
+        IsAuthenticated,
+        UserRegistrationStagePermission(UserRegistrationStageType.CUSTOMER)
+    )
     serializer_class = CustomerSerializer
 
     def perform_create(self, serializer):
         customer = serializer.save()
         user = self.request.user
-        if user.requires_customer_registration_completion is True:
-            user.requires_customer_registration_completion = False
+        if user.registration_stage == UserRegistrationStageType.CUSTOMER:
+            user.registration_stage = str(UserRegistrationStageType.CUSTOMER_USER)
             user.save()
         return customer
 
@@ -157,7 +150,11 @@ class CustomerUserViewMixin(object):
 
 class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [
+        IsAuthenticated &
+        (IsAdminOrManager | UserRegistrationStagePermission(UserRegistrationStageType.CUSTOMER_USER))
+    ]
+
     serializer_class = CustomerUserSerializer
 
     filter_backends = (filters.DjangoFilterBackend,)
@@ -166,6 +163,12 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
     def perform_create(self, serializer):
         customer_user = serializer.save()
         customer_user.invite(adapter=get_adapter(self.request))
+
+        user = self.request.user
+        if user.registration_stage == UserRegistrationStageType.CUSTOMER_USER:
+            user.registration_stage = None
+            user.save()
+
         return customer_user
 
 

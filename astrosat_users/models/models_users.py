@@ -27,6 +27,16 @@ def user_avatar_path(instance, filename):
     return f"users/{instance.username}/{filename}"
 
 
+class UserRegistrationStageType(models.TextChoices):
+
+    USER = "USER", _("User")
+    CUSTOMER = "CUSTOMER", _("Customer")
+    CUSTOMER_USER = "CUSTOMER_USER", _("CustomerUser")
+    ORDER = "ORDER", _("Order")
+
+    __empty__ = _("None")
+
+
 class User(AbstractUser):
 
     # TODO: CUSTOM MANAGER ?
@@ -57,8 +67,8 @@ class User(AbstractUser):
     accepted_terms = models.BooleanField(
         default=False, help_text=_("Has this user accepted the terms & conditions?")
     )
-    requires_customer_registration_completion = models.BooleanField(
-        default=False, help_text=_("Is this user in the middle of creating a customer? Did they register as a 'team'?")
+    registration_stage = models.CharField(
+        blank=True, null=True, max_length=128, choices=UserRegistrationStageType.choices, help_text=_("Indicates which stage of the registration process a user is at.")
     )
     latest_confirmation_key = models.CharField(
         blank=True,

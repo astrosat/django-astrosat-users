@@ -30,7 +30,7 @@ class UserAdmin(auth_admin.UserAdmin):
                     "change_password",
                     "is_approved",
                     "accepted_terms",
-                    "requires_customer_registration_completion",
+                    "registration_stage",
                     "roles",
                     "uuid",
                 )
@@ -46,11 +46,11 @@ class UserAdmin(auth_admin.UserAdmin):
         "is_approved",
         "is_active",
         "accepted_terms",
-        "requires_customer_registration_completion",
+        "registration_stage",
         "get_roles_for_list_display",
         "get_customers_for_list_display",
     ]
-    list_filter = auth_admin.UserAdmin.list_filter + ("customers", "requires_customer_registration_completion")
+    list_filter = auth_admin.UserAdmin.list_filter + ("customers",)
     readonly_fields = auth_admin.UserAdmin.readonly_fields + ("uuid",)
     search_fields = ["username", "name", "email"]
     filter_horizontal = (

@@ -14,12 +14,37 @@ from django_filters import rest_framework as filters
 from astrosat.views import BetterBooleanFilter, BetterBooleanFilterField
 
 from astrosat_users.models import User, UserRole, UserPermission
+from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import UserSerializer
 
 
 #############
 # api views #
 #############
+
+
+def UserRegistrationStagePermission(registration_stage_getter):
+    """
+    This fn is a factory that returns a _dynamic_ DRF Permission.
+    Only a request.user w/ a matching registration_stage is granted permission.
+    """
+
+    class _UserRegistrationStagePermission(BasePermission):
+
+        def has_permission(self, request, view):
+            if callable(registration_stage_getter):
+                registration_stage = registration_stage_getter(request)
+            else:
+                registration_stage = registration_stage_getter
+
+            user = request.user
+            if user.registration_stage == str(registration_stage):
+                return True
+
+            self.message = f"User must have a registration_stage of '{registration_stage}' to perform this action."
+            return False
+
+    return _UserRegistrationStagePermission
 
 
 class IsAdminOrSelf(BasePermission):
@@ -36,12 +61,12 @@ class IsAdminOrSelf(BasePermission):
 class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
-        fields = ["is_active", "is_approved", "accepted_terms", "requires_customer_registration_completion", "is_verified"]
+        fields = ["is_active", "is_approved", "accepted_terms", "is_verified", "registration_stage"]
 
     is_active = BetterBooleanFilter()
     is_approved = BetterBooleanFilter()
     accepted_terms = BetterBooleanFilter()
-    requires_customer_registration_completion = BetterBooleanFilter()
+    registration_stage = filters.ChoiceFilter(choices=UserRegistrationStageType.choices)
     is_verified = filters.Filter(method="filter_is_verified")
 
     roles__any = filters.Filter(method="filter_roles_or")
