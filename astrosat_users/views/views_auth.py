@@ -122,7 +122,7 @@ _register_schema = openapi.Schema(
             ),
             ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
             (
-                "registration_status",
+                "registration_stage",
                 openapi.Schema(type=openapi.TYPE_STRING),
             ),
         )
