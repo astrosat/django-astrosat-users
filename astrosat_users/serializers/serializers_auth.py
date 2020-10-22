@@ -22,6 +22,7 @@ from astrosat.serializers import ConsolidatedErrorsSerializerMixin
 
 from astrosat_users.conf import app_settings
 from astrosat_users.models import User
+from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.utils import rest_decode_user_pk
 
 
@@ -167,7 +168,11 @@ class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSeri
 
     # add extra fields...
     accepted_terms = serializers.BooleanField()
-    registration_stage = serializers.CharField(default=None)
+    registration_stage = serializers.ChoiceField(
+        allow_null=True,
+        choices=UserRegistrationStageType.choices,
+        required=False,
+    )
 
     def validate_accepted_terms(self, value):
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not value:
