@@ -27,7 +27,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     email = FactoryFaker("email")
     name = FactoryFaker("name")
     description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
-    requires_customer_registration_completion = False
+    registration_stage = None
     accepted_terms = True
     is_approved = False
 

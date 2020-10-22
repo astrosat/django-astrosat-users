@@ -16,8 +16,9 @@ from astrosat_users.tests.factories import CustomerFactory
 from astrosat_users.tests.utils import *
 
 from astrosat_users.models import User, Customer
+from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import UserSerializerBasic
-from astrosat_users.views.views_customers import RequiresCustomerRegistrationCompletion, IsAdminOrManager
+from astrosat_users.views.views_customers import IsAdminOrManager
 
 from .factories import *
 
@@ -26,9 +27,6 @@ from .factories import *
 class TestCustomerViews:
 
     def test_create_customer_permission(self, user, mock_storage):
-        """
-        ensures that a user w/out requires_customer_registration_completion cannot create a customer
-        """
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
         customer_data["type"] = customer_data.pop("customer_type")
@@ -39,38 +37,34 @@ class TestCustomerViews:
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customers-list")
 
-        assert user.requires_customer_registration_completion is False
-
-        response = client.post(url, customer_data, format="json")
-        content = response.json()
-
-        assert status.is_client_error(response.status_code)
-        assert Customer.objects.count() == 0
-        assert content["detail"] == RequiresCustomerRegistrationCompletion.message
-
-    def test_create_customer(self, user, mock_storage):
-        """
-        ensures that a user w/ requires_customer_registration_completion can create a customer
-        """
-
-        customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
-        customer_data["type"] = customer_data.pop("customer_type")
-        customer_data.pop("logo")
-
-        _, key = create_auth_token(user)
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customers-list")
-
-        user.requires_customer_registration_completion = True
+        # a user that is not in the middle of creating a customer
+        # cannot create a customer
+        user.registration_stage = None
         user.save()
 
         response = client.post(url, customer_data, format="json")
         content = response.json()
+        user.refresh_from_db()
+
+        assert status.is_client_error(response.status_code)
+        assert content["detail"] == "User must have a registration_stage of 'CUSTOMER' to perform this action."
+
+        assert Customer.objects.count() == 0
+        assert user.registration_stage != UserRegistrationStageType.CUSTOMER_USER
+
+        # a user that IS in the middle of creating a customer
+        # CAN create a customer (and is primed to create a customer_user)
+        user.registration_stage = str(UserRegistrationStageType.CUSTOMER)
+        user.save()
+
+        response = client.post(url, customer_data, format="json")
+        content = response.json()
+        user.refresh_from_db()
 
         assert status.is_success(response.status_code)
+
         assert Customer.objects.count() == 1
-        assert str(Customer.objects.first().id) == content["id"]
+        assert user.registration_stage == UserRegistrationStageType.CUSTOMER_USER
 
     def test_get_customer(self, user, mock_storage):
 
@@ -235,7 +229,8 @@ class TestCustomerViews:
         response = client.get(customer_users_url, format="json")
         content = response.json()
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == IsAdminOrManager.message
+        # TODO: ERROR IN DRF CAUSING COMPOSED PERMISSIONS TO RETURN A GENERIC MESSAGE
+        # assert content["detail"] == IsAdminOrManager.message
 
     def test_add_existing_customer_user(self, admin, mock_storage):
 
@@ -265,6 +260,46 @@ class TestCustomerViews:
         assert customer.customer_users.count() == user.customer_users.count() == 1
         assert set(customer.customer_users.values_list("id")) == set(user.customer_users.values_list("id"))
         assert user.change_password is not True
+
+
+    def test_add_new_customer_user_permissions(self, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        user = UserFactory()
+
+        _, key = create_auth_token(user)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url = reverse("customer-users-list", args=[customer.id])
+
+        data = {
+            "customer": customer.name,
+            "user": UserSerializerBasic(user).data,
+        }
+
+        # a user who is neither admin nor manager cannot create a customer user
+        # if registration_stage is not CUSTOMER_USER
+        assert user.registration_stage != UserRegistrationStageType.CUSTOMER_USER
+        response = client.post(url, data, format="json")
+        content = response.json()
+
+        assert status.is_client_error(response.status_code)
+        # TODO: ERROR IN DRF CAUSING COMPOSED PERMISSIONS TO RETURN A GENERIC MESSAGE
+        # assert content["detail"] == "User must have a registration_stage of 'CUSTOMER_USER' to perform this action."
+
+        # a user who is neither admin nor manager can still create a customer user
+        # if registration_stage is CUSTOMER_USER
+        user.registration_stage = UserRegistrationStageType.CUSTOMER_USER
+        user.save()
+        response = client.post(url, data, format="json")
+        content = response.json()
+        user.refresh_from_db()
+
+        assert status.is_success(response.status_code)
+        assert user.registration_stage == None
+        assert customer.users.count() == 1
 
     def test_add_new_customer_user(self, admin, user_data, mock_storage):
 
