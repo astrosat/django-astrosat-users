@@ -157,6 +157,7 @@ class User(AbstractUser):
         context["customer"] = customer
 
         if customer:
+            assert customer.users.filter(email=self.email).exists()
             cc = customer.customer_users.managers().values_list("user__email", flat=True)
         else:
             cc = []
