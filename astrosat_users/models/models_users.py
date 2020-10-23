@@ -57,6 +57,7 @@ class User(AbstractUser):
     name = models.CharField(
         validators=[validate_no_tags], blank=True, null=True, max_length=255
     )
+    phone = models.CharField(max_length=128, blank=True, null=True, verbose_name='Your Contact Number')
     description = models.TextField(validators=[validate_no_tags], blank=True, null=True)
     change_password = models.BooleanField(
         default=False, help_text=_("Force user to change password at next login.")
