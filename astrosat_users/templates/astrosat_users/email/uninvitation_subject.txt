@@ -1,4 +1,4 @@
-{# used for notifying a user that they have been removd from a customer #}
+{# used for notifying a user that they have been removed from a customer #}
 
 {% load i18n %}
 

@@ -294,6 +294,14 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
 
         self.send_mail(template_prefix, email, context)
 
+    def send_mail(self, template_prefix, email, context, **kwargs):
+        cc = kwargs.pop("cc", [])
+        bcc = kwargs.pop("bcc", [])
+        msg = self.render_mail(template_prefix, email, context)
+        msg.cc = list(cc)
+        msg.bcc = list(bcc)
+        msg.send()
+
     def set_password(self, user, password):
         user.set_password(password)
         user.change_password = False
