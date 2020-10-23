@@ -1,0 +1,12 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{% block body %}
+
+    Hey {{ user.username }},
+
+    Welcome!
+
+    Cheers,
+    from Astrosat
+
+{% endblock %}

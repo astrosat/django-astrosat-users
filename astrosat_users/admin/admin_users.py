@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
 
+from allauth.account.adapter import get_adapter
+
 from astrosat.admin import get_clickable_m2m_list_display
 
 from astrosat_users.admin.admin_roles import update_roles_action
@@ -15,6 +17,7 @@ class UserAdmin(auth_admin.UserAdmin):
         "toggle_approval",
         "toggle_accepted_terms",
         "toggle_verication",
+        "onboard",
         "logout_all",
     ) + (update_roles_action,)
     form = UserAdminChangeForm
@@ -31,6 +34,7 @@ class UserAdmin(auth_admin.UserAdmin):
                     "change_password",
                     "is_approved",
                     "accepted_terms",
+                    "onboarded",
                     "registration_stage",
                     "roles",
                     "uuid",
@@ -47,6 +51,7 @@ class UserAdmin(auth_admin.UserAdmin):
         "is_approved",
         "is_active",
         "accepted_terms",
+        "onboarded",
         "registration_stage",
         "get_roles_for_list_display",
         "get_customers_for_list_display",
@@ -130,6 +135,17 @@ class UserAdmin(auth_admin.UserAdmin):
     toggle_verication.short_description = (
         "Toggles the verification of the selected users' primary email addresses"
     )
+
+    def onboard(self, request, queryset):
+        adapter = get_adapter(request)
+
+        for obj in queryset:
+            obj.onboard(adapter=adapter)
+
+            msg = f"onboarded {obj}."
+            self.message_user(request, msg)
+
+    onboard.short_description = "Sends an onboarding message to the selected users."
 
     def logout_all(self, request, queryset):
         for obj in queryset:

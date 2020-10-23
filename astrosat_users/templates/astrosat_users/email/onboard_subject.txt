@@ -1,0 +1,9 @@
+{% load i18n %}
+
+{% autoescape off %}
+
+{% blocktrans %}
+  Welcome, it's great to have you on-board!
+{% endblocktrans %}
+
+{% endautoescape %}
