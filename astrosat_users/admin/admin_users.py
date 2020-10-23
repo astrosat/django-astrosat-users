@@ -27,6 +27,7 @@ class UserAdmin(auth_admin.UserAdmin):
                     "avatar",
                     "name",
                     "description",
+                    "phone",
                     "change_password",
                     "is_approved",
                     "accepted_terms",

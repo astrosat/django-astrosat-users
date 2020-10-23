@@ -39,6 +39,7 @@ class UserSerializerBasic(serializers.ModelSerializer):
             "change_password",
             "email",
             "name",
+            "phone",
             "description",
             "accepted_terms",
             "profiles",
