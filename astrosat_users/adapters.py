@@ -297,6 +297,14 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
     def send_mail(self, template_prefix, email, context, **kwargs):
         cc = kwargs.pop("cc", [])
         bcc = kwargs.pop("bcc", [])
+        if cc:
+            if isinstance(cc, str):
+                raise TypeError('"cc" argument must be a list or tuple')
+            cc = list(cc)
+        if bcc:
+            if isinstance(bcc, str):
+                raise TypeError('"bcc" argument must be a list or tuple')
+            self.bcc = list(bcc)
         msg = self.render_mail(template_prefix, email, context)
         msg.cc = list(cc)
         msg.bcc = list(bcc)
