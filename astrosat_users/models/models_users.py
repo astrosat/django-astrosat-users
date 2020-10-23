@@ -7,6 +7,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 
 from astrosat.utils import validate_no_tags
@@ -70,6 +71,9 @@ class User(AbstractUser):
     )
     registration_stage = models.CharField(
         blank=True, null=True, max_length=128, choices=UserRegistrationStageType.choices, help_text=_("Indicates which stage of the registration process a user is at.")
+    )
+    onboarded = models.BooleanField(
+        default=False, help_text=_("Has this user been onboarded?")
     )
     latest_confirmation_key = models.CharField(
         blank=True,
@@ -141,3 +145,23 @@ class User(AbstractUser):
                 avatar_storage.delete(avatar_name)
 
         return super().delete(*args, **kwargs)
+
+    def onboard(self, **kwargs):
+
+        adapter = kwargs.get("adapter", get_adapter())
+        context = kwargs.get("context", {})
+        customer = kwargs.get("customer", None)
+        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/onboard")
+
+        context["user"] = self
+        context["customer"] = customer
+
+        if customer:
+            assert customer.users.filter(email=self.email).exists()
+            cc = customer.customer_users.managers().values_list("user__email", flat=True)
+        else:
+            cc = []
+        adapter.send_mail(template_prefix, self.email, context, cc=cc)
+
+        self.onboarded = True
+        self.save()

@@ -21,6 +21,7 @@ class UserSerializerLite(serializers.ModelSerializer):
             "is_verified",
             "is_approved",
             "accepted_terms",
+            "onboarded",
             "registration_stage",
         )
         read_only_fields = fields  # this marks _all_ fields as read_only
@@ -141,6 +142,7 @@ class UserSerializer(UserSerializerBasic):
             "is_verified",
             "is_approved",
             "registration_stage",
+            "onboarded",
             "avatar",
             "customers",
         ]
