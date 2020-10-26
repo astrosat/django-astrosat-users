@@ -1,0 +1,10 @@
+{# used to notify all managers of a customer that the customer details have been updated #}
+{% load i18n %}
+
+{% autoescape off %}
+
+{% blocktrans %}
+  Update on your customer
+{% endblocktrans %}
+
+{% endautoescape %}

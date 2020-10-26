@@ -17,7 +17,7 @@ from astrosat_users.tests.utils import *
 
 from astrosat_users.models import User, Customer
 from astrosat_users.models.models_users import UserRegistrationStageType
-from astrosat_users.serializers import UserSerializerBasic
+from astrosat_users.serializers import UserSerializerBasic, CustomerUserSerializer
 from astrosat_users.views.views_customers import IsAdminOrManager
 
 from .factories import *
@@ -107,6 +107,12 @@ class TestCustomerViews:
         customer.refresh_from_db()
         assert customer.name == new_name
 
+        # in addition to making the change,
+        # the view should also notify the user
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Update on your customer" in message.subject
+
     def test_list_customer_users(self, admin, mock_storage):
 
         N_CUSTOMER_USERS = 10
@@ -180,6 +186,12 @@ class TestCustomerViews:
         assert status.is_success(response.status_code)
         test_user.refresh_from_db()
         assert test_user.name == new_name
+
+        # in addition to making the change,
+        # the view should also notify the user
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Update on your account" in message.subject
 
     def test_delete_customer_user(self, admin, mock_storage):
 
@@ -538,3 +550,45 @@ class TestCustomerViews:
         message = mail.outbox[0]
         assert EXAMPLE_ONBOARDING_TEXT in message.body
         assert len(message.cc) == 0  # email should be stripped from cc b/c user is onboarding themselves
+
+    def test_customer_user_assign_manager(self, admin, user, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        customer_user_data = CustomerUserSerializer(customer_user).data
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customer-users-detail", args=[customer.id, user.uuid])
+
+        customer_user_data["type"] = "MANAGER"
+        response = client.put(url, customer_user_data, format="json")
+        assert status.is_success(response.status_code)
+        customer_user.refresh_from_db()
+
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Admin right granted" in message.subject
+
+    def test_customer_user_revoke_manager(self, admin, user, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        customer_user_data = CustomerUserSerializer(customer_user).data
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customer-users-detail", args=[customer.id, user.uuid])
+
+        customer_user_data["type"] = "MEMBER"
+        response = client.put(url, customer_user_data, format="json")
+        assert status.is_success(response.status_code)
+        customer_user.refresh_from_db()
+
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Admin right revoked" in message.subject

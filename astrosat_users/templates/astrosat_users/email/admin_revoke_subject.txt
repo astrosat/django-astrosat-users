@@ -1,0 +1,11 @@
+{# used to notify a user that they've been removed as a manger to a customer #}
+
+{% load i18n %}
+
+{% autoescape off %}
+
+{% blocktrans %}
+  Admin right revoked
+{% endblocktrans %}
+
+{% endautoescape %}

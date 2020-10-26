@@ -1,0 +1,17 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{# used to notify a user that their details have been changed by a customer manager #}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi,
+
+    The user details on your account have been changed.
+
+  {% endautoescape %}
+
+{% endblock %}

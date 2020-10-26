@@ -1,0 +1,17 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{# used to notify a user that they've been added as a manger to a customer #}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi,
+
+    Great news, Admin Rights have been granted for your existing account.
+
+  {% endautoescape %}
+
+{% endblock %}
