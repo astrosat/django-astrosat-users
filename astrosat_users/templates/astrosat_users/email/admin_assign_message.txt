@@ -1,0 +1,15 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi,
+
+    Great news, Admin Rights have been granted for your existing account.
+
+  {% endautoescape %}
+
+{% endblock %}

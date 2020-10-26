@@ -1,0 +1,11 @@
+{# used for notifying a user that they have been added to a customer #}
+
+{% load i18n %}
+
+{% autoescape off %}
+
+{% blocktrans %}
+  Admin right revoked
+{% endblocktrans %}
+
+{% endautoescape %}

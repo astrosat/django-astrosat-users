@@ -10,6 +10,7 @@ from allauth.account.adapter import get_adapter
 from django_filters import rest_framework as filters
 
 from astrosat_users.models import Customer, CustomerUser
+from astrosat_users.models.models_customers import CustomerUserType
 from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import CustomerSerializer, CustomerUserSerializer
 from astrosat_users.views.views_users import UserRegistrationStagePermission
@@ -182,6 +183,26 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
         if not(deleted_instances):  # only proceed w/ the deletion if "uninvite" hasn't already done it
             return super().perform_destroy(instance)
 
+    def perform_update(self, serializer):
+
+        existing_customer_user = self.get_object()
+        updated_customer_user = serializer.save()
+
+        if existing_customer_user.customer_user_type != updated_customer_user.customer_user_type:
+
+            if updated_customer_user.customer_user_type == CustomerUserType.MANAGER:
+                # customer_user was something else, now it's a MANAGER
+                template_prefix = "astrosat_users/email/admin_assign"
+            elif existing_customer_user.customer_user_type == CustomerUserType.MANAGER:
+                # customer_user was a MANAGER, now it's something else
+                template_prefix = "astrosat_users/email/admin_revoke"
+
+            adapter = get_adapter(self.request)
+            managers_emails = self.customer.customer_users.managers().values_list("user__email", flat=True)
+            adapter.send_mail(template_prefix, updated_customer_user.user.email, {}, cc=managers_emails)
+
+        return updated_customer_user
+
 
 class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):
     """
@@ -193,7 +214,7 @@ class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         customer_user = self.get_object()
-        customer_user.invite(adapter=get_adapter(self.request))
+        customer_user.invite(adapter=get_adapter(request))
         serializer = self.get_serializer(customer_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -208,6 +229,6 @@ class CustomerUserOnboardView(CustomerUserViewMixin, generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         customer_user = self.get_object()
-        customer_user.user.onboard(adapter=get_adapter(self.request), customer=self.customer)
+        customer_user.user.onboard(adapter=get_adapter(request), customer=self.customer)
         serializer = self.get_serializer(customer_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
