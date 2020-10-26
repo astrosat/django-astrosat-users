@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.signals import user_logged_out
 from django.db import models
+from django.template.exceptions import TemplateDoesNotExist
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -161,7 +162,13 @@ class User(AbstractUser):
             cc = customer.customer_users.managers().values_list("user__email", flat=True)
         else:
             cc = []
-        adapter.send_mail(template_prefix, self.email, context, cc=cc)
 
-        self.onboarded = True
-        self.save()
+        try:
+            adapter.send_mail(template_prefix, self.email, context, cc=cc)
+        except TemplateDoesNotExist:
+            # only send an email if the project has a corresponding template
+            pass
+
+        if not self.onboarded:
+            self.onboarded = True
+            self.save()

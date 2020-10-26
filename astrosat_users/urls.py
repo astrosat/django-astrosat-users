@@ -31,6 +31,7 @@ from .views import (
     CustomerUserListView,
     CustomerUserDetailView,
     CustomerUserInviteView,
+    CustomerUserOnboardView,
 )
 
 # API views that still authenticate w/ backend...
@@ -66,6 +67,11 @@ api_urlpatterns = [
         "customers/<slug:customer_id>/users/<slug:user_id>/invite/",
         CustomerUserInviteView.as_view(),
         name="customer-users-invite",
+    ),
+    path(
+        "customers/<slug:customer_id>/users/<slug:user_id>/onboard/",
+        CustomerUserOnboardView.as_view(),
+        name="customer-users-onboard",
     ),
     # overwrite the rest_auth.urls to cope w/ the idiosyncracies of astrosat_users
     # (and to exclude the built-in user ViewSets)

@@ -43,6 +43,7 @@ class UserSerializerBasic(serializers.ModelSerializer):
             "phone",
             "description",
             "accepted_terms",
+            "onboarded",
             "profiles",
             "roles",
             "permissions",
@@ -142,7 +143,6 @@ class UserSerializer(UserSerializerBasic):
             "is_verified",
             "is_approved",
             "registration_stage",
-            "onboarded",
             "avatar",
             "customers",
         ]

@@ -510,3 +510,29 @@ class TestCustomerViews:
 
         assert len(mail.outbox) == 1
         assert RESET_PASSWORD_TEXT not in mail.outbox[0].body
+
+    def test_onboard_customer_user(self, admin, user, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        (customer_user, _) = customer.add_user(user, type="MEMBER", status="PENDING")
+
+        _, key = create_auth_token(admin)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+        url = reverse("customer-users-onboard", args=[customer.id, user.uuid])
+
+        assert user.onboarded is False
+
+        response = client.post(url, {}, format="json")
+        content = response.json()
+        user.refresh_from_db()
+
+        assert status.is_success(response.status_code)
+        assert content["user"]["onboarded"] is True
+        assert user.onboarded is True
+
+        EXAMPLE_ONBOARDING_TEXT = "Welcome to the example project!"
+
+        assert len(mail.outbox) == 1
+        assert EXAMPLE_ONBOARDING_TEXT in mail.outbox[0].body

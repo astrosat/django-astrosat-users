@@ -15,6 +15,7 @@ from .views_customers import (
     CustomerUserListView,
     CustomerUserDetailView,
     CustomerUserInviteView,
+    CustomerUserOnboardView,
 )
 from .views_users import UserViewSet, UserListView, UserDetailView, UserUpdateView
 from .views_messages import message_view
