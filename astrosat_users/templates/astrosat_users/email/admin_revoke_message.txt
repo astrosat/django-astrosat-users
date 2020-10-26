@@ -1,5 +1,7 @@
 {% extends "astrosat_users/email/message_base.txt" %}
 
+{# used to notify a user that they've been removed as a manger to a customer #}
+
 {% load i18n %}
 
 {% block body %}

@@ -1,5 +1,4 @@
-{# used for notifying a user that they have been added to a customer #}
-
+{# used to notify all managers of a customer that the customer details have been updated #}
 {% load i18n %}
 
 {% autoescape off %}

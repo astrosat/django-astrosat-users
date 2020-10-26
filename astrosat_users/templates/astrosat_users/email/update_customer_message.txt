@@ -1,5 +1,7 @@
 {% extends "astrosat_users/email/message_base.txt" %}
 
+{# used to notify all managers of a customer that the customer details have been updated #}
+
 {% load i18n %}
 
 {% block body %}
