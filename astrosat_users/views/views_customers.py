@@ -196,3 +196,18 @@ class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):
         customer_user.invite(adapter=get_adapter(self.request))
         serializer = self.get_serializer(customer_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CustomerUserOnboardView(CustomerUserViewMixin, generics.GenericAPIView):
+    """
+    A special view just for onboarding Users.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    serializer_class = CustomerUserSerializer
+
+    def post(self, request, *args, **kwargs):
+        customer_user = self.get_object()
+        customer_user.user.onboard(adapter=get_adapter(self.request), customer=self.customer)
+        serializer = self.get_serializer(customer_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
