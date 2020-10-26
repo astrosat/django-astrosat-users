@@ -511,13 +511,13 @@ class TestCustomerViews:
         assert len(mail.outbox) == 1
         assert RESET_PASSWORD_TEXT not in mail.outbox[0].body
 
-    def test_onboard_customer_user(self, admin, user, mock_storage):
+    def test_onboard_customer_user(self, user, mock_storage):
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MEMBER", status="PENDING")
+        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customer-users-onboard", args=[customer.id, user.uuid])
@@ -535,4 +535,6 @@ class TestCustomerViews:
         EXAMPLE_ONBOARDING_TEXT = "Welcome to the example project!"
 
         assert len(mail.outbox) == 1
-        assert EXAMPLE_ONBOARDING_TEXT in mail.outbox[0].body
+        message = mail.outbox[0]
+        assert EXAMPLE_ONBOARDING_TEXT in message.body
+        assert len(message.cc) == 0  # email should be stripped from cc b/c user is onboarding themselves
