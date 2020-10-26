@@ -181,6 +181,12 @@ class TestCustomerViews:
         test_user.refresh_from_db()
         assert test_user.name == new_name
 
+        # in addition to making the change,
+        # the view should also notify the user
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Update on your account" in message.subject
+
     def test_delete_customer_user(self, admin, mock_storage):
 
         N_CUSTOMER_USERS = 10

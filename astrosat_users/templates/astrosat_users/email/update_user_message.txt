@@ -1,0 +1,15 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi,
+
+    The user details on your account have been changed.
+
+  {% endautoescape %}
+
+{% endblock %}

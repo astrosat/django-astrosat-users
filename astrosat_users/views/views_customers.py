@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
+from rest_framework.utils.encoders import JSONEncoder
 
 from allauth.account.adapter import get_adapter
 
@@ -188,6 +189,21 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
         existing_customer_user = self.get_object()
         updated_customer_user = serializer.save()
 
+        json_encoder = JSONEncoder()
+        existing_customer_user_user_data = json_encoder.encode(self.serializer_class(existing_customer_user).data["user"])
+        updated_customer_user_user_data = json_encoder.encode(serializer.data["user"])
+
+        adapter = get_adapter(self.request)
+        context = {
+            "user": updated_customer_user.user,
+            "customer": updated_customer_user.customer,
+        }
+        managers_emails = self.customer.customer_users.managers().values_list("user__email", flat=True)
+
+        if existing_customer_user_user_data != updated_customer_user_user_data:
+            template_prefix = "astrosat_users/email/update_user"
+            adapter.send_mail(template_prefix, updated_customer_user.user.email, context, cc=managers_emails)
+
         if existing_customer_user.customer_user_type != updated_customer_user.customer_user_type:
 
             if updated_customer_user.customer_user_type == CustomerUserType.MANAGER:
@@ -197,9 +213,7 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
                 # customer_user was a MANAGER, now it's something else
                 template_prefix = "astrosat_users/email/admin_revoke"
 
-            adapter = get_adapter(self.request)
-            managers_emails = self.customer.customer_users.managers().values_list("user__email", flat=True)
-            adapter.send_mail(template_prefix, updated_customer_user.user.email, {}, cc=managers_emails)
+            adapter.send_mail(template_prefix, updated_customer_user.user.email, context, cc=managers_emails)
 
         return updated_customer_user
 
