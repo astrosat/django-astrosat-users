@@ -31,6 +31,7 @@ from dj_rest_auth.registration.views import (
 )
 
 from astrosat_users.conf import app_settings as astrosat_users_settings
+from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import (
     UserSerializerLite,
     KnoxTokenSerializer,
@@ -226,8 +227,21 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
     ```
     """
 
-    pass
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
 
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        user = serializer.user
+        if user.registration_stage == UserRegistrationStageType.ONBOARD:
+            user.onboard(adapter=get_adapter(request))
+            user.registration_stage = None
+            user.save()
+
+        return Response(
+            {"detail": _("Password has been reset with the new password.")}
+        )
 
 @method_decorator(
     sensitive_post_parameters("password1", "password2"), name="dispatch"

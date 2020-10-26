@@ -34,6 +34,7 @@ class UserRegistrationStageType(models.TextChoices):
     USER = "USER", _("User")
     CUSTOMER = "CUSTOMER", _("Customer")
     CUSTOMER_USER = "CUSTOMER_USER", _("CustomerUser")
+    ONBOARD = "ONBOARD", _("Onboard")
     ORDER = "ORDER", _("Order")
 
     __empty__ = _("None")
@@ -159,7 +160,7 @@ class User(AbstractUser):
 
         if customer:
             assert customer.users.filter(email=self.email).exists()
-            cc = customer.customer_users.managers().values_list("user__email", flat=True)
+            cc = customer.customer_users.managers().exclude(user=self).values_list("user__email", flat=True)
         else:
             cc = []
 
