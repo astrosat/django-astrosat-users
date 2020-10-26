@@ -1,0 +1,15 @@
+{% extends "astrosat_users/email/message_base.txt" %}
+
+{% load i18n %}
+
+{% block body %}
+
+  {% autoescape off %}
+
+    Hi,
+
+    The customer details for {{ customer.name }} has been changed.
+
+  {% endautoescape %}
+
+{% endblock %}

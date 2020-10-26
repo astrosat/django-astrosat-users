@@ -92,6 +92,25 @@ class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
     serializer_class = CustomerSerializer
 
+    def perform_update(self, serializer):
+
+        existing_customer = self.get_object()
+        updated_customer = serializer.save()
+
+        json_encoder = JSONEncoder()
+        existing_customer_data = json_encoder.encode(self.serializer_class(existing_customer).data)
+        updated_customer_data = json_encoder.encode(serializer.data)
+
+        if existing_customer_data != updated_customer_data:
+            adapter = get_adapter(self.request)
+            context = {
+                "customer": updated_customer,
+            }
+            managers_emails = updated_customer.customer_users.managers().values_list("user__email", flat=True)
+            adapter.send_mail("astrosat_users/email/update_customer", managers_emails, context)
+
+        return updated_customer
+
 
 class CustomerUserFilterSet(filters.FilterSet):
     class Meta:

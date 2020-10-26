@@ -107,6 +107,12 @@ class TestCustomerViews:
         customer.refresh_from_db()
         assert customer.name == new_name
 
+        # in addition to making the change,
+        # the view should also notify the user
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert "Update on your customer" in message.subject
+
     def test_list_customer_users(self, admin, mock_storage):
 
         N_CUSTOMER_USERS = 10
