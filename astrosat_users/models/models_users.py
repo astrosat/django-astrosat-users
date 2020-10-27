@@ -160,7 +160,7 @@ class User(AbstractUser):
 
         if customer:
             assert customer.users.filter(email=self.email).exists()
-            cc = customer.customer_users.managers().exclude(user=self).values_list("user__email", flat=True)
+            cc = customer.customer_users.managers().values_list("user__email", flat=True)
         else:
             cc = []
 
