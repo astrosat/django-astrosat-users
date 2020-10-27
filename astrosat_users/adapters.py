@@ -306,7 +306,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 raise TypeError('"bcc" argument must be a list or tuple')
             self.bcc = list(bcc)
         msg = self.render_mail(template_prefix, email, context)
-        msg.cc = [address for address in bcc if address != email]
+        msg.cc = [address for address in cc if address != email]
         msg.bcc = [address for address in bcc if address != email]
         msg.send()
 
