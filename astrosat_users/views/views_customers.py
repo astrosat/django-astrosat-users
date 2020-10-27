@@ -182,10 +182,12 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
     filterset_class = CustomerUserFilterSet
 
     def perform_create(self, serializer):
-        customer_user = serializer.save()
-        customer_user.invite(adapter=get_adapter(self.request))
-
         user = self.request.user
+
+        customer_user = serializer.save()
+        if user != customer_user.user:
+            customer_user.invite(adapter=get_adapter(self.request))
+
         if user.registration_stage == UserRegistrationStageType.CUSTOMER_USER:
             user.registration_stage = None
             user.save()
