@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     # api...
     "rest_framework",
     "django_filters",
-    "drf_yasg",
+    "drf_yasg2",
     "knox",
     # users...
     "allauth",

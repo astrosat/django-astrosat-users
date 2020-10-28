@@ -8,8 +8,8 @@ test = "pipenv run pytest"
 
 [dev-packages]
 django-debug-toolbar = "*"
-factory-boy = "*"
-pytest = "==5.3.5"
+factory-boy = "==3.0.1"
+pytest = "*"
 pytest-django = "*"
 pytest-sugar = "*"
 
@@ -18,11 +18,11 @@ django = "~=3.0"  # django, duh
 django-allauth = "*"  # user authentication
 django-environ = "*"  # better env handling
 django-filter = "*"  # richer api filters
-django-rest-framework = "*" # api
+djangorestframework = "*" # api
 djangorestframework-simplejwt = "*"  
 django-rest-knox = "*"  # secure tokens
 dj-rest-auth = {extras = ["with_social"],version = "*"}  # user authentication via api
-drf-yasg = "*"  # api documentation
+drf-yasg2 = "*"  # api documentation
 pillow = "*"  # images
 zxcvbn = "*"  # secure passwords
 django-astrosat-core = {editable = true,git = "https://github.com/astrosat/django-astrosat-core.git",ref = "master"}
