@@ -198,6 +198,9 @@ class CustomerUser(models.Model):
             token_key = token_generator.make_token(user)
             url = adapter.get_password_confirmation_url(adapter.request, user, token_key)
             context["password_reset_url"] = url
+        else:
+            url = adapter.get_login_url(adapter.request)
+            context["login_url"] = url
 
         if (
             allauth_app_settings.AUTHENTICATION_METHOD

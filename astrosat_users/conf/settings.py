@@ -15,6 +15,9 @@ PROJECT_SLUG = getattr(settings, "PROJECT_SLUG", slugify(PROJECT_NAME))
 PROJECT_EMAIL = getattr(settings, "PROJECT_EMAIL", "{role}@astrosat.net")
 
 
+ACCOUNT_LOGIN_CLIENT_URL = getattr(
+    settings, "ACCOUNT_LOGIN_CLIENT_URL", "login/"
+)
 ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = getattr(
     settings, "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", "verify-email/?key={key}"
 )
