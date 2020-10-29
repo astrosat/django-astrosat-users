@@ -491,11 +491,11 @@ class TestCustomerViews:
         assert new_content["invitation_date"] is not None
         assert new_content["user"]["change_password"] is True
 
-        RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
+        INVITATION_RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
 
         assert len(mail.outbox) == 2
-        assert RESET_PASSWORD_TEXT in mail.outbox[0].body
-        assert RESET_PASSWORD_TEXT in mail.outbox[1].body
+        assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[0].body
+        assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[1].body
 
     def test_resend_invitation_existing_customer_user(self, admin, user, mock_storage):
 
@@ -518,10 +518,12 @@ class TestCustomerViews:
         assert content["invitation_date"] is not None
         assert content["user"]["change_password"] is False
 
-        RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
+        INVITATION_RESET_PASSWORD_TEXT = "Please follow the link below to create a User Account and Password"
+        INVITATION_LOGIN_TEXT = "Please follow the link below to login"
 
         assert len(mail.outbox) == 1
-        assert RESET_PASSWORD_TEXT not in mail.outbox[0].body
+        assert INVITATION_RESET_PASSWORD_TEXT not in mail.outbox[0].body
+        assert INVITATION_LOGIN_TEXT in mail.outbox[0].body
 
     def test_onboard_customer_user(self, user, mock_storage):
 

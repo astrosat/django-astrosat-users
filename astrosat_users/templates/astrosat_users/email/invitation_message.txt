@@ -11,11 +11,17 @@
 
     Hi, you have been invited to {{ customer.name }}.
 
-    {% if url %}
+    {% if password_reset_url %}
 
       Please follow the link below to create a User Account and Password.
 
-      {{ url }}
+      {{ password_reset_url }}
+
+    {% elif login_url %}
+
+      Please follow the link below to login.
+
+      {{ login_url }}
 
     {% endif %}
 
