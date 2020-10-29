@@ -127,6 +127,22 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
 
         return user
 
+    def get_login_url(self, request):
+        """Constructs the login url.
+        """
+        if self.is_api:
+            # if the user registered via the API, then get the URL that the client should use
+            path = app_settings.ACCOUNT_LOGIN_CLIENT_URL
+        else:
+            # otherwise, just use the builtin allauth view
+            path = reverse("account_signup")
+        if self.is_api and "HTTP_ORIGIN" in request.META:
+            # request originates from a client on a different domain...
+            url = urljoin(request.META['HTTP_ORIGIN'], path)
+        else:
+            url = build_absolute_uri(request, path)
+        return url
+
     def get_email_confirmation_url(self, request, emailconfirmation):
         """Constructs the email confirmation (activation) url.
         Note that if you have architected your system such that email
