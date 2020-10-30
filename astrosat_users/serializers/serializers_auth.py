@@ -57,8 +57,11 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
             # the user might change accepted_terms...
             accepted_terms = self.initial_data.get("accepted_terms", None)
             if accepted_terms is not None:
-                user.accepted_terms = self.fields["accepted_terms"].to_internal_value(accepted_terms)
-                user.save()
+                accepted_terms_field = self.fields["accepted_terms"]
+                accepted_terms_value = accepted_terms_field.to_internal_value(accepted_terms)
+                if user.accepted_terms != accepted_terms_value:
+                    user.accepted_terms = accepted_terms_value
+                    user.save()
             adapter.check_user(user)
         except Exception as e:
             msg = {drf_settings.NON_FIELD_ERRORS_KEY: str(e)}
