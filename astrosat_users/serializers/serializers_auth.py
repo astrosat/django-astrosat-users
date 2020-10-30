@@ -35,9 +35,10 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
     id = serializers.UUIDField(read_only=True, source="uuid")
     is_verified = serializers.BooleanField(read_only=True)
     is_approved = serializers.BooleanField(read_only=True)
-    accepted_terms = serializers.BooleanField(read_only=True)
     registration_stage = serializers.CharField(read_only=True)
     change_password = serializers.BooleanField(read_only=True)
+
+    accepted_terms = serializers.BooleanField(required=False)
 
     # (even though I don't need the 'username' field, the 'validate()' fn checks its value)
     # (so I haven't bothered removing it; the client can deal w/ this)
@@ -49,10 +50,19 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
         but that uses this serializer for the user and so validation will be checked when processing the view.)
         """
         self.instance = super().validate(attrs)
+        user = self.instance["user"]
 
         adapter = get_adapter(self.context.get("request"))
         try:
-            adapter.check_user(self.instance["user"])
+            # the user might change accepted_terms...
+            accepted_terms = self.initial_data.get("accepted_terms", None)
+            if accepted_terms is not None:
+                accepted_terms_field = self.fields["accepted_terms"]
+                accepted_terms_value = accepted_terms_field.to_internal_value(accepted_terms)
+                if user.accepted_terms != accepted_terms_value:
+                    user.accepted_terms = accepted_terms_value
+                    user.save()
+            adapter.check_user(user)
         except Exception as e:
             msg = {drf_settings.NON_FIELD_ERRORS_KEY: str(e)}
             raise ValidationError(msg)

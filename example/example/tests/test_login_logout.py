@@ -43,6 +43,8 @@ class TestAPILoginLogout:
         url = kwargs.get("url", self.login_url)
         user = kwargs.get("user", UserFactory())
         data = {"email": user.email, "password": user.raw_password}
+        if "accepted_terms" in kwargs:
+            data["accepted_terms"] = kwargs.get("accepted_terms")
         response = client.post(url, data)
         return response
 
@@ -149,6 +151,39 @@ class TestAPILoginLogout:
 
         request_user = response.wsgi_request.user
         assert request_user == user
+
+    def test_login_accepted(self, user, user_settings):
+        """
+        tests that I can manipulate accepted_terms via login
+        """
+
+        user_settings.require_verification = False
+        user_settings.require_approval = False
+        user_settings.require_terms_acceptance = True
+        user_settings.save()
+
+        user.accepted_terms = False
+        user.save()
+
+        response = self.login(user=user, accepted_terms=True)
+        content = response.json()
+
+        assert status.is_success(response.status_code)
+        assert content["user"]["accepted_terms"] == True
+
+        request_user = response.wsgi_request.user
+        assert request_user == user
+
+        response = self.login(user=user, accepted_terms=False)
+        content = response.json()
+
+        assert status.is_client_error(response.status_code)
+        assert content["errors"] == {
+            drf_settings.NON_FIELD_ERRORS_KEY: [self.UNACCEPTED_TERMS.format(user)]
+        }
+
+        request_user = response.wsgi_request.user
+        assert request_user != user and not request_user.is_authenticated
 
     def test_login_change_password(self, user, user_settings):
 

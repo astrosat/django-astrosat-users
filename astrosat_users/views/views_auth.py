@@ -94,6 +94,10 @@ _login_schema = openapi.Schema(
                 "password",
                 openapi.Schema(type=openapi.TYPE_STRING, example="password")
             ),
+            (
+                "accepted_terms",
+                openapi.Schema(type=openapi.TYPE_BOOLEAN)
+            )
         )
     ),
 )
