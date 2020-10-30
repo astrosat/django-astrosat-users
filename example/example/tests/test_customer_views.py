@@ -338,6 +338,7 @@ class TestCustomerViews:
 
         assert customer.customer_users.count() == 1
         assert user.change_password is True
+        assert user.accepted_terms is False
         assert user.pk in customer.customer_users.values_list("user", flat=True)
         assert user.email == content["user"]["email"]
 
