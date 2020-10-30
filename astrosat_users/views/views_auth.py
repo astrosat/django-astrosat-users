@@ -240,7 +240,10 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
             user.save()
 
         return Response(
-            {"detail": _("Password has been reset with the new password.")}
+            {
+                "detail": _("Password has been reset with the new password."),
+                "user": UserSerializerLite(user).data
+            }
         )
 
 @method_decorator(
