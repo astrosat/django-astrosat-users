@@ -66,7 +66,7 @@ class CustomerUserSerializer(serializers.ModelSerializer):
             default_password = User.objects.make_random_password()
             user_data.update({
                 "change_password": True,
-                "accepted_terms": True,
+                "accepted_terms": False,
                 "password1": default_password,
                 "password2": default_password,
             })
