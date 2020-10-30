@@ -176,4 +176,27 @@ class TestApiPassword:
         assert status.is_success(response.status_code)
         assert user.check_password(password)
 
-        pass
+    def test_password_verify_reset_returns_user(self, user):
+        """
+        tests that resetting the password returns UserSerializerLite
+        in the response
+        """
+
+        password = generate_password()
+        token_key = get_adapter().default_token_generator.make_token(user)
+        uid = rest_encode_user_pk(user)
+
+        url = reverse("rest_password_reset_confirm")
+        client = APIClient()
+
+        data = {
+            "new_password1": password,
+            "new_password2": password,
+            "uid": uid,
+            "token": token_key,
+        }
+
+        response = client.post(url, data)
+        content = response.json()
+        assert status.is_success(response.status_code)
+        assert content["user"]["email"] == user.email
