@@ -160,12 +160,9 @@ class User(AbstractUser):
 
         if customer:
             assert customer.users.filter(email=self.email).exists()
-            cc = customer.customer_users.managers().values_list("user__email", flat=True)
-        else:
-            cc = []
 
         try:
-            adapter.send_mail(template_prefix, self.email, context, cc=cc)
+            adapter.send_mail(template_prefix, self.email, context)
         except TemplateDoesNotExist:
             # only send an email if the project has a corresponding template
             pass

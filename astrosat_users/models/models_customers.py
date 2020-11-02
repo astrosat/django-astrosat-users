@@ -208,8 +208,7 @@ class CustomerUser(models.Model):
         ):
             context["username"] = user_username(user)
 
-        managers_emails = customer.customer_users.managers().values_list("user__email", flat=True)
-        adapter.send_mail(template_prefix, user.email, context, cc=managers_emails)
+        adapter.send_mail(template_prefix, user.email, context)
 
         self.invitation_date = timezone.now()
         self.save()
@@ -225,8 +224,7 @@ class CustomerUser(models.Model):
         context["user"] = user
         context["customer"] = customer
 
-        managers_emails = customer.customer_users.managers().values_list("user__email", flat=True)
-        adapter.send_mail(template_prefix, user.email, context, cc=managers_emails)
+        adapter.send_mail(template_prefix, user.email, context)
 
         # Note: "CustomerUserDetailView.perform_destroy" usually does the actual deletion
         # This fn only deletes the CustomerUser if "force_deletion=True"
