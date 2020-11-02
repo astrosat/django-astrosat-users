@@ -219,11 +219,10 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
             "user": updated_customer_user.user,
             "customer": updated_customer_user.customer,
         }
-        managers_emails = self.customer.customer_users.managers().values_list("user__email", flat=True)
 
         if existing_customer_user_user_data != updated_customer_user_user_data:
             template_prefix = "astrosat_users/email/update_user"
-            adapter.send_mail(template_prefix, updated_customer_user.user.email, context, cc=managers_emails)
+            adapter.send_mail(template_prefix, updated_customer_user.user.email, context)
 
         if existing_customer_user.customer_user_type != updated_customer_user.customer_user_type:
 
@@ -234,7 +233,7 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
                 # customer_user was a MANAGER, now it's something else
                 template_prefix = "astrosat_users/email/admin_revoke"
 
-            adapter.send_mail(template_prefix, updated_customer_user.user.email, context, cc=managers_emails)
+            adapter.send_mail(template_prefix, updated_customer_user.user.email, context)
 
         return updated_customer_user
 

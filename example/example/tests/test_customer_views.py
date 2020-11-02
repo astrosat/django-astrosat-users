@@ -552,7 +552,7 @@ class TestCustomerViews:
         assert len(mail.outbox) == 1
         message = mail.outbox[0]
         assert EXAMPLE_ONBOARDING_TEXT in message.body
-        assert len(message.cc) == 0  # email should be stripped from cc b/c user is onboarding themselves
+        assert len(message.cc) == 0  # emails should not be cc'd
 
     def test_customer_user_assign_manager(self, admin, user, mock_storage):
 
