@@ -65,15 +65,20 @@ class CustomerUserSerializer(serializers.ModelSerializer):
             # new user, perform registration...
             default_password = User.objects.make_random_password()
             user_data.update({
+                "accepted_terms": True,
+                # accepted_terms must be True for registration to succeed
+                # (assuming UserSettings.require_terms_acceptance is True)
+                # but I want a newly-created user to have to explicitly accept terms
+                # so I update the value immediately after calling is_valid below
                 "change_password": True,
-                "accepted_terms": False,
                 "password1": default_password,
                 "password2": default_password,
             })
             register_serializer = RegisterSerializer(data=user_data)
             if register_serializer.is_valid():
-                request = self.context["request"]
-                user = register_serializer.save(request)
+                user_data.pop("accepted_terms")
+                register_serializer.validated_data["accepted_terms"] = False
+                user = register_serializer.save(self.context["request"])
             # no else block is needed; UserSerializerBasic will catch any errors
 
         user_serializer.update(user, user_data)
