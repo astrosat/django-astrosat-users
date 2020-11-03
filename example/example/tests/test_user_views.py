@@ -143,9 +143,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["email"], content)) == set(
-            map(lambda x: x.email, matching_users)
-        )
+        assert set(map(lambda x: x["email"],
+                       content)) == set(map(lambda x: x.email, matching_users))
 
         url_params = urllib.parse.urlencode(
             {"roles__all": ",".join([role.name for role in roles[:2]])}
@@ -157,9 +156,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["email"], content)) == set(
-            map(lambda x: x.email, matching_users)
-        )
+        assert set(map(lambda x: x["email"],
+                       content)) == set(map(lambda x: x.email, matching_users))
 
     def test_filter_permissions_users(self, admin, mock_storage):
 
@@ -170,7 +168,9 @@ class TestApiViews:
 
         users = [UserFactory() for _ in range(8)]
         permissions = [UserPermissionFactory() for _ in range(4)]
-        roles = [UserRoleFactory(permissions=[permissions[i]]) for i in range(4)]
+        roles = [
+            UserRoleFactory(permissions=[permissions[i]]) for i in range(4)
+        ]
 
         # user 0 has no permissions
         # user 1 has permission 0
@@ -191,9 +191,10 @@ class TestApiViews:
 
         url_params = urllib.parse.urlencode(
             {
-                "permissions__any": ",".join(
-                    [permission.name for permission in permissions[:2]]
-                )
+                "permissions__any":
+                    ",".join(
+                        [permission.name for permission in permissions[:2]]
+                    )
             }
         )
         matching_users = [users[1], users[2], users[5], users[6]]
@@ -203,15 +204,15 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["email"], content)) == set(
-            map(lambda x: x.email, matching_users)
-        )
+        assert set(map(lambda x: x["email"],
+                       content)) == set(map(lambda x: x.email, matching_users))
 
         url_params = urllib.parse.urlencode(
             {
-                "permissions__all": ",".join(
-                    [permission.name for permission in permissions[:2]]
-                )
+                "permissions__all":
+                    ",".join(
+                        [permission.name for permission in permissions[:2]]
+                    )
             }
         )
         matching_users = [users[5]]
@@ -221,9 +222,8 @@ class TestApiViews:
 
         assert status.is_success(response.status_code)
         assert len(content) == len(matching_users)
-        assert set(map(lambda x: x["email"], content)) == set(
-            map(lambda x: x.email, matching_users)
-        )
+        assert set(map(lambda x: x["email"],
+                       content)) == set(map(lambda x: x.email, matching_users))
 
     def test_get_user(self, admin, mock_storage):
 

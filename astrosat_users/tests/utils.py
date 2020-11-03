@@ -7,6 +7,7 @@ from dj_rest_auth.app_settings import TokenSerializer, create_token
 
 fake = Faker()
 
+
 def generate_password(**kwargs):
     """
     generates a password
@@ -19,7 +20,8 @@ def generate_password(**kwargs):
         "lower_case": True,
     }
     password_kwargs.update(kwargs)
-    assert password_kwargs["length"] >= 4  # faker will break if the pwd is _too_ short
+    assert password_kwargs["length"
+                          ] >= 4  # faker will break if the pwd is _too_ short
     return fake.password(**password_kwargs)
 
 

@@ -30,7 +30,6 @@ class TestTokens:
     """
     tests that TokenAuthentication works via the API
     """
-
     def test_get_token(self, user, user_settings):
 
         user_settings.require_approval = False

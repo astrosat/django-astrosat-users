@@ -6,7 +6,6 @@ from zxcvbn import zxcvbn
 
 from astrosat_users.conf import app_settings as astrosat_users_settings
 
-
 #########################
 # user image validation #
 #########################
@@ -17,7 +16,6 @@ class ImageDimensionsValidator:
     """
     Validates the user image file has the correct dimensions
     """
-
     def __init__(self, max_width=100, max_height=100):
         assert max_width > 0 and max_height > 0, "Invalid AvatarDimensionsValidator"
         self.max_width = max_width
@@ -33,9 +31,9 @@ class ImageDimensionsValidator:
 
     def __eq__(self, other):
         return (
-            isinstance(other, ImageDimensionsValidator)
-            and (self.max_height == other.max_height)
-            and (self.max_width == other.max_width)
+            isinstance(other, ImageDimensionsValidator) and
+            (self.max_height == other.max_height) and
+            (self.max_width == other.max_width)
         )
 
 
@@ -48,7 +46,6 @@ class LengthPasswordValidator:
     """
     Validates the password length is inside a range.
     """
-
     def __init__(
         self,
         min_length=astrosat_users_settings.PASSWORD_MIN_LENGTH,
@@ -90,14 +87,14 @@ class StrengthPasswordValidator:
         3 # safely unguessable: moderate protection from offline slow-hash scenario. (guesses < 10^10)
         4 # very unguessable: strong protection from offline slow-hash scenario. (guesses >= 10^10)
     """
-
     def __init__(self, strength=astrosat_users_settings.PASSWORD_STRENGTH):
         assert 0 <= strength <= 4, "Invalid StrongPasswordValidator strength."
         self.strength = strength
 
     def validate(self, password, user=None):
 
-        user_inputs = [user.email, user.username, user.name] if user is not None else []
+        user_inputs = [user.email, user.username, user.name
+                      ] if user is not None else []
 
         password_results = zxcvbn(password, user_inputs=user_inputs)
 

@@ -15,7 +15,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         parser.add_argument(
-            "--username", required=True, dest="username", help="The username to verify."
+            "--username",
+            required=True,
+            dest="username",
+            help="The username to verify."
         )
 
     def handle(self, *args, **options):

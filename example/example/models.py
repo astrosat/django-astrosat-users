@@ -8,7 +8,6 @@ class ExampleProfile(models.Model):
     """
     A silly user profile, just for testing.
     """
-
     class Meta:
         verbose_name = "Example Profile"
         verbose_name_plural = "Example Profiles"
@@ -19,7 +18,9 @@ class ExampleProfile(models.Model):
     )
 
     # some silly fields for playing w/ profiles...
-    age = models.IntegerField(blank=True, null=True, help_text=_("Age in years."))
+    age = models.IntegerField(
+        blank=True, null=True, help_text=_("Age in years.")
+    )
     height = models.FloatField(
         blank=True, null=True, help_text=_("Height in centimeters.")
     )
@@ -30,7 +31,7 @@ class ExampleProfile(models.Model):
     @property
     def body_mass_index(self):
         if self.weight and self.height:
-            return self.weight / ((self.height / 100) ** 2)
+            return self.weight / ((self.height / 100)**2)
         return None
 
     def __str__(self):

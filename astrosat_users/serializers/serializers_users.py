@@ -10,7 +10,6 @@ class UserSerializerLite(serializers.ModelSerializer):
     in-case the client needs that information to submit a POST (for example, to resend
     the verification email, and for the RegisterView)
     """
-
     class Meta:
         model = User
         fields = (
@@ -32,7 +31,6 @@ class UserSerializerBasic(serializers.ModelSerializer):
     The serializer used by the customer user views; only includes
     fields that a customer manager should access
     """
-
     class Meta:
         model = User
         fields = [
@@ -75,7 +73,9 @@ class UserSerializerBasic(serializers.ModelSerializer):
         returns a read-only list of permissions belonging to the user
         """
         roles_qs = obj.roles.exclude(permissions__isnull=True)
-        permission_names_qs = roles_qs.values_list("permissions__name", flat=True)
+        permission_names_qs = roles_qs.values_list(
+            "permissions__name", flat=True
+        )
         return permission_names_qs.distinct()
 
     def to_representation(self, instance):
@@ -84,9 +84,8 @@ class UserSerializerBasic(serializers.ModelSerializer):
         for profile_key, profile in instance.profiles.items():
             if profile:
                 profile_serializer_class = profile.get_serializer_class()
-                profiles_representation[
-                    profile_key
-                ] = profile_serializer_class().to_representation(profile)
+                profiles_representation[profile_key] = profile_serializer_class(
+                ).to_representation(profile)
 
         representation = super().to_representation(instance)
         representation.update({"profiles": profiles_representation})
@@ -105,9 +104,8 @@ class UserSerializerBasic(serializers.ModelSerializer):
             for profile_key, profile_data in data["profiles"].items():
                 profile_class = PROFILES_REGISTRY[profile_key]
                 profile_serializer_class = profile_class.get_serializer_class()
-                profiles_internal_value[
-                    profile_key
-                ] = profile_serializer_class().to_internal_value(profile_data)
+                profiles_internal_value[profile_key] = profile_serializer_class(
+                ).to_internal_value(profile_data)
 
         internal_value = super().to_internal_value(data)
 
@@ -135,7 +133,6 @@ class UserSerializer(UserSerializerBasic):
     The serializer used by the user views; includes all the basic
     fields plus some extra details - most notably, customers
     """
-
     class Meta:
         model = User
         fields = UserSerializerBasic.Meta.fields + [
@@ -156,6 +153,5 @@ class UserSerializer(UserSerializerBasic):
                 "type": customer_user.customer_user_type,
                 "status": customer_user.customer_user_status,
                 "id": str(customer_user.customer.id),
-            }
-            for customer_user in obj.customer_users.all()
+            } for customer_user in obj.customer_users.all()
         ]

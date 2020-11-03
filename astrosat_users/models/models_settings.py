@@ -12,7 +12,8 @@ class UserSettings(SingletonMixin, models.Model):
         verbose_name_plural = "User Settings"
 
     allow_registration = models.BooleanField(
-        default=True, help_text=_("Allow users to register via the 'sign up' views.")
+        default=True,
+        help_text=_("Allow users to register via the 'sign up' views.")
     )
     enable_backend_access = models.BooleanField(
         default=True,
@@ -36,25 +37,22 @@ class UserSettings(SingletonMixin, models.Model):
     )
     require_verification = models.BooleanField(
         default=True,
-        help_text=_("Require an email verification step to the sign up process."),
+        help_text=_(
+            "Require an email verification step to the sign up process."
+        ),
     )
 
     password_min_length = models.PositiveIntegerField(
-        default=6,
-        help_text=_(
-            "Minimum length of a user password"
-        )
+        default=6, help_text=_("Minimum length of a user password")
     )
     password_max_length = models.PositiveIntegerField(
-        default=255,
-        help_text=_(
-            "Maximum length of a user password"
-        )
+        default=255, help_text=_("Maximum length of a user password")
     )
 
     password_strength = models.IntegerField(
         default=2,
-        validators=[MinValueValidator(0), MaxValueValidator(4)],
+        validators=[MinValueValidator(0),
+                    MaxValueValidator(4)],
         help_text=_(
             "Strength of password field as per <a href='github.com/dropbox/zxcvbn'>zxcvbn</a>"
         )
@@ -65,4 +63,6 @@ class UserSettings(SingletonMixin, models.Model):
 
     def clean(self):
         if self.password_max_length < self.password_min_length:
-            raise ValidationError("password_max_length must be greater than or equal to password_min_length.")
+            raise ValidationError(
+                "password_max_length must be greater than or equal to password_min_length."
+            )

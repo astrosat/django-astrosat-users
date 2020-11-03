@@ -15,6 +15,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to=astrosat_users.models.models_users.user_avatar_path, validators=[astrosat_users.validators.ImageDimensionsValidator()]),
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to=astrosat_users.models.models_users.user_avatar_path,
+                validators=[
+                    astrosat_users.validators.ImageDimensionsValidator()
+                ]
+            ),
         ),
     ]

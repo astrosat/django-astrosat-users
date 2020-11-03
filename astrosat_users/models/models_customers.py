@@ -70,22 +70,29 @@ class Customer(models.Model):
     is_active = models.BooleanField(default=True)
 
     users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, through="CustomerUser", related_name="customers"
+        settings.AUTH_USER_MODEL,
+        through="CustomerUser",
+        related_name="customers"
     )
 
     customer_type = models.CharField(
-        max_length=64, choices=CustomerType.choices, default=CustomerType.MULTIPLE
+        max_length=64,
+        choices=CustomerType.choices,
+        default=CustomerType.MULTIPLE
     )
 
-    name = models.CharField( unique=True, blank=False, null=False, max_length=128)
-    official_name = models.CharField(unique=True, blank=True, null=True, max_length=128)
-    company_type = models.CharField(
-        choices=CompanyTypes.choices,
-        blank=True,
-        null=True,
-        max_length=64
+    name = models.CharField(
+        unique=True, blank=False, null=False, max_length=128
     )
-    registered_id = models.CharField(unique=True, blank=True, null=True, max_length=128)
+    official_name = models.CharField(
+        unique=True, blank=True, null=True, max_length=128
+    )
+    company_type = models.CharField(
+        choices=CompanyTypes.choices, blank=True, null=True, max_length=64
+    )
+    registered_id = models.CharField(
+        unique=True, blank=True, null=True, max_length=128
+    )
     description = models.TextField(blank=True, null=True)
     logo = models.FileField(upload_to=customer_logo_path, blank=True, null=True)
     url = models.URLField(blank=True, null=True)
@@ -126,8 +133,10 @@ class Customer(models.Model):
 class CustomerUserManager(models.Manager):
     def add_user(self, user, **kwargs):
         defaults = {
-            "customer_user_type": kwargs.get("type", CustomerUserType.MEMBER),
-            "customer_user_status": kwargs.get("status", CustomerUserStatus.PENDING),
+            "customer_user_type":
+                kwargs.get("type", CustomerUserType.MEMBER),
+            "customer_user_status":
+                kwargs.get("status", CustomerUserStatus.PENDING),
         }
         return self.update_or_create(user=user, defaults=defaults)
 
@@ -161,10 +170,14 @@ class CustomerUser(models.Model):
     )
 
     customer_user_type = models.CharField(
-        max_length=64, choices=CustomerUserType.choices, default=CustomerUserType.MEMBER
+        max_length=64,
+        choices=CustomerUserType.choices,
+        default=CustomerUserType.MEMBER
     )
     customer_user_status = models.CharField(
-        max_length=64, choices=CustomerUserStatus.choices, default=CustomerUserStatus.PENDING
+        max_length=64,
+        choices=CustomerUserStatus.choices,
+        default=CustomerUserStatus.PENDING
     )
 
     invitation_date = models.DateTimeField(null=True, blank=True)
@@ -186,7 +199,9 @@ class CustomerUser(models.Model):
 
         adapter = kwargs.get("adapter", get_adapter())
         context = kwargs.get("context", {})
-        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/invitation")
+        template_prefix = kwargs.get(
+            "template_prefix", "astrosat_users/email/invitation"
+        )
 
         user = self.user
         customer = self.customer
@@ -194,17 +209,21 @@ class CustomerUser(models.Model):
         context["customer"] = customer
 
         if user.change_password:
-            token_generator = kwargs.get("token_generator", adapter.default_token_generator)
+            token_generator = kwargs.get(
+                "token_generator", adapter.default_token_generator
+            )
             token_key = token_generator.make_token(user)
-            url = adapter.get_password_confirmation_url(adapter.request, user, token_key)
+            url = adapter.get_password_confirmation_url(
+                adapter.request, user, token_key
+            )
             context["password_reset_url"] = url
         else:
             url = adapter.get_login_url(adapter.request)
             context["login_url"] = url
 
         if (
-            allauth_app_settings.AUTHENTICATION_METHOD
-            != allauth_app_settings.AuthenticationMethod.EMAIL
+            allauth_app_settings.AUTHENTICATION_METHOD !=
+            allauth_app_settings.AuthenticationMethod.EMAIL
         ):
             context["username"] = user_username(user)
 
@@ -217,7 +236,9 @@ class CustomerUser(models.Model):
 
         adapter = kwargs.get("adapter", get_adapter())
         context = kwargs.get("context", {})
-        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/uninvitation")
+        template_prefix = kwargs.get(
+            "template_prefix", "astrosat_users/email/uninvitation"
+        )
 
         user = self.user
         customer = self.customer

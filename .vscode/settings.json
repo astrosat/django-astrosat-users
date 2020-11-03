@@ -1,0 +1,31 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/*.pyc": true,
+    "**/__pycache__": true
+  },
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "python.pythonPath": "./example/.venv/bin/python",
+  "python.autoComplete.extraPaths": ["./example/"],
+  "python.formatting.provider": "yapf",
+  "python.formatting.yapfPath": "./example/.venv/bin/yapf",
+  "python.formatting.yapfArgs": [
+    "--style={based_on_style: facebook, indent_width: 4}"
+  ],
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintPath": "./example/.venv/bin/pylint",
+  "python.linting.pylintUseMinimalCheckers": false,
+  "python.linting.lintOnSave": true,
+  "[python]": {
+    "editor.tabSize": 4
+  },
+  "python.analysis.extraPaths": [
+    "./example/"
+  ]
+}

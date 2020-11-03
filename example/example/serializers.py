@@ -7,10 +7,11 @@ class ExampleProfileSerializer(serializers.ModelSerializer):
     """
     A silly serializer, just for testing.
     """
-
     class Meta:
         model = ExampleProfile
-        fields = ("age", "height", "weight", "body_mass_index", "some_custom_field")
+        fields = (
+            "age", "height", "weight", "body_mass_index", "some_custom_field"
+        )
 
     some_custom_field = serializers.SerializerMethodField()
 

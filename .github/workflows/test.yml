@@ -15,7 +15,7 @@ jobs:
       - name: Setup Container
         run: |
           apt-get update && apt-get install -y postgresql-client python3-gdal
-          pip3 install --upgrade --no-cache-dir "pip==19.1.1"
+          pip3 install --upgrade --no-cache-dir pip
           pip3 install --upgrade --no-cache-dir pipenv
 
       - name: Setup Environment

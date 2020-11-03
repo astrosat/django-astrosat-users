@@ -11,7 +11,6 @@ from astrosat_users.serializers.serializers_profiles import (
 
 
 class UserProfileField(OneToOneField):
-
     """
     A special field to use when defining a UserProfile.
 
@@ -25,7 +24,6 @@ class UserProfileField(OneToOneField):
     "user@profiles" property returns a dictionary of all profiles belonging to a user
     (keyed by "related_name").  All possible profile classess are stored in the PROFILES dictionary above.
     """
-
     def __init__(self, *args, **kwargs):
 
         self.key = kwargs.get("related_name", None)
@@ -61,9 +59,13 @@ class UserProfileField(OneToOneField):
         # using lambdas to pass a fn which gets the serializer on-demand
         # instead of trying to get it inline here (which could result in circular dependencies)
         if self.serializer_class is not None:
-            get_serializer_fn = lambda *args: import_string(self.serializer_class)
+            get_serializer_fn = lambda *args: import_string(
+                self.serializer_class
+            )
         else:
-            get_serializer_fn = lambda *args: GenericProfileSerializerFactory(cls)
+            get_serializer_fn = lambda *args: GenericProfileSerializerFactory(
+                cls
+            )
         setattr(cls, "get_serializer_class", get_serializer_fn)
 
     def contribute_to_related_class(self, cls, related):

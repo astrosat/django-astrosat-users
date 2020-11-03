@@ -11,13 +11,11 @@ from astrosat_users.utils import rest_decode_user_pk, rest_encode_user_pk
 
 from .factories import *
 
-
 NON_FIELD_ERRORS_KEY = "non_field_errors"
 
 
 @pytest.mark.django_db
 class TestRegistrationErrors:
-
     """
     Make sure all the errors to do w/ registration are as expected
     """
@@ -62,7 +60,11 @@ class TestRegistrationErrors:
         }
 
         UNNACCEPTED_TERMS_ERROR_RESPONSE = {
-            "errors": {"accepted_terms": ["Accepting terms & conditions is required."]}
+            "errors":
+                {
+                    "accepted_terms":
+                        ["Accepting terms & conditions is required."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -81,9 +83,7 @@ class TestRegistrationErrors:
 
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
-                "password1": [
-                    "The password must not be weak."
-                ]
+                "password1": ["The password must not be weak."]
             }
         }
 
@@ -102,7 +102,11 @@ class TestRegistrationErrors:
         }
 
         NON_MATCHING_PASSWORD_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: ["The two password fields didn't match."]}
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        ["The two password fields didn't match."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -121,9 +125,13 @@ class TestRegistrationErrors:
         }
 
         EXISTING_USER_ERROR_RESPONSE = {
-            "errors": {
-                "email": ["A user is already registered with this e-mail address."]
-            }
+            "errors":
+                {
+                    "email":
+                        [
+                            "A user is already registered with this e-mail address."
+                        ]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -134,10 +142,15 @@ class TestRegistrationErrors:
 
         client = APIClient()
 
-        test_data = {"email": user_data["email"], "password1": user_data["password"]}
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"]
+        }
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"password2": ["This field is required."]}
+            "errors": {
+                "password2": ["This field is required."]
+            }
         }
 
         response = client.post(self.url, test_data)
@@ -154,12 +167,17 @@ class TestLoginErrors:
 
         client = APIClient()
 
-        test_data = {"email": user_data["email"], "password": user_data["password"]}
+        test_data = {
+            "email": user_data["email"],
+            "password": user_data["password"]
+        }
 
         UNKNOWN_USER_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
-            }
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        ["Unable to log in with provided credentials."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -170,12 +188,17 @@ class TestLoginErrors:
 
         client = APIClient()
 
-        test_data = {"email": user.email, "password": shuffle_string(user.raw_password)}
+        test_data = {
+            "email": user.email,
+            "password": shuffle_string(user.raw_password)
+        }
 
         INCORRECT_PASSWORD_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
-            }
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        ["Unable to log in with provided credentials."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -189,7 +212,9 @@ class TestLoginErrors:
         test_data = {"email": user.email}
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"password": ["This field is required."]}
+            "errors": {
+                "password": ["This field is required."]
+            }
         }
 
         response = client.post(self.url, test_data)
@@ -212,9 +237,11 @@ class TestLoginErrors:
         # TODO: THOUGHT THIS WOULD RETURN "User account is disabled."
         # TODO: BUT LOW-LEVEL DJANGO-NESS: https://github.com/pennersr/django-allauth/blob/b52a61b4d5c74c586f032c761cd0f902df20fd4b/allauth/account/auth_backends.py#L62
         INACTIVE_USER_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: ["Unable to log in with provided credentials."]
-            }
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        ["Unable to log in with provided credentials."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -237,7 +264,9 @@ class TestLoginErrors:
         test_data = {"email": user.email, "password": user.raw_password}
 
         UNVERIFIED_USER_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: [f"User {user} is not verified."]}
+            "errors": {
+                NON_FIELD_ERRORS_KEY: [f"User {user} is not verified."]
+            }
         }
 
         response = client.post(self.url, test_data)
@@ -261,7 +290,11 @@ class TestLoginErrors:
         test_data = {"email": user.email, "password": user.raw_password}
 
         UNAPPROVED_USER_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: [f"User {user} has not been approved."]}
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        [f"User {user} has not been approved."]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -285,11 +318,13 @@ class TestLoginErrors:
         test_data = {"email": user.email, "password": user.raw_password}
 
         UNACCEPTED_USER_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: [
-                    f"User {user} has not yet accepted the terms & conditions."
-                ]
-            }
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        [
+                            f"User {user} has not yet accepted the terms & conditions."
+                        ]
+                }
         }
 
         response = client.post(self.url, test_data)
@@ -341,7 +376,10 @@ class TestPasswordErrors:
         # TODO: THERE IS AN INCONSISTENCY IN DJANGO!  ("didn’t" instead of "didn't") BAD BAD DJANGO!
         # TODO: https://github.com/django/django/blob/505fec6badba0622bbf97bb659188c3d62a9bc58/django/contrib/auth/forms.py#L334
         NON_MATCHING_PASSWORD_ERROR_RESPONSE = {
-            "errors": {"new_password2": ["The two password fields didn’t match."]}
+            "errors":
+                {
+                    "new_password2": ["The two password fields didn’t match."]
+                }
         }
 
         response = client.post(self.change_url, test_data)
@@ -357,7 +395,9 @@ class TestPasswordErrors:
         test_data = {"new_password1": user.raw_password}
 
         MISSING_FIELD_ERROR_RESPONSE = {
-            "errors": {"new_password2": ["This field is required."]}
+            "errors": {
+                "new_password2": ["This field is required."]
+            }
         }
 
         response = client.post(self.change_url, test_data)
@@ -374,9 +414,7 @@ class TestPasswordErrors:
 
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
-                "new_password2": [
-                    "The password must not be weak."
-                ]
+                "new_password2": ["The password must not be weak."]
             }
         }
 
@@ -395,9 +433,13 @@ class TestPasswordErrors:
         test_data = {"email": user_data["email"]}
 
         UNKNOWN_USER_ERROR_RESPONSE = {
-            "errors": {
-                "email": ["The e-mail address is not assigned to any user account"]
-            }
+            "errors":
+                {
+                    "email":
+                        [
+                            "The e-mail address is not assigned to any user account"
+                        ]
+                }
         }
 
         response = client.post(self.reset_url, test_data)
@@ -424,9 +466,7 @@ class TestPasswordErrors:
 
         INVALID_PASSWORD_ERROR_RESPONSE = {
             "errors": {
-                "new_password2": [
-                    "The password must not be weak."
-                ]
+                "new_password2": ["The password must not be weak."]
             }
         }
 
@@ -449,7 +489,11 @@ class TestPasswordErrors:
             "token": shuffle_string(token_key),
         }
 
-        INVALID_KEY_ERROR_RESPONSE = {"errors": {"token": ["The link is broken or expired."]}}
+        INVALID_KEY_ERROR_RESPONSE = {
+            "errors": {
+                "token": ["The link is broken or expired."]
+            }
+        }
 
         response = client.post(self.reset_confirm_url, test_data)
         assert status.is_client_error(response.status_code)
@@ -476,11 +520,13 @@ class TestEmailErrors:
         test_data = {"email": user_data["email"]}
 
         UNKNOWN_USER_ERROR_RESPONSE = {
-            "errors": {
-                NON_FIELD_ERRORS_KEY: [
-                    f"Unable to find user with '{test_data['email']}' address."
-                ]
-            }
+            "errors":
+                {
+                    NON_FIELD_ERRORS_KEY:
+                        [
+                            f"Unable to find user with '{test_data['email']}' address."
+                        ]
+                }
         }
 
         response = client.post(self.send_email_verifciation_url, test_data)
@@ -497,7 +543,11 @@ class TestEmailErrors:
 
         test_data = {}
 
-        MISSING_KEY_ERROR_RESPONSE = {"errors": {"key": ["This field is required."]}}
+        MISSING_KEY_ERROR_RESPONSE = {
+            "errors": {
+                "key": ["This field is required."]
+            }
+        }
 
         response = client.post(self.verify_email_url, test_data)
         assert status.is_client_error(response.status_code)
@@ -510,7 +560,9 @@ class TestEmailErrors:
         test_data = {"key": "invalid_key"}
 
         INVALID_KEY_ERROR_RESPONSE = {
-            "errors": {NON_FIELD_ERRORS_KEY: ["This is an invalid key."]}
+            "errors": {
+                NON_FIELD_ERRORS_KEY: ["This is an invalid key."]
+            }
         }
 
         response = client.post(self.verify_email_url, test_data)

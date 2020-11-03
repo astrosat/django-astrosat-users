@@ -7,7 +7,6 @@ from django.shortcuts import render
 
 from astrosat_users.models import UserPermission, UserRole
 
-
 # don't let the built-in Django Roles system
 # get in-the-way-of the astrosat_users roles
 try:
@@ -18,7 +17,6 @@ try:
     admin.site.unregister(Permission)
 except admin.sites.NotRegistered:
     pass
-
 
 #################
 # admin classes #
@@ -32,7 +30,7 @@ class UserPermissionAdmin(admin.ModelAdmin):
 
 @admin.register(UserRole)
 class UserRoleAdmin(admin.ModelAdmin):
-    filter_horizontal = ("permissions",)
+    filter_horizontal = ("permissions", )
 
 
 #################
@@ -44,14 +42,17 @@ def update_roles_action(modeladmin, request, queryset):
     """
     used by UserAdmin & CustomerAdmin to update roles in bulk
     """
-
     class UpdateRolesForm(forms.Form):
         _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
         included_roles = forms.ModelMultipleChoiceField(
-            required=False, label="Included Roles", queryset=UserRole.objects.all()
+            required=False,
+            label="Included Roles",
+            queryset=UserRole.objects.all()
         )
         excluded_roles = forms.ModelMultipleChoiceField(
-            required=False, label="Excluded Roles", queryset=UserRole.objects.all()
+            required=False,
+            label="Excluded Roles",
+            queryset=UserRole.objects.all()
         )
 
         def clean(self):
@@ -65,7 +66,10 @@ def update_roles_action(modeladmin, request, queryset):
 
     update_roles_form = UpdateRolesForm(
         request.POST or None,
-        initial={"_selected_action": request.POST.getlist(admin.helpers.ACTION_CHECKBOX_NAME)},
+        initial={
+            "_selected_action":
+                request.POST.getlist(admin.helpers.ACTION_CHECKBOX_NAME)
+        },
     )
 
     if "apply" in request.POST:
@@ -95,7 +99,9 @@ def update_roles_action(modeladmin, request, queryset):
         "form": update_roles_form,
         "objects": queryset,
     }
-    return render(request, "astrosat_users/admin/update_roles.html", context=context)
+    return render(
+        request, "astrosat_users/admin/update_roles.html", context=context
+    )
 
 
 update_roles_action.short_description = (

@@ -5,7 +5,6 @@ import astrosat_users
 
 register = template.Library()
 
-
 ##################
 # some constants #
 ##################

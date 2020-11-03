@@ -33,8 +33,8 @@ class CustomerAdmin(admin.ModelAdmin):
         "address",
         "postcode",
     )
-    inlines = (CustomerUserAdminInline,)
+    inlines = (CustomerUserAdminInline, )
     list_display = ("name", "customer_type")
-    list_filter = ("customer_type",)
-    readonly_fields = ("id",)
+    list_filter = ("customer_type", )
+    readonly_fields = ("id", )
     search_fields = ("name", "official_name")

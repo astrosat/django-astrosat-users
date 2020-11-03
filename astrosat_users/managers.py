@@ -1,7 +1,6 @@
 from django.contrib.auth.models import BaseUserManager
 from django.db import models
 
-
 # Using a custom QuerySet _and_ a custom Manager may seem needlessly complicated.  But I can't just use
 # "QuerySet.as_manager()" w/ AbstractUser b/c I also need to override create_user & create_superuser.
 # (as per https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#writing-a-manager-for-a-custom-user-model)

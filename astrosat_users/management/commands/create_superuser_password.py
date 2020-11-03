@@ -32,7 +32,9 @@ class Command(createsuperuser.Command):
         username = options.get("username")
 
         if password and not username:
-            raise CommandError("--username is required if specifying --password")
+            raise CommandError(
+                "--username is required if specifying --password"
+            )
 
         super(Command, self).handle(*args, **options)
 

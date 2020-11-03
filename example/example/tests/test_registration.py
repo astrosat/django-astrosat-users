@@ -20,7 +20,6 @@ from astrosat_users.views.views_auth import REGISTRATION_CLOSED_MSG
 
 from .factories import *
 
-
 UserModel = get_user_model()
 
 
@@ -128,7 +127,9 @@ class TestApiRegistration:
         assert test_data["email"] in email.to
         assert confirmation_url in email.body
 
-    def test_registration_sends_notification_email(self, user_settings, user_data):
+    def test_registration_sends_notification_email(
+        self, user_settings, user_data
+    ):
         """
         Tests that registering a user sends an email to the admin
         """
@@ -188,7 +189,8 @@ class TestApiRegistration:
         assert user.is_verified is False
 
         valid_email = user.email
-        invalid_email = shuffle_string(user.username) + "@" + valid_email.split("@")[1]
+        invalid_email = shuffle_string(user.username
+                                      ) + "@" + valid_email.split("@")[1]
 
         client = APIClient()
         url = reverse("rest_send_email_verification")
@@ -281,7 +283,9 @@ class TestBackendRegistration:
         response = client.post(self.registration_url, test_data)
 
         assert status.is_redirect(response.status_code)
-        assert resolve(response.url).view_name == "account_email_verification_sent"
+        assert resolve(
+            response.url
+        ).view_name == "account_email_verification_sent"
 
         user = UserModel.objects.get(email=user_data["email"])
         assert UserModel.objects.count() == 1
@@ -315,7 +319,9 @@ class TestBackendRegistration:
 
         assert status.is_redirect(response.status_code)
         assert not request_user.is_authenticated
-        assert resolve(response.url).view_name == "account_email_verification_sent"
+        assert resolve(
+            response.url
+        ).view_name == "account_email_verification_sent"
 
     def test_registration_sends_confirmation_email(self, user_data):
         """
@@ -335,14 +341,17 @@ class TestBackendRegistration:
 
         user = UserModel.objects.get(email=test_data["email"])
         confirmation_url = reverse(
-            "account_confirm_email", kwargs={"key": user.latest_confirmation_key}
+            "account_confirm_email",
+            kwargs={"key": user.latest_confirmation_key}
         )
         email = mail.outbox[0]
 
         assert test_data["email"] in email.to
         assert confirmation_url in email.body
 
-    def test_registration_sends_notification_email(self, user_settings, user_data):
+    def test_registration_sends_notification_email(
+        self, user_settings, user_data
+    ):
         """
         Tests that registering a user sends an email to the admin
         """
@@ -384,7 +393,8 @@ class TestBackendRegistration:
 
         user = UserModel.objects.get(email=test_data["email"])
         valid_verification_url = reverse(
-            "account_confirm_email", kwargs={"key": user.latest_confirmation_key}
+            "account_confirm_email",
+            kwargs={"key": user.latest_confirmation_key}
         )
         invalid_verification_url = reverse(
             "account_confirm_email",

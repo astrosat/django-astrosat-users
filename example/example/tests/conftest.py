@@ -46,7 +46,9 @@ def user(mock_storage):
 @pytest.fixture
 def admin():
     UserModel = get_user_model()
-    admin = UserModel.objects.create_superuser("admin", "admin@admin.com", "password")
+    admin = UserModel.objects.create_superuser(
+        "admin", "admin@admin.com", "password"
+    )
     admin.verify()
     return admin
 
