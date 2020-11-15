@@ -10,6 +10,8 @@ from allauth.account.adapter import get_adapter
 
 from django_filters import rest_framework as filters
 
+from astrosat.decorators import swagger_fake
+
 from astrosat_users.models import Customer, CustomerUser
 from astrosat_users.models.models_customers import CustomerUserType
 from astrosat_users.models.models_users import UserRegistrationStageType
@@ -43,26 +45,13 @@ class CustomerViewMixin(object):
 
     # DRY way of customizing object retrieval for the 2 views below
 
+    @cached_property
+    def customer(self):
+        return self.get_object()
+
     @property
     def active_managers(self):
-        customer = self.get_object()
-        return customer.customer_users.managers().active()
-
-    def get_object(self):
-        if getattr(self, "swagger_fake_view", False):
-            # object just for schema generation metadata (when there are no kwargs)
-            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
-            return None
-
-        return super().get_object()
-
-    def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            # queryset just for schema generation metadata
-            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
-            return Customer.objects.none()
-
-        return Customer.objects.multiple()
+        return self.customer.customer_users.managers().active()
 
 
 class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
@@ -74,6 +63,7 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
         IsAuthenticated,
         UserRegistrationStagePermission(UserRegistrationStageType.CUSTOMER)
     )
+    queryset = Customer.objects.multiple()
     serializer_class = CustomerSerializer
 
     def perform_create(self, serializer):
@@ -84,12 +74,14 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
             user.save()
         return customer
 
+
 class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
 
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
 
     permission_classes = [IsAuthenticated, IsAdminOrManager]
+    queryset = Customer.objects.multiple()
     serializer_class = CustomerSerializer
 
     def perform_update(self, serializer):
@@ -135,12 +127,8 @@ class CustomerUserViewMixin(object):
     def active_managers(self):
         return self.customer.customer_users.managers().active()
 
+    @swagger_fake(None)
     def get_object(self):
-        if getattr(self, "swagger_fake_view", False):
-            # object just for schema generation metadata (when there are no kwargs)
-            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
-            return None
-
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
         user_uuid = self.kwargs["user_id"]
@@ -149,12 +137,8 @@ class CustomerUserViewMixin(object):
         self.check_object_permissions(self.request, obj)
         return obj
 
+    @swagger_fake(CustomerUser.objects.none())
     def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            # queryset just for schema generation metadata (when there are no kwargs)
-            # as per https://github.com/axnsan12/drf-yasg/issues/333#issuecomment-474883875
-            return CustomerUser.objects.none()
-
         return self.customer.customer_users.select_related("user").all()
 
     def get_serializer_context(self):
