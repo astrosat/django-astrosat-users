@@ -13,10 +13,20 @@ from .serializers_auth import RegisterSerializer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("id", "type", "name", "official_name", "company_type", "registered_id","description", "logo", "url", "country", "address", "postcode")
+        fields = ("id", "type", "name", "official_name", "company_type", "registered_id", "description", "logo", "url", "country", "address", "postcode")
 
     id = serializers.UUIDField(read_only=True)
     type = serializers.CharField(source="customer_type")
+
+    def validate(self, data):
+        # the client sometimes includes empty strings as data
+        # these should be converted to None for some fields
+        ignorable_fields = ["official_name", "registered_id"]
+        for field_name in ignorable_fields:
+            field_value = data.get(field_name)
+            if field_value is not None and not field_value:
+                data[field_name] = None
+        return data
 
 
 class CustomerUserSerializer(serializers.ModelSerializer):
