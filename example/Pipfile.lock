@@ -34,17 +34,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:51c419d890ae216b9b031be31f3182739dc3deb5b64351f286bffca2818ddb35",
-                "sha256:d70d21ea137d786e84124639a62be42f92f4b09472ebfb761156057c92dc5366"
+                "sha256:066b9dfd466e42c206dbbd282da030a6d5cade4ef7e9f1c90a79ebde1310b217",
+                "sha256:bb8ecadd1c8dc8b27c72642567adcd910b2fc3c2fe95b5df3796b647dc47abb9"
             ],
-            "version": "==1.16.18"
+            "version": "==1.16.22"
         },
         "botocore": {
             "hashes": [
-                "sha256:288d43e85f12e3c1d6a0535a585a182ca04e8c6e742ebaaf15357a0e3b37ca7a",
-                "sha256:bba18b5c4eef3eb2dc39b1b1f8959ba01ac27e7e12e413e281b0fb242990c0f5"
+                "sha256:5cee9d02d335a0c43d225da6595e6f95970a01ecaebeba757ac22130f2d31495",
+                "sha256:87d77925ea8d35898ff1627f6f97d396bed44d37fff960daae181a76ba413546"
             ],
-            "version": "==1.19.18"
+            "version": "==1.19.22"
         },
         "certifi": {
             "hashes": [
@@ -156,10 +156,10 @@
                 "with_social"
             ],
             "hashes": [
-                "sha256:2312c1d722a12c453a5bd1678dc1d93e87eba3562bb2711a11547abaa134926c"
+                "sha256:c0d3495d3629f54644966da31611ca4619b8470978ae8bdc03f6b87e04cb562c"
             ],
             "index": "pypi",
-            "version": "==2.0.1"
+            "version": "==2.1.1"
         },
         "django": {
             "hashes": [
@@ -179,7 +179,7 @@
         "django-astrosat-core": {
             "editable": true,
             "git": "https://github.com/astrosat/django-astrosat-core.git",
-            "ref": "8615759f555c32231a60b988d982234a1c4ba91e"
+            "ref": "ffb8c126fe077eba8a7f606ae1a62106285e4193"
         },
         "django-astrosat-users": {
             "editable": true,
@@ -613,11 +613,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:6afc461ab3f779c9c16e299fc731d775e39ea7e8e063b3053ee359ae198a15ca",
-                "sha256:ce1c38823eb0f927567cde5bf2e7c8ca565c7a70316139342050ce2ca74b4026"
+                "sha256:3f5d379e4b5ce92a8afe3c2ce59d7c43886370dd3bf9495a936b91888debfc81",
+                "sha256:8c0e8a06acef4b9312902e2ce18becabe62badd3a6632180bd0680c6ee111473"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==4.14.2"
+            "version": "==4.17.0"
         },
         "importlib-metadata": {
             "hashes": [
