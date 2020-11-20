@@ -9,6 +9,7 @@ from rest_framework.routers import SimpleRouter
 from allauth.urls import urlpatterns as allauth_urlpatterns
 
 from astrosat.decorators import conditional_redirect
+from astrosat.routers import SlashlessSimpleRouter
 
 from astrosat_users.conf import app_settings
 
@@ -41,7 +42,8 @@ from .views import token_view
 # api routes #
 ##############
 
-api_router = SimpleRouter()
+
+api_router = SlashlessSimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
 api_urlpatterns = [
     path("", include(api_router.urls)),

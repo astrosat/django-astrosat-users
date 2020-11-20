@@ -287,3 +287,21 @@ class TestApiViews:
             assert status.is_success(response.status_code)
             # make sure that "current" returns the user whose key is passed
             assert content["email"] == user.email
+
+    def test_get_current_user_slashless(self, mock_storage):
+        """
+        Tests that using the reserved username "current"
+        will redirect to the current user if the url has no trailing slash.
+        """
+
+        client = APIClient()
+        user = UserFactory()
+
+        token, key = create_auth_token(user)
+        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        url = reverse("users-detail", kwargs={"id": "current"})
+        assert url[-1] == "/"
+        response = client.get(url[:-1])
+        assert status.is_redirect(response.status_code)
+        assert response.url == url
