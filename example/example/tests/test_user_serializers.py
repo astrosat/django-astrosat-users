@@ -32,6 +32,7 @@ class TestUserSerializer:
             {
                 "type": "MANAGER",
                 "status": "PENDING",
-                "id": str(customer.id)
+                "id": str(customer.id),
+                "name": customer.name
             }
         ]
