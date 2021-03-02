@@ -78,7 +78,9 @@ class TestApiRegistration:
         assert user.accepted_terms == False
 
     def test_registration_name(self, user_data):
-        "tests that registering a user works w/ or w/out a name"
+        """
+        tests that registering a user works w/ or w/out a name
+        """
 
         client = APIClient()
 
