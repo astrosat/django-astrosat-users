@@ -263,7 +263,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         """
         saved_user = super().save_user(request, user, form, commit=commit)
 
-        extra_fields = ["accepted_terms", "registration_stage"]
+        extra_fields = ["accepted_terms", "registration_stage", "name"]
         for extra_field in extra_fields:
             setattr(saved_user, extra_field, form.cleaned_data.get(extra_field))
         if commit:
