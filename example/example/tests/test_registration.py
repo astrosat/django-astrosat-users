@@ -77,6 +77,36 @@ class TestApiRegistration:
         assert user.is_approved == False
         assert user.accepted_terms == False
 
+    def test_registration_name(self, user_data):
+        """
+        tests that registering a user works w/ or w/out a name
+        """
+
+        client = APIClient()
+
+        test_data_with_name = {
+            "email": f"a_{user_data['email']}",
+            "name": user_data["name"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+        }
+        response = client.post(self.registration_url, test_data_with_name)
+        assert status.is_success(response.status_code)
+
+        test_data_without_name = {
+            "email": f"b_{user_data['email']}",
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+        }
+        response = client.post(self.registration_url, test_data_without_name)
+        assert status.is_success(response.status_code)
+
+        assert UserModel.objects.count() == 2
+        user_with_name = UserModel.objects.get(email=f"a_{user_data['email']}")
+        user_without_name = UserModel.objects.get(email=f"b_{user_data['email']}")
+        assert user_with_name.name == user_data["name"]
+        assert user_without_name.name == None
+
     def test_registration_accept_terms(self, user_data, user_settings):
 
         client = APIClient()

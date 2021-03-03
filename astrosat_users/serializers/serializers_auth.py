@@ -177,6 +177,7 @@ class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSeri
     # which uses settings.AUTH_PASSWORD_VALIDATORS which includes zxcvbn
 
     # add extra fields...
+    name = serializers.CharField(required=False)
     accepted_terms = serializers.BooleanField()
     registration_stage = serializers.ChoiceField(
         allow_null=True,
