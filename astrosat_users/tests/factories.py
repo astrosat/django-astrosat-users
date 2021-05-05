@@ -4,6 +4,7 @@ import factory
 from factory.faker import (
     Faker as FactoryFaker,
 )  # note I use FactoryBoy's wrapper of Faker
+from faker import Faker
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import slugify
@@ -18,6 +19,8 @@ from astrosat_users.tests.utils import *
 
 FactoryFaker.add_provider(PrettyLoremProvider)
 
+fake = Faker()
+
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -26,7 +29,9 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     email = FactoryFaker("email")
     name = FactoryFaker("name")
-    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    description = optional_declaration(
+        FactoryFaker("sentence", nb_words=10), chance=50
+    )
     registration_stage = None
     accepted_terms = True
     is_approved = False
@@ -52,7 +57,9 @@ class UserFactory(factory.django.DjangoModelFactory):
         self.set_password(password)
 
     @factory.post_generation
-    def emailaddress_set(self, create: bool, extracted: Sequence[Any], **kwargs):
+    def emailaddress_set(
+        self, create: bool, extracted: Sequence[Any], **kwargs
+    ):
         if not create:
             return
 
@@ -73,7 +80,6 @@ class EmailAddressFactory(factory.django.DjangoModelFactory):
     This is done by default when I create a user via the registration views.  But if I am bypassing that,
     I still need an EmailAddress instance to exist.
     """
-
     class Meta:
         model = EmailAddress
 
@@ -87,11 +93,13 @@ class UserRoleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserRole
 
-    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    description = optional_declaration(
+        FactoryFaker("sentence", nb_words=10), chance=50
+    )
 
     @factory.lazy_attribute_sequence
     def name(self, n):
-        word = FactoryFaker("word").generate()
+        word = fake.word()
         return f"{word.title()}{n}Role"
 
     @factory.post_generation
@@ -114,11 +122,13 @@ class UserPermissionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserPermission
 
-    description = optional_declaration(FactoryFaker("sentence", nb_words=10), chance=50)
+    description = optional_declaration(
+        FactoryFaker("sentence", nb_words=10), chance=50
+    )
 
     @factory.lazy_attribute_sequence
     def name(self, n):
-        words = FactoryFaker("words", nb=2).generate()
+        words = fake.words(nb=2)
         return f"can_{'_'.join(words)}_{n}"
 
 
