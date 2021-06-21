@@ -48,7 +48,9 @@ class User(AbstractUser):
 
     roles = models.ManyToManyField("UserRole", related_name="users", blank=True)
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)  # note that this is not the pk
+    uuid = models.UUIDField(
+        default=uuid.uuid4, editable=False
+    )  # note that this is not the pk
 
     avatar = models.ImageField(
         upload_to=user_avatar_path,
@@ -60,19 +62,34 @@ class User(AbstractUser):
     name = models.CharField(
         validators=[validate_no_tags], blank=True, null=True, max_length=255
     )
-    phone = models.CharField(max_length=128, blank=True, null=True, verbose_name='Your Contact Number')
-    description = models.TextField(validators=[validate_no_tags], blank=True, null=True)
+    phone = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        verbose_name='Your Contact Number'
+    )
+    description = models.TextField(
+        validators=[validate_no_tags], blank=True, null=True
+    )
     change_password = models.BooleanField(
-        default=False, help_text=_("Force user to change password at next login.")
+        default=False,
+        help_text=_("Force user to change password at next login.")
     )
     is_approved = models.BooleanField(
         default=False, help_text=_("Has this user been approved?")
     )
     accepted_terms = models.BooleanField(
-        default=False, help_text=_("Has this user accepted the terms & conditions?")
+        default=False,
+        help_text=_("Has this user accepted the terms & conditions?")
     )
     registration_stage = models.CharField(
-        blank=True, null=True, max_length=128, choices=UserRegistrationStageType.choices, help_text=_("Indicates which stage of the registration process a user is at.")
+        blank=True,
+        null=True,
+        max_length=128,
+        choices=UserRegistrationStageType.choices,
+        help_text=_(
+            "Indicates which stage of the registration process a user is at."
+        )
     )
     onboarded = models.BooleanField(
         default=False, help_text=_("Has this user been onboarded?")
@@ -105,9 +122,9 @@ class User(AbstractUser):
         Checks if the primary email address belonging to this user has been verified.
         """
         return (
-            self.emailaddress_set.only("verified", "primary")
-            .filter(primary=True, verified=True)
-            .exists()
+            self.emailaddress_set.only("verified", "primary").filter(
+                primary=True, verified=True
+            ).exists()
         )
 
     def logout_all(self):
@@ -153,7 +170,9 @@ class User(AbstractUser):
         adapter = kwargs.get("adapter", get_adapter())
         context = kwargs.get("context", {})
         customer = kwargs.get("customer", None)
-        template_prefix = kwargs.get("template_prefix", "astrosat_users/email/onboard")
+        template_prefix = kwargs.get(
+            "template_prefix", "astrosat_users/email/onboard"
+        )
 
         context["user"] = self
         context["customer"] = customer
