@@ -17,7 +17,6 @@ from astrosat_users.models import User, UserRole, UserPermission
 from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import UserSerializer
 
-
 #############
 # api views #
 #############
@@ -28,9 +27,7 @@ def UserRegistrationStagePermission(registration_stage_getter):
     This fn is a factory that returns a _dynamic_ DRF Permission.
     Only a request.user w/ a matching registration_stage is granted permission.
     """
-
     class _UserRegistrationStagePermission(BasePermission):
-
         def has_permission(self, request, view):
             if callable(registration_stage_getter):
                 registration_stage = registration_stage_getter(request)
@@ -61,12 +58,17 @@ class IsAdminOrSelf(BasePermission):
 class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
-        fields = ["is_active", "is_approved", "accepted_terms", "is_verified", "registration_stage"]
+        fields = [
+            "is_active", "is_approved", "accepted_terms", "is_verified",
+            "registration_stage"
+        ]
 
     is_active = BetterBooleanFilter()
     is_approved = BetterBooleanFilter()
     accepted_terms = BetterBooleanFilter()
-    registration_stage = filters.ChoiceFilter(choices=UserRegistrationStageType.choices)
+    registration_stage = filters.ChoiceFilter(
+        choices=UserRegistrationStageType.choices
+    )
     is_verified = filters.Filter(method="filter_is_verified")
 
     roles__any = filters.Filter(method="filter_roles_or")
@@ -82,7 +84,8 @@ class UserFilterSet(filters.FilterSet):
                 # Django cannot efficiently filter querysets by property
                 # so this basically recreates the logic of the @is_verified User property
                 queryset = queryset.filter(
-                    emailaddress__primary=True, emailaddress__verified=cleaned_value
+                    emailaddress__primary=True,
+                    emailaddress__verified=cleaned_value
                 )
         except ValidationError as e:
             raise APIException({name: e.messages})
@@ -90,30 +93,42 @@ class UserFilterSet(filters.FilterSet):
 
     def filter_roles_or(self, queryset, name, value):
         role_names = value.split(",")
-        return queryset.filter(roles__name__in=role_names).distinct()
+        return queryset.filter(
+            roles__name__in=role_names
+        ).distinct()  # yapf: disable
 
     def filter_roles_and(self, queryset, name, value):
         role_names = value.split(",")
         return (
-            queryset.filter(roles__name__in=role_names)
-            .annotate(num_roles=Count("roles"))
-            .filter(num_roles=len(role_names))
-        )
+            queryset.filter(
+                roles__name__in=role_names
+            ).annotate(
+                num_roles=Count("roles")
+            ).filter(
+                num_roles=len(role_names)
+            )
+        )  # yapf: disable
 
     def filter_permissions_or(self, queryset, name, value):
         permission_names = value.split(",")
-        return queryset.filter(roles__permissions__name__in=permission_names).distinct()
+        return queryset.filter(
+            roles__permissions__name__in=permission_names
+        ).distinct()  # yapf: disable
 
     def filter_permissions_and(self, queryset, name, value):
         permission_names = value.split(",")
         return (
-            queryset.filter(roles__permissions__name__in=permission_names)
-            .annotate(num_permissions=Count("roles__permissions"))
-            .filter(num_permissions=len(permission_names))
-        )
+            queryset.filter(
+                roles__permissions__name__in=permission_names
+            ).annotate(
+                num_permissions=Count("roles__permissions")
+            ).filter(
+                num_permissions=len(permission_names)
+            )
+        )  # yapf: disable
 
 
-class ListRetrieveViewSet(
+class ListRetrieveUpdateViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -129,11 +144,11 @@ class ListRetrieveViewSet(
     pass
 
 
-class UserViewSet(ListRetrieveViewSet):
+class UserViewSet(ListRetrieveUpdateViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
     serializer_class = UserSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = UserFilterSet
 
     queryset = User.objects.prefetch_related("roles", "roles__permissions")
@@ -144,11 +159,20 @@ class UserViewSet(ListRetrieveViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
 
+        # b/c of the convoluted nature of UserProfiles
+        # (which can have nested serializers w/in nested serializers)
+        # it is helpful to pass the user, from which we can access their profiles
+        # which can then be passed to any nested serializers as needed
+        if self.action in [
+            "retrieve", "update"
+        ]:  # TODO: WHAT TO DO ABOUT "list"?
+            context.update({"user": self.get_object()})
+
         # TODO: ADD SOME LOGIC HERE TO RESTRICT WHICH PROFILES WE CAN SERIALIZE
         # TODO: (NOT ALL USERS SHOULD MODIFY ALL PROFILES)
         managed_profiles = [profile_key for profile_key in User.PROFILE_KEYS]
-
         context.update({"managed_profiles": managed_profiles})
+
         return context
 
     def get_object(self, *args, **kwargs):
