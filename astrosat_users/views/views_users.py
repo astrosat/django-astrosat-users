@@ -128,7 +128,7 @@ class UserFilterSet(filters.FilterSet):
         )  # yapf: disable
 
 
-class ListRetrieveViewSet(
+class ListRetrieveUpdateViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -144,7 +144,7 @@ class ListRetrieveViewSet(
     pass
 
 
-class UserViewSet(ListRetrieveViewSet):
+class UserViewSet(ListRetrieveUpdateViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
     serializer_class = UserSerializer
