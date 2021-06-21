@@ -85,6 +85,7 @@ class UserSerializerBasic(serializers.ModelSerializer):
             if profile:
                 profile_serializer_class = profile.get_serializer_class()
                 profiles_representation[profile_key] = profile_serializer_class(
+                    context=self.context
                 ).to_representation(profile)
 
         representation = super().to_representation(instance)
@@ -105,6 +106,7 @@ class UserSerializerBasic(serializers.ModelSerializer):
                 profile_class = PROFILES_REGISTRY[profile_key]
                 profile_serializer_class = profile_class.get_serializer_class()
                 profiles_internal_value[profile_key] = profile_serializer_class(
+                    context=self.context
                 ).to_internal_value(profile_data)
 
         internal_value = super().to_internal_value(data)
@@ -120,9 +122,10 @@ class UserSerializerBasic(serializers.ModelSerializer):
             for profile_key, profile_data in profiles_data.items():
                 profile_class = PROFILES_REGISTRY[profile_key]
                 profile_serializer_class = profile_class.get_serializer_class()
-                profile_serializer_class().update(
-                    getattr(instance, profile_key), profile_data
-                )
+                profile_serializer_class(
+                    context=self.context
+                ).update(getattr(instance, profile_key), profile_data)
+
         updated_instance = super().update(instance, validated_data)
 
         return updated_instance
