@@ -13,7 +13,11 @@ from .serializers_auth import RegisterSerializer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("id", "type", "name", "official_name", "company_type", "registered_id", "description", "logo", "url", "country", "address", "postcode")
+        fields = (
+            "id", "type", "name", "official_name", "company_type",
+            "registered_id", "description", "logo", "url", "country", "address",
+            "postcode"
+        )
 
     id = serializers.UUIDField(read_only=True)
     type = serializers.CharField(source="customer_type")
@@ -35,7 +39,9 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         fields = ("id", "type", "status", "invitation_date", "user", "customer")
 
     type = serializers.CharField(source="customer_user_type", required=False)
-    status = serializers.CharField(source="customer_user_status", required=False)
+    status = serializers.CharField(
+        source="customer_user_status", required=False
+    )
     invitation_date = serializers.DateTimeField(read_only=True)
 
     customer = serializers.SlugRelatedField(
@@ -53,7 +59,9 @@ class CustomerUserSerializer(serializers.ModelSerializer):
             customer = data["customer"]
             user_email = data["user"]["email"]
             if customer.users.filter(email=user_email).exists():
-                raise serializers.ValidationError("User is already a member of Customer.")
+                raise serializers.ValidationError(
+                    "User is already a member of Customer."
+                )
 
         return data
 
@@ -74,16 +82,18 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             # new user, perform registration...
             default_password = User.objects.make_random_password()
-            user_data.update({
-                "accepted_terms": True,
-                # accepted_terms must be True for registration to succeed
-                # (assuming UserSettings.require_terms_acceptance is True)
-                # but I want a newly-created user to have to explicitly accept terms
-                # so I update the value immediately after calling is_valid below
-                "change_password": True,
-                "password1": default_password,
-                "password2": default_password,
-            })
+            user_data.update(
+                {
+                    "accepted_terms": True,
+                    # accepted_terms must be True for registration to succeed
+                    # (assuming UserSettings.require_terms_acceptance is True)
+                    # but I want a newly-created user to have to explicitly accept terms
+                    # so I update the value immediately after calling is_valid below
+                    "change_password": True,
+                    "password1": default_password,
+                    "password2": default_password,
+                }
+            )
             register_serializer = RegisterSerializer(data=user_data)
             if register_serializer.is_valid():
                 user_data.pop("accepted_terms")
