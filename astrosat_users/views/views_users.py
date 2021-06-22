@@ -11,6 +11,9 @@ from rest_framework.permissions import IsAuthenticated, BasePermission, SAFE_MET
 
 from django_filters import rest_framework as filters
 
+from drf_yasg2 import openapi
+from drf_yasg2.utils import swagger_auto_schema
+
 from astrosat.views import BetterBooleanFilter, BetterBooleanFilterField
 
 from astrosat_users.models import User, UserRole, UserPermission
@@ -144,6 +147,21 @@ class ListRetrieveUpdateViewSet(
     pass
 
 
+_user_viewset_params = [
+    # despite specifying a custom "lookup_field", drf_yasg2 insists on
+    # treating "id" as an IntegerField; so I override the schema params
+    openapi.Parameter("id", openapi.IN_PATH, type=openapi.TYPE_STRING)
+]
+
+
+@method_decorator(
+    name="retrieve",
+    decorator=swagger_auto_schema(manual_parameters=_user_viewset_params)
+)
+@method_decorator(
+    name="update",
+    decorator=swagger_auto_schema(manual_parameters=_user_viewset_params)
+)
 class UserViewSet(ListRetrieveUpdateViewSet):
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
@@ -175,6 +193,7 @@ class UserViewSet(ListRetrieveUpdateViewSet):
 
         return context
 
+    @swagger_fake(None)
     def get_object(self, *args, **kwargs):
         """
         If you passed the reserved word "current",
