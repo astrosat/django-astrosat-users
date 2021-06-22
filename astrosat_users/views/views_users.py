@@ -178,15 +178,6 @@ class UserViewSet(ListRetrieveUpdateViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
 
-        # b/c of the convoluted nature of UserProfiles
-        # (which can have nested serializers w/in nested serializers)
-        # it is helpful to pass the user, from which we can access their profiles
-        # which can then be passed to any nested serializers as needed
-        if self.action in [
-            "retrieve", "update"
-        ]:  # TODO: WHAT TO DO ABOUT "list"?
-            context.update({"user": self.get_object()})
-
         # TODO: ADD SOME LOGIC HERE TO RESTRICT WHICH PROFILES WE CAN SERIALIZE
         # TODO: (NOT ALL USERS SHOULD MODIFY ALL PROFILES)
         managed_profiles = [profile_key for profile_key in User.PROFILE_KEYS]
