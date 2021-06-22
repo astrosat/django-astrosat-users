@@ -14,6 +14,7 @@ from django_filters import rest_framework as filters
 from drf_yasg2 import openapi
 from drf_yasg2.utils import swagger_auto_schema
 
+from astrosat.decorators import swagger_fake
 from astrosat.views import BetterBooleanFilter, BetterBooleanFilterField
 
 from astrosat_users.models import User, UserRole, UserPermission
