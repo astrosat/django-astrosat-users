@@ -1,4 +1,3 @@
-from astrosat_users.models.models_customers import Customer
 from django.utils.module_loading import import_string
 
 from allauth.account import app_settings as auth_settings

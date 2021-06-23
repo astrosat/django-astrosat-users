@@ -275,7 +275,7 @@ class RegisterView(RestAuthRegisterView):
     def perform_create(self, serializer):
 
         # the RegisterSerializer.save() method eventually calls RegisterSerializer.custom_signup()
-        # and that creates a customer and customer-user
+        # and - assuming "customer_name" was passed to the view - that creates a customer & customer-user
         user = serializer.save(self.request)
 
         self.token = create_knox_token(None, user, None)
