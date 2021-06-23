@@ -1,4 +1,3 @@
-from astrosat_users.tests.factories import CustomerFactory
 import pytest
 import factory
 
@@ -13,6 +12,7 @@ from allauth.utils import build_absolute_uri
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from astrosat_users.tests.factories import CustomerFactory
 from astrosat.tests.utils import *
 
 from astrosat_users.conf import app_settings
