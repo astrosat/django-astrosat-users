@@ -1,3 +1,4 @@
+from astrosat_users.tests.factories import CustomerFactory
 import pytest
 import factory
 
@@ -15,6 +16,7 @@ from rest_framework.test import APIClient
 from astrosat.tests.utils import *
 
 from astrosat_users.conf import app_settings
+from astrosat_users.models import Customer, CustomerUser
 from astrosat_users.tests.utils import *
 from astrosat_users.views.views_auth import REGISTRATION_CLOSED_MSG
 
@@ -103,7 +105,9 @@ class TestApiRegistration:
 
         assert UserModel.objects.count() == 2
         user_with_name = UserModel.objects.get(email=f"a_{user_data['email']}")
-        user_without_name = UserModel.objects.get(email=f"b_{user_data['email']}")
+        user_without_name = UserModel.objects.get(
+            email=f"b_{user_data['email']}"
+        )
         assert user_with_name.name == user_data["name"]
         assert user_without_name.name == None
 
@@ -127,6 +131,56 @@ class TestApiRegistration:
 
         response = client.post(self.registration_url, test_data)
         assert status.is_success(response.status_code)
+
+    def test_registration_creates_customer(self, user_data):
+        """
+        Tests that registering a user w/ a customer name creates that customer
+        """
+        client = APIClient()
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+            "customer_name": "test_customer",
+        }
+        response = client.post(self.registration_url, test_data)
+        assert status.is_success(response.status_code)
+
+        user = UserModel.objects.get(email=test_data["email"])
+        customer = Customer.objects.get(name=test_data["customer_name"])
+        customer_user = CustomerUser.objects.get(user=user, customer=customer)
+
+        assert user in customer.users.all()
+        assert customer in user.customers.all()
+        assert customer_user.customer_user_type == "MANAGER"
+        assert customer_user.customer_user_status == "PENDING"
+
+    def test_registration_doesnt_create_existing_customer(self, user_data):
+        """
+        Tests that registering a user w/ an existing customer name fails
+        """
+        client = APIClient()
+
+        existing_customer = CustomerFactory(logo=None)
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+            "customer_name": existing_customer.name,
+        }
+
+        response = client.post(self.registration_url, test_data)
+        assert status.is_client_error(response.status_code)
+
+        content = response.json()
+
+        assert not UserModel.objects.filter(email=test_data["email"]).exists()
+
+        assert content["errors"] == {
+            "customer_name": ["An organisation with this name already exists."]
+        }
 
     def test_registration_sends_confirmation_email(self, user_data):
         """

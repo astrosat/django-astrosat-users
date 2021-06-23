@@ -94,10 +94,7 @@ _login_schema = openapi.Schema(
                 "password",
                 openapi.Schema(type=openapi.TYPE_STRING, example="password")
             ),
-            (
-                "accepted_terms",
-                openapi.Schema(type=openapi.TYPE_BOOLEAN)
-            )
+            ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN))
         )
     ),
 )
@@ -106,7 +103,6 @@ _register_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties=OrderedDict(
         (
-            # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
             (
                 "email",
                 openapi.Schema(
@@ -125,10 +121,16 @@ _register_schema = openapi.Schema(
                     type=openapi.TYPE_STRING, example="superpassword23"
                 ),
             ),
+            (
+                "customer_name",
+                openapi.Schema(
+                    type=openapi.TYPE_STRING, example="example company"
+                )
+            ),
             ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
             (
                 "registration_stage",
-                openapi.Schema(type=openapi.TYPE_STRING),
+                openapi.Schema(type=openapi.TYPE_STRING, example="CUSTOMER"),
             ),
         )
     ),
@@ -230,7 +232,6 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
     }
     ```
     """
-
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
@@ -249,6 +250,7 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
                 "user": UserSerializerLite(user).data
             }
         )
+
 
 @method_decorator(
     sensitive_post_parameters("password1", "password2"), name="dispatch"
@@ -271,7 +273,11 @@ class RegisterView(RestAuthRegisterView):
         return serializer.data
 
     def perform_create(self, serializer):
+
+        # the RegisterSerializer.save() method eventually calls RegisterSerializer.custom_signup()
+        # and that creates a customer and customer-user
         user = serializer.save(self.request)
+
         self.token = create_knox_token(None, user, None)
         complete_signup(
             self.request._request, user, allauth_settings.EMAIL_VERIFICATION,
