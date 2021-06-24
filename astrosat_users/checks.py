@@ -116,10 +116,14 @@ def check_third_party_settings(app_configs, **kwargs):
 
     for key, value in chain(*map(lambda x: x.items(), third_party_settings)):
         setting = getattr(settings, key, None)
-        if setting != value:
+        # just check that the key is present; I should
+        # be able to override the value in client apps
+        # if setting != value:
+        if not setting:
             errors.append(
                 Error(
-                    f"You are using {APP_NAME} which requires {key} to be set to {value}."
+                    f"You are using {APP_NAME} which requires {key} to be set."
                 )
             )
+
     return errors
