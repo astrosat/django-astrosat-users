@@ -160,6 +160,7 @@ class PasswordResetConfirmSerializer(
 
         user = self.set_password_form.save()
 
+        # TODO: DELETE THIS? IT IS NOW DONE IN "VerifyEmailView"
         pending_customer_users_qs = user.customer_users.pending()
         if pending_customer_users_qs.exists():
             pending_customer_users_qs.update(customer_user_status="ACTIVE")

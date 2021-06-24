@@ -309,6 +309,12 @@ class VerifyEmailView(RestAuthVerifyEmailView):
         confirmation = serializer.validated_data["confirmation"]
         confirmation.confirm(self.request)
 
+        # if I have successfuly verified the email address,
+        # then I should activate any pending customer_users
+        user = serializer.validated_data["user"]
+        pending_customer_users_qs = user.customer_users.pending()
+        pending_customer_users_qs.update(customer_user_status="ACTIVE")
+
         response = {
             "detail":
                 _("ok"),
