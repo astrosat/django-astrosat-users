@@ -14,7 +14,7 @@ from astrosat.routers import SlashlessSimpleRouter
 from astrosat_users.conf import app_settings
 
 # backend views...
-from .views import message_view, UserListView, UserDetailView, UserUpdateView
+from .views import text_view, UserListView, UserDetailView, UserUpdateView
 
 # API views...
 from .views import (
@@ -27,6 +27,7 @@ from .views import (
     VerifyEmailView,
     SendEmailVerificationView,
     UserViewSet,
+    MessageViewSet,
     CustomerCreateView,
     CustomerUpdateView,
     CustomerUserListView,
@@ -42,9 +43,11 @@ from .views import token_view
 # api routes #
 ##############
 
-
 api_router = SlashlessSimpleRouter()
 api_router.register("users", UserViewSet, basename="users")
+api_router.register(
+    "users/(?P<user_id>[^/.]+)/messages", MessageViewSet, basename="messages"
+)
 api_urlpatterns = [
     path("", include(api_router.urls)),
     path("customers/", CustomerCreateView.as_view(), name="customers-list"),
@@ -152,8 +155,8 @@ urlpatterns = [
     # allauth stuff...
     path("authentication/", include(conditional_backend_url_patterns)),
     path(
-        "authentication/message/disabled/",
-        partial(message_view, message="Backend access is currently disabled."),
+        "authentication/text/disabled/",
+        partial(text_view, text="Backend access is currently disabled."),
         name="disabled",
     ),
     # user stuff...

@@ -1,11 +1,13 @@
+import itertools
 import re
 from typing import Any
 
 from urllib.parse import urljoin
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import mail_managers
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -35,6 +37,8 @@ from astrosat_users.conf import app_settings
 from astrosat_users.serializers import UserSerializerLite
 from astrosat_users.utils import rest_encode_user_pk
 
+UserModel = get_user_model()
+
 
 class AdapterMixin(object):
     @property
@@ -50,48 +54,50 @@ class AdapterMixin(object):
         which aren't necessarily form/serializer errors.
         """
 
-        from astrosat_users.views.views_messages import message_view
+        from astrosat_users.views.views_text import text_view
 
         # verification (overriding the check here in order to not automatically resend the verification email)
         if (
-            kwargs.get("check_verification", True)
-            and app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION
-            and not user.is_verified
+            kwargs.get("check_verification", True) and
+            app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION and
+            not user.is_verified
         ):
             msg = f"User {user} is not verified."
             # send_email_confirmation(request, user)
             if self.is_api:
                 raise APIException(msg)
             else:
-                response = self.respond_email_verification_sent(self.request, user)
+                response = self.respond_email_verification_sent(
+                    self.request, user
+                )
                 raise ImmediateHttpResponse(response)
 
         # approval (display a message)
         if (
-            kwargs.get("check_approval", True)
-            and app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL
-            and not user.is_approved
+            kwargs.get("check_approval", True) and
+            app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL and
+            not user.is_approved
         ):
             msg = f"User {user} has not been approved."
             if self.is_api:
                 raise APIException(msg)
             else:
                 # (this is dealt w/ in "authenticate" below as a ValidationError, but just-in-case...)
-                response = message_view(self.request, message=msg)
+                response = text_view(self.request, text=msg)
                 raise ImmediateHttpResponse(response)
 
         # terms acceptance (display a message)
         if (
-            kwargs.get("check_terms_acceptance", True)
-            and app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE
-            and not user.accepted_terms
+            kwargs.get("check_terms_acceptance", True) and
+            app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and
+            not user.accepted_terms
         ):
             msg = f"User {user} has not yet accepted the terms & conditions."
             if self.is_api:
                 raise APIException(msg)
             else:
                 # (this is dealt w/ in "authenticate" below as a ValidationError, but just-in-case...)
-                response = message_view(self.request, message=msg)
+                response = text_view(self.request, text=msg)
                 raise ImmediateHttpResponse(response)
 
         # change_password (redirecting to reset_password_view)
@@ -119,8 +125,8 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 msg = f"User {user} has not been approved."
                 raise forms.ValidationError(msg)
             elif (
-                app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE
-                and not user.accepted_terms
+                app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and
+                not user.accepted_terms
             ):
                 msg = f"User {user} has not yet accepted Terms & Conditions."
                 raise forms.ValidationError(msg)
@@ -156,7 +162,9 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             )
         else:
             # otherwise, just use the builtin allauth view
-            path = reverse("account_confirm_email", args=[emailconfirmation.key])
+            path = reverse(
+                "account_confirm_email", args=[emailconfirmation.key]
+            )
 
         if self.is_api and "HTTP_ORIGIN" in request.META:
             # request originates from a client on a different domain...
@@ -170,7 +178,8 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         """
 
         token_key = (
-            self.default_token_generator.make_token(user) if token is None else token
+            self.default_token_generator.make_token(user)
+            if token is None else token
         )
 
         if self.is_api:
@@ -182,7 +191,10 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         else:
             path = reverse(
                 "account_reset_password_from_key",
-                kwargs={"key": token_key, "uidb36": user_pk_to_url_str(user)},
+                kwargs={
+                    "key": token_key,
+                    "uidb36": user_pk_to_url_str(user)
+                },
             )
 
         if self.is_api and "HTTP_ORIGIN" in request.META:
@@ -210,9 +222,11 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
 
             self.check_user(
                 user,
-                check_verification=app_settings.ASTROSAT_USERS_REQUIRE_VERIFICATION,
+                check_verification=app_settings.
+                ASTROSAT_USERS_REQUIRE_VERIFICATION,
                 check_approval=app_settings.ASTROSAT_USERS_REQUIRE_APPROVAL,
-                check_terms_acceptance=app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE,
+                check_terms_acceptance=app_settings.
+                ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE,
                 check_password=False,
             )
         except APIException:
@@ -238,7 +252,6 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             # this code just uses either the value explicitly passed by the fronted
             # or defaults to the email address
             user_username(user, username or email)
-
 
     def respond_email_verification_sent(self, request, user):
         """
@@ -271,7 +284,8 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             saved_user.save()
 
         if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
-            subject = super().format_email_subject(f"new user signup: {saved_user}")
+            subject = super(
+            ).format_email_subject(f"new user signup: {saved_user}")
             message = f"User {saved_user.email} signed up for an account."
             mail_managers(subject, message, fail_silently=True)
         return saved_user
@@ -289,23 +303,29 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
 
     def send_password_confirmation_email(self, user, email, **kwargs):
 
-        token_generator = kwargs.get("token_generator", self.default_token_generator)
+        token_generator = kwargs.get(
+            "token_generator", self.default_token_generator
+        )
         token_key = token_generator.make_token(user)
 
         url = self.get_password_confirmation_url(self.request, user, token_key)
 
-        template_prefix = kwargs.get("template_prefix", "account/email/password_reset_key")
+        template_prefix = kwargs.get(
+            "template_prefix", "account/email/password_reset_key"
+        )
         context = kwargs.get("context", {})
-        context.update({
-            "current_site": get_current_site(self.request),
-            "user": user,
-            "password_reset_url": url,
-            "request": self.request,
-        })
+        context.update(
+            {
+                "current_site": get_current_site(self.request),
+                "user": user,
+                "password_reset_url": url,
+                "request": self.request,
+            }
+        )
 
         if (
-            allauth_app_settings.AUTHENTICATION_METHOD
-            != allauth_app_settings.AuthenticationMethod.EMAIL
+            allauth_app_settings.AUTHENTICATION_METHOD !=
+            allauth_app_settings.AuthenticationMethod.EMAIL
         ):
             context["username"] = user_username(user)
 
@@ -326,6 +346,18 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         msg.cc = [address for address in cc if address != email]
         msg.bcc = [address for address in bcc if address != email]
         msg.send()
+
+        if kwargs.pop("save_message", True):
+            for address in itertools.chain(msg.to, msg.cc, msg.bcc):
+                try:
+                    user = UserModel.objects.get(email=address)
+                    user.add_message(
+                        title=msg.subject,
+                        sender=msg.from_email,
+                        content=msg.body,
+                    )
+                except ObjectDoesNotExist:
+                    pass
 
     def set_password(self, user, password):
         user.set_password(password)

@@ -189,3 +189,13 @@ class User(AbstractUser):
         if not self.onboarded:
             self.onboarded = True
             self.save()
+
+    def add_message(self, **kwargs):
+        message = self.messages.model(
+            user=self,
+            **kwargs,
+        )
+        message.full_clean(
+        )  # this will raise an error if the msg content is invalid
+        message.save()
+        return message
