@@ -12,7 +12,6 @@ from django.utils.html import escape
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-
 env = environ.Env()
 
 PROJECT_NAME = "Example Project"
@@ -70,30 +69,36 @@ ROOT_URLCONF = "example.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            # I override some built-in templates (rest_framework, allauth, & rest_auth)
-            # in order for this to work, I need to make sure that the following directories are checked
-            # before their default locations (see the comment in "loaders" for more info)
-            os.path.join(BASE_DIR, "example/templates/"),
-            os.path.join(
-                os.path.dirname(importlib.import_module("astrosat_users").__file__),
-                "templates",
-            ),
-        ],
+        "DIRS":
+            [
+                # I override some built-in templates (rest_framework, allauth, & rest_auth)
+                # in order for this to work, I need to make sure that the following directories are checked
+                # before their default locations (see the comment in "loaders" for more info)
+                os.path.join(BASE_DIR, "example/templates/"),
+                os.path.join(
+                    os.path.dirname(
+                        importlib.import_module("astrosat_users").__file__
+                    ),
+                    "templates",
+                ),
+            ],
         # "APP_DIRS": True,
-        "OPTIONS": {
-            "loaders": [
-                # first look at files in DIR, then look in the standard place for each INSTALLED_APP
-                "django.template.loaders.filesystem.Loader",
-                "django.template.loaders.app_directories.Loader",
-            ],
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
+        "OPTIONS":
+            {
+                "loaders":
+                    [
+                        # first look at files in DIR, then look in the standard place for each INSTALLED_APP
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                "context_processors":
+                    [
+                        "django.template.context_processors.debug",
+                        "django.template.context_processors.request",
+                        "django.contrib.auth.context_processors.auth",
+                        "django.contrib.messages.context_processors.messages",
+                    ],
+            },
     }
 ]
 
@@ -105,39 +110,45 @@ MIGRATION_MODULES = {"sites": "example.contrib.sites.migrations"}
 
 SITE_ID = 1
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Database
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
+    "default":
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
 }
 
 # api
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        # "rest_framework.authentication.BasicAuthentication",  # insecure
-        # "rest_framework.authentication.SessionAuthentication",  # CSRF
-        # "rest_framework.authentication.TokenAuthentication",  # tokens
-        # "dj_rest_auth.utils.JWTCookieAuthentication",  # JWT tokens
-        "knox.auth.TokenAuthentication"  # secure tokens
-    ]
+    "DEFAULT_AUTHENTICATION_CLASSES":
+        [
+            # "rest_framework.authentication.BasicAuthentication",  # insecure
+            # "rest_framework.authentication.SessionAuthentication",  # CSRF
+            # "rest_framework.authentication.TokenAuthentication",  # tokens
+            # "dj_rest_auth.utils.JWTCookieAuthentication",  # JWT tokens
+            "knox.auth.TokenAuthentication"  # secure tokens
+        ]
 }
 
 SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Token Authentication": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": escape("Enter 'Token <token>'"),
+    "SECURITY_DEFINITIONS":
+        {
+            "Token Authentication":
+                {
+                    "type": "apiKey",
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": escape("Enter 'Token <token>'"),
+                },
+            "Basic": {
+                "type": "basic"
+            },
         },
-        "Basic": {"type": "basic"},
-    },
     "DOC_EXPANSION": "none",
     "OPERATIONS_SORTER": None,
     "TAGS_SORTER": "alpha",
@@ -197,11 +208,16 @@ ACCOUNT_FORMS = {
 
 # custom serializers...
 REST_AUTH_SERIALIZERS = {
-    "TOKEN_SERIALIZER": "astrosat_users.serializers.KnoxTokenSerializer",
-    "LOGIN_SERIALIZER": "astrosat_users.serializers.LoginSerializer",
-    "PASSWORD_CHANGE_SERIALIZER": "astrosat_users.serializers.PasswordChangeSerializer",
-    "PASSWORD_RESET_SERIALIZER": "astrosat_users.serializers.PasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER": "astrosat_users.serializers.PasswordResetConfirmSerializer",
+    "TOKEN_SERIALIZER":
+        "astrosat_users.serializers.KnoxTokenSerializer",
+    "LOGIN_SERIALIZER":
+        "astrosat_users.serializers.LoginSerializer",
+    "PASSWORD_CHANGE_SERIALIZER":
+        "astrosat_users.serializers.PasswordChangeSerializer",
+    "PASSWORD_RESET_SERIALIZER":
+        "astrosat_users.serializers.PasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER":
+        "astrosat_users.serializers.PasswordResetConfirmSerializer",
 }
 
 # more custom serializers...
@@ -209,12 +225,12 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "astrosat_users.serializers.RegisterSerializer"
 }
 
-
 # Passwords
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        "NAME":
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
     {
         "NAME": "astrosat_users.validators.LengthPasswordValidator"

@@ -13,7 +13,7 @@ from astrosat.tests.providers import PrettyLoremProvider
 from astrosat.tests.utils import optional_declaration
 
 from allauth.account.models import EmailAddress
-from astrosat_users.models import User, UserRole, UserPermission, Customer
+from astrosat_users.models import User, UserRole, UserPermission, Customer, Message, MessageAttachment
 from astrosat_users.models.models_customers import CustomerType
 from astrosat_users.tests.utils import *
 
@@ -154,3 +154,44 @@ class CustomerFactory(factory.django.DjangoModelFactory):
             content=b"I am a fake image",
             content_type="image/png",
         )
+
+
+############
+# messages #
+############
+
+
+class MessageFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Message
+
+    title = FactoryFaker("sentence", nb_words=10)
+    sender = FactoryFaker("email")
+    content = FactoryFaker("text")
+
+    # user = factory.SubFactory(UserFactory, messages=None)
+
+    @factory.post_generation
+    def attachments(obj, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # MessageFactory(attachments=10) will generate a Message w/ 10 attachments
+            for n in range(extracted):
+                MessageAttachmentFactory(message=obj)
+
+
+class MessageAttachmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MessageAttachment
+
+    @factory.lazy_attribute_sequence
+    def file(self, n):
+        return SimpleUploadedFile(
+            name=f"attachment_{n}.png",
+            content=b"I am a fake image",
+            content_type="image/png",
+        )
+
+    message = factory.SubFactory(MessageFactory)
