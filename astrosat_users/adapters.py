@@ -358,6 +358,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                     )
                 except ObjectDoesNotExist:
                     pass
+        return msg
 
     def set_password(self, user, password):
         user.set_password(password)
