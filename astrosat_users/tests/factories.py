@@ -1,4 +1,3 @@
-from astrosat_users.models.models_messages import MessageAttachment
 from typing import Any, Sequence
 
 import factory
