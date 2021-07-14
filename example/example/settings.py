@@ -12,6 +12,7 @@ from django.utils.html import escape
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+
 env = environ.Env()
 
 PROJECT_NAME = "Example Project"
