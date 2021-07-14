@@ -1,6 +1,6 @@
 from knox.models import AuthToken
 
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 
@@ -16,4 +16,4 @@ def rest_encode_user_pk(user):
 
 
 def rest_decode_user_pk(encoded_user):
-    return force_text(urlsafe_base64_decode(encoded_user))
+    return force_str(urlsafe_base64_decode(encoded_user))
