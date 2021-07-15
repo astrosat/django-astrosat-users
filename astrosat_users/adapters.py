@@ -282,12 +282,6 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 setattr(saved_user, extra_field, form.cleaned_data[extra_field])
         if commit:
             saved_user.save()
-
-        if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
-            subject = super(
-            ).format_email_subject(f"new user signup: {saved_user}")
-            message = f"User {saved_user.email} signed up for an account."
-            mail_managers(subject, message, fail_silently=True)
         return saved_user
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):
