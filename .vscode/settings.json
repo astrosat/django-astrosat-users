@@ -1,4 +1,6 @@
 {
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -8,20 +10,18 @@
     "**/*.pyc": true,
     "**/__pycache__": true
   },
-  "editor.formatOnPaste": true,
-  "editor.formatOnSave": true,
-  "python.pythonPath": "./example/.venv/bin/python",
   "python.autoComplete.extraPaths": ["./example/"],
   "python.formatting.provider": "yapf",
-  "python.formatting.yapfPath": "./example/.venv/bin/yapf",
   "python.formatting.yapfArgs": [
-    "--style={based_on_style: facebook, indent_width: 4}"
+    "--style={based_on_style: facebook, coalesce_brackets: 1, dedent_closing_brackets: 1, indent_width: 4, split_all_top_level_comma_separated_values: 1, split_before_dict_set_generator: 1}"
   ],
+  "python.formatting.yapfPath": "./example/.venv/bin/yapf",
   "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
   "python.linting.pylintEnabled": true,
   "python.linting.pylintPath": "./example/.venv/bin/pylint",
   "python.linting.pylintUseMinimalCheckers": false,
-  "python.linting.lintOnSave": true,
+  "python.pythonPath": "./example/.venv/bin/python",
   "[python]": {
     "editor.tabSize": 4
   },
