@@ -103,7 +103,9 @@ class TestApiRegistration:
 
         assert UserModel.objects.count() == 2
         user_with_name = UserModel.objects.get(email=f"a_{user_data['email']}")
-        user_without_name = UserModel.objects.get(email=f"b_{user_data['email']}")
+        user_without_name = UserModel.objects.get(
+            email=f"b_{user_data['email']}"
+        )
         assert user_with_name.name == user_data["name"]
         assert user_without_name.name == None
 
@@ -128,7 +130,9 @@ class TestApiRegistration:
         response = client.post(self.registration_url, test_data)
         assert status.is_success(response.status_code)
 
-    def test_registration_sends_confirmation_email(self, user_data):
+    def test_registration_sends_confirmation_email(
+        self, user_settings, user_data
+    ):
         """
         Tests that registering a user sends a single email
         """
@@ -141,6 +145,7 @@ class TestApiRegistration:
         }
 
         assert len(mail.outbox) == 0
+        assert user_settings.notify_signups == False
         response = client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
@@ -151,11 +156,13 @@ class TestApiRegistration:
                 key=user.latest_confirmation_key
             ),
         )
-        assert len(mail.outbox) == 1
-        email = mail.outbox[0]
+        assert len(
+            mail.outbox
+        ) == 1  # this is not 2 b/c ASTROSAT_USERS_NOTIFY_SIGNUPS is False
+        confirmation_email = mail.outbox[0]
 
-        assert test_data["email"] in email.to
-        assert confirmation_url in email.body
+        assert test_data["email"] in confirmation_email.to
+        assert confirmation_url in confirmation_email.body
 
     def test_registration_sends_notification_email(
         self, user_settings, user_data
@@ -180,12 +187,12 @@ class TestApiRegistration:
         client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
-        email = mail.outbox[0]
+        notification_email = mail.outbox[0]
 
         manager_emails = [manager[1] for manager in settings.MANAGERS]
 
-        assert manager_emails == email.to
-        assert user.email in email.body
+        assert manager_emails == notification_email.to
+        assert user.email in notification_email.body
 
     def test_registration_verify_email(self, user_settings, user_data):
 
@@ -374,10 +381,10 @@ class TestBackendRegistration:
             "account_confirm_email",
             kwargs={"key": user.latest_confirmation_key}
         )
-        email = mail.outbox[0]
+        confirmation_email = mail.outbox[0]
 
-        assert test_data["email"] in email.to
-        assert confirmation_url in email.body
+        assert test_data["email"] in confirmation_email.to
+        assert confirmation_url in confirmation_email.body
 
     def test_registration_sends_notification_email(
         self, user_settings, user_data
@@ -402,12 +409,12 @@ class TestBackendRegistration:
         client.post(self.registration_url, test_data)
 
         user = UserModel.objects.get(email=test_data["email"])
-        email = mail.outbox[0]
+        notification_email = mail.outbox[0]
 
         manager_emails = [manager[1] for manager in settings.MANAGERS]
 
-        assert manager_emails == email.to
-        assert user.email in email.body
+        assert manager_emails == notification_email.to
+        assert user.email in notification_email.body
 
     def test_registration_verify_email(self, user_settings, user_data):
 

@@ -1,3 +1,4 @@
+from django.core.mail import mail_managers
 from django.utils.module_loading import import_string
 
 from allauth.account import app_settings as auth_settings
@@ -26,10 +27,14 @@ from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.utils import rest_decode_user_pk
 
 
-class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer):
+class LoginSerializer(
+    ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
+):
 
     # just a bit more security...
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
 
     # some extra fields...
     id = serializers.UUIDField(read_only=True, source="uuid")
@@ -58,7 +63,9 @@ class LoginSerializer(ConsolidatedErrorsSerializerMixin, RestAuthLoginSerializer
             accepted_terms = self.initial_data.get("accepted_terms", None)
             if accepted_terms is not None:
                 accepted_terms_field = self.fields["accepted_terms"]
-                accepted_terms_value = accepted_terms_field.to_internal_value(accepted_terms)
+                accepted_terms_value = accepted_terms_field.to_internal_value(
+                    accepted_terms
+                )
                 if user.accepted_terms != accepted_terms_value:
                     user.accepted_terms = accepted_terms_value
                     user.save()
@@ -93,7 +100,9 @@ class PasswordResetSerializer(
     ConsolidatedErrorsSerializerMixin, RestAuthPasswordResetSerializer
 ):
 
-    password_reset_form_class = import_string(auth_settings.FORMS["reset_password"])
+    password_reset_form_class = import_string(
+        auth_settings.FORMS["reset_password"]
+    )
 
     def validate_email(self, value):
         # TODO: THERE IS AN ERROR IN django-rest-auth [https://github.com/Tivix/django-rest-auth/blob/624ad01afbc86fa15b4e652406f3bdcd01f36e00/rest_auth/serializers.py#L172]
@@ -166,11 +175,17 @@ class PasswordResetConfirmSerializer(
         return user
 
 
-class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSerializer):
+class RegisterSerializer(
+    ConsolidatedErrorsSerializerMixin, RestAuthRegisterSerializer
+):
 
     # just a bit more security...
-    password1 = serializers.CharField(write_only=True, style={"input_type": "password"})
-    password2 = serializers.CharField(write_only=True, style={"input_type": "password"})
+    password1 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
+    password2 = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
 
     # no need to overwrite serializers/forms to use zxcvbn;
     # both of those hook into the allauth adapter
@@ -184,6 +199,16 @@ class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSeri
         choices=UserRegistrationStageType.choices,
         required=False,
     )
+
+    def custom_signup(self, request, user):
+        # send a notification email; not doing this as part of the adapter
+        # b/c sometimes registration forms/serializers have additional checks
+        # to make before _actually_ saving the user - this fn runs after those
+        if app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
+            adapter = get_adapter(request)
+            subject = adapter.format_email_subject(f"new user signup: {user}")
+            message = f"User {user.email} signed up for an account."
+            mail_managers(subject, message, fail_silently=True)
 
     def validate_accepted_terms(self, value):
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not value:
@@ -201,7 +226,9 @@ class RegisterSerializer(ConsolidatedErrorsSerializerMixin, RestAuthRegisterSeri
         return self.validated_data
 
 
-class VerifyEmailSerializer(ConsolidatedErrorsSerializerMixin, serializers.Serializer):
+class VerifyEmailSerializer(
+    ConsolidatedErrorsSerializerMixin, serializers.Serializer
+):
 
     key = serializers.CharField()
 
