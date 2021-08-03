@@ -8,7 +8,6 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.mail import mail_managers
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import resolve, reverse
@@ -283,11 +282,11 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         if commit:
             saved_user.save()
 
-        if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
-            subject = super(
-            ).format_email_subject(f"new user signup: {saved_user}")
-            message = f"User {saved_user.email} signed up for an account."
-            mail_managers(subject, message, fail_silently=True)
+        # if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
+        #     subject = super(
+        #     ).format_email_subject(f"new user signup: {saved_user}")
+        #     message = f"User {saved_user.email} signed up for an account."
+        #     mail_managers(subject, message, fail_silently=True)
         return saved_user
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):

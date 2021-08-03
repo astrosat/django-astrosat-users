@@ -1,3 +1,4 @@
+from django.core.mail import mail_managers
 from django.utils.module_loading import import_string
 
 from allauth.account import app_settings as auth_settings
@@ -224,6 +225,15 @@ class RegisterSerializer(
         return self.validated_data
 
     def custom_signup(self, request, user):
+        # send a notification email; not doing this as part of the adapter
+        # b/c sometimes registration forms/serializers have additional checks
+        # to make before _actually_ saving the user - this fn runs after those
+        if app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
+            adapter = get_adapter(request)
+            subject = adapter.format_email_subject(f"new user signup: {user}")
+            message = f"User {user.email} signed up for an account."
+            mail_managers(subject, message, fail_silently=True)
+
         customer_name = self.validated_data.get("customer_name")
         if customer_name:
             # create a customer and customer-user as part of the signup process

@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.mail import mail_managers
 from django.utils.translation import gettext_lazy as _
 
 from allauth.account import app_settings as allauth_app_settings
@@ -64,10 +65,16 @@ class PasswordResetForm(AllAuthPasswordResetForm):
 
 class RegistrationForm(AllAuthRegistrationForm):
 
-    field_order = ["email", "password1", "password2", "registration_stage", "accepted_terms"]
+    field_order = [
+        "email", "password1", "password2", "registration_stage",
+        "accepted_terms"
+    ]
 
     accepted_terms = forms.BooleanField(label="Accept Terms & Conditions")
-    registration_stage = forms.CharField(label="What stage of the registration process is the user at", required=False)
+    registration_stage = forms.CharField(
+        label="What stage of the registration process is the user at",
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,5 +87,17 @@ class RegistrationForm(AllAuthRegistrationForm):
         # perform this explicit validation
         accepted_terms = self.cleaned_data["accepted_terms"]
         if app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and not accepted_terms:
-            raise forms.ValidationError("Accepting terms & conditions is required.")
+            raise forms.ValidationError(
+                "Accepting terms & conditions is required."
+            )
         return accepted_terms
+
+    def custom_signup(self, request, user):
+        # send a notification email; not doing this as part of the adapter
+        # b/c sometimes registration forms/serializers have additional checks
+        # to make before _actually_ saving the user - this fn runs after those
+        if app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
+            adapter = get_adapter(request)
+            subject = adapter.format_email_subject(f"new user signup: {user}")
+            message = f"User {user.email} signed up for an account."
+            mail_managers(subject, message, fail_silently=True)
