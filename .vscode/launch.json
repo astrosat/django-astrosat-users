@@ -14,7 +14,7 @@
       "type": "python",
       "request": "launch",
       "stopOnEntry": false,
-      "pythonPath": "${workspaceRoot}/example/.venv/bin/python",
+      "python": "${workspaceRoot}/example/.venv/bin/python",
       "module": "pytest",
       "args": ["-sv"],
       "cwd": "${workspaceRoot}/example",
