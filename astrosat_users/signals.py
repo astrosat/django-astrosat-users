@@ -9,9 +9,7 @@ from allauth.account.signals import password_changed
 # customers #
 #############
 
-customer_added_user = django.dispatch.Signal(
-    providing_args=["customer", "user"]
-)
-customer_removed_user = django.dispatch.Signal(
-    providing_args=["customer", "user"]
-)
+# args passed = ["customer", "user"]
+customer_added_user = django.dispatch.Signal()
+# args passed = ["customer", "user"]
+customer_removed_user = django.dispatch.Signal()
