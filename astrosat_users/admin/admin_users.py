@@ -19,29 +19,27 @@ class UserAdmin(auth_admin.UserAdmin):
         "toggle_verication",
         "onboard",
         "logout_all",
-    ) + (update_roles_action,)
+    ) + (update_roles_action, )
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
-    fieldsets = (
-        (
-            "User",
-            {
-                "fields": (
-                    "avatar",
-                    "name",
-                    "description",
-                    "phone",
-                    "change_password",
-                    "is_approved",
-                    "accepted_terms",
-                    "onboarded",
-                    "registration_stage",
-                    "roles",
-                    "uuid",
-                )
-            },
-        ),
-    ) + auth_admin.UserAdmin.fieldsets
+    fieldsets = ((
+        "User",
+        {
+            "fields": (
+                "avatar",
+                "name",
+                "description",
+                "phone",
+                "change_password",
+                "is_approved",
+                "accepted_terms",
+                "onboarded",
+                "registration_stage",
+                "roles",
+                "uuid",
+            )
+        },
+    ), ) + auth_admin.UserAdmin.fieldsets
     list_display = [
         "username",
         "email",
@@ -56,8 +54,8 @@ class UserAdmin(auth_admin.UserAdmin):
         "get_roles_for_list_display",
         "get_customers_for_list_display",
     ]
-    list_filter = auth_admin.UserAdmin.list_filter + ("customers",)
-    readonly_fields = auth_admin.UserAdmin.readonly_fields + ("uuid",)
+    list_filter = auth_admin.UserAdmin.list_filter + ("customers", )
+    readonly_fields = auth_admin.UserAdmin.readonly_fields + ("uuid", )
     search_fields = ["username", "name", "email"]
     filter_horizontal = (
         "roles",

@@ -66,7 +66,10 @@ class PasswordResetForm(AllAuthPasswordResetForm):
 class RegistrationForm(AllAuthRegistrationForm):
 
     field_order = [
-        "email", "password1", "password2", "registration_stage",
+        "email",
+        "password1",
+        "password2",
+        "registration_stage",
         "accepted_terms"
     ]
 

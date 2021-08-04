@@ -14,8 +14,17 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = (
-            "id", "type", "name", "official_name", "company_type",
-            "registered_id", "description", "logo", "url", "country", "address",
+            "id",
+            "type",
+            "name",
+            "official_name",
+            "company_type",
+            "registered_id",
+            "description",
+            "logo",
+            "url",
+            "country",
+            "address",
             "postcode"
         )
 
@@ -82,18 +91,16 @@ class CustomerUserSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             # new user, perform registration...
             default_password = User.objects.make_random_password()
-            user_data.update(
-                {
-                    "accepted_terms": True,
-                    # accepted_terms must be True for registration to succeed
-                    # (assuming UserSettings.require_terms_acceptance is True)
-                    # but I want a newly-created user to have to explicitly accept terms
-                    # so I update the value immediately after calling is_valid below
-                    "change_password": True,
-                    "password1": default_password,
-                    "password2": default_password,
-                }
-            )
+            user_data.update({
+                "accepted_terms": True,
+                # accepted_terms must be True for registration to succeed
+                # (assuming UserSettings.require_terms_acceptance is True)
+                # but I want a newly-created user to have to explicitly accept terms
+                # so I update the value immediately after calling is_valid below
+                "change_password": True,
+                "password1": default_password,
+                "password2": default_password,
+            })
             register_serializer = RegisterSerializer(data=user_data)
             if register_serializer.is_valid():
                 user_data.pop("accepted_terms")

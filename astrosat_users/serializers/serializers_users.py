@@ -151,11 +151,9 @@ class UserSerializer(UserSerializerBasic):
 
     def get_customers(self, obj):
         # a very lightweight representation of the customer_user
-        return [
-            {
-                "type": customer_user.customer_user_type,
-                "status": customer_user.customer_user_status,
-                "id": str(customer_user.customer.id),
-                "name": customer_user.customer.name,
-            } for customer_user in obj.customer_users.all()
-        ]
+        return [{
+            "type": customer_user.customer_user_type,
+            "status": customer_user.customer_user_status,
+            "id": str(customer_user.customer.id),
+            "name": customer_user.customer.name,
+        } for customer_user in obj.customer_users.all()]

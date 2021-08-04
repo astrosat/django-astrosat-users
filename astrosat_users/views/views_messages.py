@@ -36,7 +36,9 @@ class MessageFilterSet(filters.FilterSet):
 
 @method_decorator(name="get_object", decorator=swagger_fake(None))
 class MessageViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
 
