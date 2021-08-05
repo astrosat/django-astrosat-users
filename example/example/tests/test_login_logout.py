@@ -75,8 +75,9 @@ class TestAPILoginLogout:
         content = response.json()
         assert status.is_client_error(response.status_code)
         assert content["errors"] == {
-            drf_settings.NON_FIELD_ERRORS_KEY:
-                [self.UNVERIFIED_MSG.format(user)]
+            drf_settings.NON_FIELD_ERRORS_KEY: [
+                self.UNVERIFIED_MSG.format(user)
+            ]
         }
 
         request_user = response.wsgi_request.user
@@ -105,8 +106,9 @@ class TestAPILoginLogout:
         content = response.json()
         assert status.is_client_error(response.status_code)
         assert content["errors"] == {
-            drf_settings.NON_FIELD_ERRORS_KEY:
-                [self.UNAPPROVED_MSG.format(user)]
+            drf_settings.NON_FIELD_ERRORS_KEY: [
+                self.UNAPPROVED_MSG.format(user)
+            ]
         }
 
         request_user = response.wsgi_request.user
@@ -137,8 +139,9 @@ class TestAPILoginLogout:
         content = response.json()
         assert status.is_client_error(response.status_code)
         assert content["errors"] == {
-            drf_settings.NON_FIELD_ERRORS_KEY:
-                [self.UNACCEPTED_TERMS.format(user)]
+            drf_settings.NON_FIELD_ERRORS_KEY: [
+                self.UNACCEPTED_TERMS.format(user)
+            ]
         }
 
         request_user = response.wsgi_request.user
@@ -182,7 +185,9 @@ class TestAPILoginLogout:
 
         assert status.is_client_error(response.status_code)
         assert content["errors"] == {
-            drf_settings.NON_FIELD_ERRORS_KEY: [self.UNACCEPTED_TERMS.format(user)]
+            drf_settings.NON_FIELD_ERRORS_KEY: [
+                self.UNACCEPTED_TERMS.format(user)
+            ]
         }
 
         request_user = response.wsgi_request.user

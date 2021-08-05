@@ -51,8 +51,7 @@ class UserSettings(SingletonMixin, models.Model):
 
     password_strength = models.IntegerField(
         default=2,
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(4)],
+        validators=[MinValueValidator(0), MaxValueValidator(4)],
         help_text=_(
             "Strength of password field as per <a href='github.com/dropbox/zxcvbn'>zxcvbn</a>"
         )

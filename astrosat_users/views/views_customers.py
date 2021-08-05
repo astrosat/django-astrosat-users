@@ -29,7 +29,8 @@ class IsAdminOrManager(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return user.is_superuser or view.active_managers.filter(user=user).exists()
+        return user.is_superuser or view.active_managers.filter(user=user
+                                                               ).exists()
 
 
 class CannotDeleteSelf(BasePermission):
@@ -70,7 +71,9 @@ class CustomerCreateView(CustomerViewMixin, generics.CreateAPIView):
         customer = serializer.save()
         user = self.request.user
         if user.registration_stage == UserRegistrationStageType.CUSTOMER:
-            user.registration_stage = str(UserRegistrationStageType.CUSTOMER_USER)
+            user.registration_stage = str(
+                UserRegistrationStageType.CUSTOMER_USER
+            )
             user.save()
         return customer
 
@@ -90,7 +93,9 @@ class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
         updated_customer = serializer.save()
 
         json_encoder = JSONEncoder()
-        existing_customer_data = json_encoder.encode(self.serializer_class(existing_customer).data)
+        existing_customer_data = json_encoder.encode(
+            self.serializer_class(existing_customer).data
+        )
         updated_customer_data = json_encoder.encode(serializer.data)
 
         if existing_customer_data != updated_customer_data:
@@ -98,8 +103,13 @@ class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
             context = {
                 "customer": updated_customer,
             }
-            managers_emails = updated_customer.customer_users.managers().values_list("user__email", flat=True)
-            adapter.send_mail("astrosat_users/email/update_customer", managers_emails, context)
+            managers_emails = updated_customer.customer_users.managers(
+            ).values_list("user__email", flat=True)
+            adapter.send_mail(
+                "astrosat_users/email/update_customer",
+                managers_emails,
+                context
+            )
 
         return updated_customer
 
@@ -109,8 +119,12 @@ class CustomerUserFilterSet(filters.FilterSet):
         model = CustomerUser
         fields = ("type", "status")
 
-    type = filters.CharFilter(field_name="customer_user_type", lookup_expr="iexact")
-    status = filters.CharFilter(field_name="customer_user_status", lookup_expr="iexact")
+    type = filters.CharFilter(
+        field_name="customer_user_type", lookup_expr="iexact"
+    )
+    status = filters.CharFilter(
+        field_name="customer_user_status", lookup_expr="iexact"
+    )
 
 
 class CustomerUserViewMixin(object):
@@ -156,13 +170,16 @@ class CustomerUserViewMixin(object):
 class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
     permission_classes = [
-        IsAuthenticated &
-        (IsAdminOrManager | UserRegistrationStagePermission(UserRegistrationStageType.CUSTOMER_USER))
+        IsAuthenticated & (
+            IsAdminOrManager | UserRegistrationStagePermission(
+                UserRegistrationStageType.CUSTOMER_USER
+            )
+        )
     ]
 
     serializer_class = CustomerUserSerializer
 
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = CustomerUserFilterSet
 
     def perform_create(self, serializer):
@@ -179,14 +196,18 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
         return customer_user
 
 
-class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView):
+class CustomerUserDetailView(
+    CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
+):
 
     permission_classes = [IsAuthenticated, IsAdminOrManager, CannotDeleteSelf]
     serializer_class = CustomerUserSerializer
 
     def perform_destroy(self, instance):
         deleted_instances = instance.uninvite(adapter=get_adapter(self.request))
-        if not(deleted_instances):  # only proceed w/ the deletion if "uninvite" hasn't already done it
+        if not (
+            deleted_instances
+        ):  # only proceed w/ the deletion if "uninvite" hasn't already done it
             return super().perform_destroy(instance)
 
     def perform_update(self, serializer):
@@ -195,8 +216,12 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
         updated_customer_user = serializer.save()
 
         json_encoder = JSONEncoder()
-        existing_customer_user_user_data = json_encoder.encode(self.serializer_class(existing_customer_user).data["user"])
-        updated_customer_user_user_data = json_encoder.encode(serializer.data["user"])
+        existing_customer_user_user_data = json_encoder.encode(
+            self.serializer_class(existing_customer_user).data["user"]
+        )
+        updated_customer_user_user_data = json_encoder.encode(
+            serializer.data["user"]
+        )
 
         adapter = get_adapter(self.request)
         context = {
@@ -206,7 +231,9 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
 
         if existing_customer_user_user_data != updated_customer_user_user_data:
             template_prefix = "astrosat_users/email/update_user"
-            adapter.send_mail(template_prefix, updated_customer_user.user.email, context)
+            adapter.send_mail(
+                template_prefix, updated_customer_user.user.email, context
+            )
 
         if existing_customer_user.customer_user_type != updated_customer_user.customer_user_type:
 
@@ -217,7 +244,9 @@ class CustomerUserDetailView(CustomerUserViewMixin, generics.RetrieveUpdateDestr
                 # customer_user was a MANAGER, now it's something else
                 template_prefix = "astrosat_users/email/admin_revoke"
 
-            adapter.send_mail(template_prefix, updated_customer_user.user.email, context)
+            adapter.send_mail(
+                template_prefix, updated_customer_user.user.email, context
+            )
 
         return updated_customer_user
 
@@ -247,6 +276,8 @@ class CustomerUserOnboardView(CustomerUserViewMixin, generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         customer_user = self.get_object()
-        customer_user.user.onboard(adapter=get_adapter(request), customer=self.customer)
+        customer_user.user.onboard(
+            adapter=get_adapter(request), customer=self.customer
+        )
         serializer = self.get_serializer(customer_user)
         return Response(serializer.data, status=status.HTTP_200_OK)

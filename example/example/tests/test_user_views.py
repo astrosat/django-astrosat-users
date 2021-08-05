@@ -133,9 +133,9 @@ class TestApiViews:
         users[6].roles.add(roles[1], roles[2])
         users[7].roles.add(roles[2], roles[3])
 
-        url_params = urllib.parse.urlencode(
-            {"roles__any": ",".join([role.name for role in roles[:2]])}
-        )
+        url_params = urllib.parse.urlencode({
+            "roles__any": ",".join([role.name for role in roles[:2]])
+        })
         matching_users = [users[1], users[2], users[5], users[6]]
 
         response = client.get(f"{self.users_list_url}?{url_params}")
@@ -146,9 +146,9 @@ class TestApiViews:
         assert set(map(lambda x: x["email"],
                        content)) == set(map(lambda x: x.email, matching_users))
 
-        url_params = urllib.parse.urlencode(
-            {"roles__all": ",".join([role.name for role in roles[:2]])}
-        )
+        url_params = urllib.parse.urlencode({
+            "roles__all": ",".join([role.name for role in roles[:2]])
+        })
         matching_users = [users[5]]
 
         response = client.get(f"{self.users_list_url}?{url_params}")
@@ -189,14 +189,10 @@ class TestApiViews:
         users[6].roles.add(roles[1], roles[2])
         users[7].roles.add(roles[2], roles[3])
 
-        url_params = urllib.parse.urlencode(
-            {
-                "permissions__any":
-                    ",".join(
-                        [permission.name for permission in permissions[:2]]
-                    )
-            }
-        )
+        url_params = urllib.parse.urlencode({
+            "permissions__any":
+                ",".join([permission.name for permission in permissions[:2]])
+        })
         matching_users = [users[1], users[2], users[5], users[6]]
 
         response = client.get(f"{self.users_list_url}?{url_params}")
@@ -207,14 +203,10 @@ class TestApiViews:
         assert set(map(lambda x: x["email"],
                        content)) == set(map(lambda x: x.email, matching_users))
 
-        url_params = urllib.parse.urlencode(
-            {
-                "permissions__all":
-                    ",".join(
-                        [permission.name for permission in permissions[:2]]
-                    )
-            }
-        )
+        url_params = urllib.parse.urlencode({
+            "permissions__all":
+                ",".join([permission.name for permission in permissions[:2]])
+        })
         matching_users = [users[5]]
 
         response = client.get(f"{self.users_list_url}?{url_params}")

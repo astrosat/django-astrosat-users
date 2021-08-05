@@ -32,13 +32,11 @@ class UserProfileField(OneToOneField):
             self.key is not None
         ), "'related_name' must be specified for UserProfileField."
 
-        kwargs.update(
-            {
-                "unique": True,
-                "on_delete": models.CASCADE,
-                "to": settings.AUTH_USER_MODEL,
-            }
-        )
+        kwargs.update({
+            "unique": True,
+            "on_delete": models.CASCADE,
+            "to": settings.AUTH_USER_MODEL,
+        })
         super().__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name, **kwargs):

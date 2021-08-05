@@ -79,61 +79,51 @@ class AllowRegistrationPermission(BasePermission):
 
 _login_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
-    properties=OrderedDict(
+    properties=OrderedDict((
+        # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
         (
-            # ("username", openapi.Schema(type=openapi.TYPE_STRING, example="admin")),
-            (
-                "email",
-                openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    format=openapi.FORMAT_EMAIL,
-                    example="admin@astrosat.net",
-                ),
+            "email",
+            openapi.Schema(
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_EMAIL,
+                example="admin@astrosat.net",
             ),
-            (
-                "password",
-                openapi.Schema(type=openapi.TYPE_STRING, example="password")
-            ),
-            ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN))
-        )
-    ),
+        ),
+        (
+            "password",
+            openapi.Schema(type=openapi.TYPE_STRING, example="password")
+        ),
+        ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN))
+    )),
 )
 
 _register_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
-    properties=OrderedDict(
+    properties=OrderedDict((
         (
-            (
-                "email",
-                openapi.Schema(
-                    type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL
-                ),
+            "email",
+            openapi.Schema(
+                type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL
             ),
-            (
-                "password1",
-                openapi.Schema(
-                    type=openapi.TYPE_STRING, example="superpassword23"
-                ),
-            ),
-            (
-                "password2",
-                openapi.Schema(
-                    type=openapi.TYPE_STRING, example="superpassword23"
-                ),
-            ),
-            (
-                "customer_name",
-                openapi.Schema(
-                    type=openapi.TYPE_STRING, example="example company"
-                )
-            ),
-            ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
-            (
-                "registration_stage",
-                openapi.Schema(type=openapi.TYPE_STRING, example="CUSTOMER"),
-            ),
-        )
-    ),
+        ),
+        (
+            "password1",
+            openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
+        ),
+        (
+            "password2",
+            openapi.Schema(type=openapi.TYPE_STRING, example="superpassword23"),
+        ),
+        (
+            "customer_name",
+            openapi.Schema(type=openapi.TYPE_STRING, example="example company")
+        ),
+        ("accepted_terms", openapi.Schema(type=openapi.TYPE_BOOLEAN)),
+        (
+            "registration_stage",
+            openapi.Schema(type=openapi.TYPE_STRING, example="CUSTOMER"),
+        ),
+    )),
 )
 
 #########
@@ -244,12 +234,10 @@ class PasswordResetConfirmView(RestAuthPasswordResetConfirmView):
             user.registration_stage = None
             user.save()
 
-        return Response(
-            {
-                "detail": _("Password has been reset with the new password."),
-                "user": UserSerializerLite(user).data
-            }
-        )
+        return Response({
+            "detail": _("Password has been reset with the new password."),
+            "user": UserSerializerLite(user).data
+        })
 
 
 @method_decorator(
@@ -280,7 +268,9 @@ class RegisterView(RestAuthRegisterView):
 
         self.token = create_knox_token(None, user, None)
         complete_signup(
-            self.request._request, user, allauth_settings.EMAIL_VERIFICATION,
+            self.request._request,
+            user,
+            allauth_settings.EMAIL_VERIFICATION,
             None
         )
         return user

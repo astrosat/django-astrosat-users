@@ -191,8 +191,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             path = reverse(
                 "account_reset_password_from_key",
                 kwargs={
-                    "key": token_key,
-                    "uidb36": user_pk_to_url_str(user)
+                    "key": token_key, "uidb36": user_pk_to_url_str(user)
                 },
             )
 
@@ -313,14 +312,12 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
             "template_prefix", "account/email/password_reset_key"
         )
         context = kwargs.get("context", {})
-        context.update(
-            {
-                "current_site": get_current_site(self.request),
-                "user": user,
-                "password_reset_url": url,
-                "request": self.request,
-            }
-        )
+        context.update({
+            "current_site": get_current_site(self.request),
+            "user": user,
+            "password_reset_url": url,
+            "request": self.request,
+        })
 
         if (
             allauth_app_settings.AUTHENTICATION_METHOD !=

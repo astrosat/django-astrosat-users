@@ -9,11 +9,9 @@ from .. import APP_NAME
 
 env = environ.Env()
 
-
 PROJECT_NAME = getattr(settings, "PROJECT_NAME", "Django Astrosat Users")
 PROJECT_SLUG = getattr(settings, "PROJECT_SLUG", slugify(PROJECT_NAME))
 PROJECT_EMAIL = getattr(settings, "PROJECT_EMAIL", "{role}@astrosat.net")
-
 
 ACCOUNT_LOGIN_CLIENT_URL = getattr(
     settings, "ACCOUNT_LOGIN_CLIENT_URL", "login/"
@@ -22,7 +20,9 @@ ACCOUNT_CONFIRM_EMAIL_CLIENT_URL = getattr(
     settings, "ACCOUNT_CONFIRM_EMAIL_CLIENT_URL", "verify-email/?key={key}"
 )
 ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL = getattr(
-    settings, "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL", "confirm-pwd/?key={key}&uid={uid}"
+    settings,
+    "ACCOUNT_CONFIRM_PASSWORD_CLIENT_URL",
+    "confirm-pwd/?key={key}&uid={uid}"
 )
 
 PASSWORD_MIN_LENGTH = getattr(
@@ -106,7 +106,6 @@ ASTROSAT_USERS_NOTIFY_SIGNUPS = getattr(
     ),
 )
 
-
 # required third party settings...
 # (most of these are checked in checks.py)
 
@@ -137,11 +136,16 @@ ALLAUTH_SETTINGS = {
 
 REST_AUTH_SETTINGS = {
     "REST_AUTH_SERIALIZERS": {
-        "TOKEN_SERIALIZER": "astrosat_users.serializers.KnoxTokenSerializer",
-        "LOGIN_SERIALIZER": "astrosat_users.serializers.LoginSerializer",
-        "PASSWORD_CHANGE_SERIALIZER": "astrosat_users.serializers.PasswordChangeSerializer",
-        "PASSWORD_RESET_SERIALIZER": "astrosat_users.serializers.PasswordResetSerializer",
-        "PASSWORD_RESET_CONFIRM_SERIALIZER": "astrosat_users.serializers.PasswordResetConfirmSerializer",
+        "TOKEN_SERIALIZER":
+            "astrosat_users.serializers.KnoxTokenSerializer",
+        "LOGIN_SERIALIZER":
+            "astrosat_users.serializers.LoginSerializer",
+        "PASSWORD_CHANGE_SERIALIZER":
+            "astrosat_users.serializers.PasswordChangeSerializer",
+        "PASSWORD_RESET_SERIALIZER":
+            "astrosat_users.serializers.PasswordResetSerializer",
+        "PASSWORD_RESET_CONFIRM_SERIALIZER":
+            "astrosat_users.serializers.PasswordResetConfirmSerializer",
     },
     "REST_AUTH_REGISTER_SERIALIZERS": {
         "REGISTER_SERIALIZER": "astrosat_users.serializers.RegisterSerializer"

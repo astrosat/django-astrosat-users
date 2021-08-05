@@ -63,7 +63,10 @@ class UserFilterSet(filters.FilterSet):
     class Meta:
         model = User
         fields = [
-            "is_active", "is_approved", "accepted_terms", "is_verified",
+            "is_active",
+            "is_approved",
+            "accepted_terms",
+            "is_verified",
             "registration_stage"
         ]
 

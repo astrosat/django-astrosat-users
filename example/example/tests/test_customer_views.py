@@ -25,7 +25,6 @@ from .factories import *
 
 @pytest.mark.django_db
 class TestCustomerViews:
-
     def test_create_customer_permission(self, user, mock_storage):
 
         customer_data = factory.build(dict, FACTORY_CLASS=CustomerFactory)
@@ -47,7 +46,9 @@ class TestCustomerViews:
         user.refresh_from_db()
 
         assert status.is_client_error(response.status_code)
-        assert content["detail"] == "User must have a registration_stage of 'CUSTOMER' to perform this action."
+        assert content[
+            "detail"
+        ] == "User must have a registration_stage of 'CUSTOMER' to perform this action."
 
         assert Customer.objects.count() == 0
         assert user.registration_stage != UserRegistrationStageType.CUSTOMER_USER
@@ -71,7 +72,8 @@ class TestCustomerViews:
         # make sure user is a MANAGER of customer
         # (so they have permission for the view)
         customer = CustomerFactory(logo=None)
-        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
 
         _, key = create_auth_token(user)
         client = APIClient()
@@ -88,7 +90,8 @@ class TestCustomerViews:
         # make sure user is a MANAGER of customer
         # (so they have permission for the view)
         customer = CustomerFactory(logo=None)
-        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
 
         _, key = create_auth_token(user)
         client = APIClient()
@@ -119,7 +122,9 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
         for _ in range(N_CUSTOMER_USERS):
-            customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")
+            customer.add_user(
+                UserFactory(avatar=None), type="MEMBER", status="ACTIVE"
+            )
 
         _, key = create_auth_token(admin)
         client = APIClient()
@@ -138,10 +143,9 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
         customer_users = [
-            customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")[
-                0
-            ]
-            for _ in range(N_CUSTOMER_USERS)
+            customer.add_user(
+                UserFactory(avatar=None), type="MEMBER", status="ACTIVE"
+            )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
         test_user = customer_users[0].user
@@ -149,7 +153,9 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
+        url = reverse(
+            "customer-users-detail", args=[customer.id, test_user.uuid]
+        )
 
         response = client.get(url, format="json")
         content = response.json()
@@ -163,10 +169,9 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
         customer_users = [
-            customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")[
-                0
-            ]
-            for _ in range(N_CUSTOMER_USERS)
+            customer.add_user(
+                UserFactory(avatar=None), type="MEMBER", status="ACTIVE"
+            )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
         test_user = customer_users[0].user
@@ -174,7 +179,9 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
+        url = reverse(
+            "customer-users-detail", args=[customer.id, test_user.uuid]
+        )
 
         response = client.get(url, format="json")
         content = response.json()
@@ -199,10 +206,9 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
         customer_users = [
-            customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")[
-                0
-            ]
-            for _ in range(N_CUSTOMER_USERS)
+            customer.add_user(
+                UserFactory(avatar=None), type="MEMBER", status="ACTIVE"
+            )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
         test_user = customer_users[0].user
@@ -210,7 +216,9 @@ class TestCustomerViews:
         _, key = create_auth_token(admin)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, test_user.uuid])
+        url = reverse(
+            "customer-users-detail", args=[customer.id, test_user.uuid]
+        )
 
         response = client.delete(url)
         assert status.is_success(response.status_code)
@@ -224,7 +232,8 @@ class TestCustomerViews:
         # tests that a customer MEMBER (not MANAGER) cannot access the Customers nor CustomerUsers API
 
         customer = CustomerFactory(logo=None)
-        (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
 
         _, key = create_auth_token(user)
         client = APIClient()
@@ -269,10 +278,12 @@ class TestCustomerViews:
         customer.refresh_from_db()
         user.refresh_from_db()
 
-        assert customer.customer_users.count() == user.customer_users.count() == 1
-        assert set(customer.customer_users.values_list("id")) == set(user.customer_users.values_list("id"))
+        assert customer.customer_users.count() == user.customer_users.count(
+        ) == 1
+        assert set(customer.customer_users.values_list("id")) == set(
+            user.customer_users.values_list("id")
+        )
         assert user.change_password is not True
-
 
     def test_add_new_customer_user_permissions(self, mock_storage):
 
@@ -342,7 +353,9 @@ class TestCustomerViews:
         assert user.pk in customer.customer_users.values_list("user", flat=True)
         assert user.email == content["user"]["email"]
 
-    def test_add_new_invalid_customer_user(self, admin, user_data, mock_storage):
+    def test_add_new_invalid_customer_user(
+        self, admin, user_data, mock_storage
+    ):
 
         user_data["email"] = "invalid_email_address"
 
@@ -369,7 +382,9 @@ class TestCustomerViews:
 
         assert customer.customer_users.count() == 0
 
-    def test_cannot_add_duplicate_customer_user(self, admin, user_data, mock_storage):
+    def test_cannot_add_duplicate_customer_user(
+        self, admin, user_data, mock_storage
+    ):
         customer = CustomerFactory(logo=None)
 
         _, key = create_auth_token(admin)
@@ -388,10 +403,14 @@ class TestCustomerViews:
         content = response.json()
 
         assert status.is_client_error(response.status_code)
-        assert content["non_field_errors"] == ["User is already a member of Customer."]
+        assert content["non_field_errors"] == [
+            "User is already a member of Customer."
+        ]
         assert customer.customer_users.count() == 1
 
-    def test_add_new_customer_user_sends_email(self, admin, user_data, mock_storage):
+    def test_add_new_customer_user_sends_email(
+        self, admin, user_data, mock_storage
+    ):
 
         customer = CustomerFactory(logo=None)
 
@@ -426,8 +445,10 @@ class TestCustomerViews:
         user_1 = UserFactory(avatar=None)
         user_2 = UserFactory(avatar=None)
 
-        (customer_user_1, _) = customer.add_user(user_1, type="MANAGER", status="ACTIVE")
-        (customer_user_2, _) = customer.add_user(user_2, type="MANAGER", status="ACTIVE")
+        (customer_user_1,
+         _) = customer.add_user(user_1, type="MANAGER", status="ACTIVE")
+        (customer_user_2,
+         _) = customer.add_user(user_2, type="MANAGER", status="ACTIVE")
 
         _, key = create_auth_token(user_1)
         client = APIClient()
@@ -449,7 +470,8 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
 
         _, key = create_auth_token(admin)
         client = APIClient()
@@ -463,7 +485,9 @@ class TestCustomerViews:
         assert len(mail.outbox) == 1
         assert user.email in email.to
 
-    def test_resend_invitation_new_customer_user(self, admin, user_data, mock_storage):
+    def test_resend_invitation_new_customer_user(
+        self, admin, user_data, mock_storage
+    ):
 
         customer = CustomerFactory(logo=None)
 
@@ -483,7 +507,10 @@ class TestCustomerViews:
         assert old_content["invitation_date"] is not None
         assert old_content["user"]["change_password"] is True
 
-        url = reverse("customer-users-invite", args=[customer.id, old_content["user"]["id"]])
+        url = reverse(
+            "customer-users-invite",
+            args=[customer.id, old_content["user"]["id"]]
+        )
         response = client.post(url, {}, format="json")
         assert status.is_success(response.status_code)
         new_content = response.json()
@@ -498,11 +525,14 @@ class TestCustomerViews:
         assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[0].body
         assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[1].body
 
-    def test_resend_invitation_existing_customer_user(self, admin, user, mock_storage):
+    def test_resend_invitation_existing_customer_user(
+        self, admin, user, mock_storage
+    ):
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MEMBER", status="PENDING")
+        (customer_user,
+         _) = customer.add_user(user, type="MEMBER", status="PENDING")
 
         _, key = create_auth_token(admin)
         client = APIClient()
@@ -530,7 +560,8 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
 
         _, key = create_auth_token(user)
         client = APIClient()
@@ -558,7 +589,8 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
         customer_user_data = CustomerUserSerializer(customer_user).data
 
         _, key = create_auth_token(admin)
@@ -579,7 +611,8 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user, _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        (customer_user,
+         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
         customer_user_data = CustomerUserSerializer(customer_user).data
 
         _, key = create_auth_token(admin)

@@ -15,12 +15,10 @@ class UserAdminCreationForm(auth_forms.UserCreationForm):
     # email and username are optional fields
     # but they still have to be unique; the clean methods below handle that
 
-    error_message = auth_forms.UserCreationForm.error_messages.update(
-        {
-            "duplicate_username": _("This username has already been taken."),
-            "duplicate_email": _("This email has already been taken."),
-        }
-    )
+    error_message = auth_forms.UserCreationForm.error_messages.update({
+        "duplicate_username": _("This username has already been taken."),
+        "duplicate_email": _("This email has already been taken."),
+    })
 
     class Meta(auth_forms.UserCreationForm.Meta):
         model = User

@@ -81,8 +81,7 @@ class TestMessagesAPI:
 
         url = reverse(
             "messages-detail", kwargs={
-                "user_id": user.uuid,
-                "pk": message.id
+                "user_id": user.uuid, "pk": message.id
             }
         )
         response = client.get(url)
@@ -108,8 +107,7 @@ class TestMessagesAPI:
 
         url = reverse(
             "messages-detail", kwargs={
-                "user_id": user.uuid,
-                "pk": message.id
+                "user_id": user.uuid, "pk": message.id
             }
         )
         response = client.get(url)
