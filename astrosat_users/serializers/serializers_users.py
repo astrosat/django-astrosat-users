@@ -155,7 +155,6 @@ class UserSerializer(UserSerializerBasic):
             "customers",
         ]
 
-   
     class _CustomerUserSerializer(serializers.Serializer):
         # a very lightweight representation of the customer_user
         # just used for documentation purposes
@@ -170,11 +169,9 @@ class UserSerializer(UserSerializerBasic):
         serializer_or_field=_CustomerUserSerializer(many=True)
     )
     def get_customers(self, obj):
-        return [
-            {
-                "type": customer_user.customer_user_type,
-                "status": customer_user.customer_user_status,
-                "id": customer_user.customer.id,
-                "name": customer_user.customer.name,
-            } for customer_user in obj.customer_users.all()
-        ]
+        return [{
+            "type": customer_user.customer_user_type,
+            "status": customer_user.customer_user_status,
+            "id": customer_user.customer.id,
+            "name": customer_user.customer.name,
+        } for customer_user in obj.customer_users.all()]
