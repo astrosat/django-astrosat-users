@@ -166,17 +166,15 @@ class UserSerializer(UserSerializerBasic):
 
     customers = serializers.SerializerMethodField()
 
- @swagger_serializer_method(
-     serializer_or_field=_CustomerUserSerializer(many=True)
- )
- def get_customers(self, obj):
+    @swagger_serializer_method(
+        serializer_or_field=_CustomerUserSerializer(many=True)
+    )
+    def get_customers(self, obj):
         return [
             {
                 "type": customer_user.customer_user_type,
                 "status": customer_user.customer_user_status,
                 "id": customer_user.customer.id,
                 "name": customer_user.customer.name,
-            } 
-            for customer_user in obj.customer_users.all()
+            } for customer_user in obj.customer_users.all()
         ]
-
