@@ -1,6 +1,14 @@
 from rest_framework import serializers
 
-from astrosat_users.models import User, UserRole, UserPermission, PROFILES_REGISTRY
+from drf_yasg2.utils import swagger_serializer_method
+
+from astrosat_users.models import (
+    PROFILES_REGISTRY,
+    User,
+    UserRole,
+    UserPermission,
+    CustomerUser,
+)
 
 
 class UserSerializerLite(serializers.ModelSerializer):
@@ -147,13 +155,23 @@ class UserSerializer(UserSerializerBasic):
             "customers",
         ]
 
+    class _CustomerUserSerializer(serializers.Serializer):
+        # a very lightweight representation of the customer_user
+        # just used for documentation purposes
+        type = serializers.CharField(max_length=128)
+        status = serializers.CharField(max_length=128)
+        id = serializers.UUIDField()
+        name = serializers.CharField(max_length=128)
+
     customers = serializers.SerializerMethodField()
 
+    @swagger_serializer_method(
+        serializer_or_field=_CustomerUserSerializer(many=True)
+    )
     def get_customers(self, obj):
-        # a very lightweight representation of the customer_user
         return [{
             "type": customer_user.customer_user_type,
             "status": customer_user.customer_user_status,
-            "id": str(customer_user.customer.id),
+            "id": customer_user.customer.id,
             "name": customer_user.customer.name,
         } for customer_user in obj.customer_users.all()]

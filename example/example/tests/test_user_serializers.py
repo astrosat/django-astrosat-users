@@ -31,6 +31,6 @@ class TestUserSerializer:
         assert serializer_data["customers"] == [{
             "type": "MANAGER",
             "status": "PENDING",
-            "id": str(customer.id),
+            "id": customer.id,
             "name": customer.name
         }]
