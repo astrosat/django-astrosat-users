@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import IsAuthenticated, BasePermission, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 
@@ -19,21 +19,43 @@ from astrosat_users.serializers import CustomerSerializer, CustomerUserSerialize
 from astrosat_users.views.views_users import UserRegistrationStagePermission
 
 
-class IsAdminOrManager(BasePermission):
+class IsManagerOrMemberPermission(BasePermission):
     """
-    Only the admin or a Customer Manager can access this view.
-    (Relies on the property "active_managers" in the views below.)
+    Only a Customer Manager can access non-safe views.
+    A Customer Member (which obviously includes Managers) can access safe views.
+    (Relies on the property "customer" in the views below.)
+
+    """
+    def has_permission(self, request, view):
+        # yapf: disable
+        user = request.user
+        if request.method in SAFE_METHODS:
+            return view.customer.customer_users.active().filter(
+                user=user
+            ).exists()
+        else:
+            return view.customer.customer_users.active().managers().filter(
+                user=user
+            ).exists()
+
+
+class IsManagerPermission(BasePermission):
+    """
+    Only a Customer Manager can access this view.
+    (Relies on the property "customer" in the views below.)
     """
 
     message = "Only a customer manager can perform this action."
 
     def has_permission(self, request, view):
         user = request.user
-        return user.is_superuser or view.active_managers.filter(user=user
-                                                               ).exists()
+        return view.customer.customer_users.active().managers().filter(
+            user=user
+        ).exists()
 
 
-class CannotDeleteSelf(BasePermission):
+class CannotDeleteSelfPermission(BasePermission):
+
     def has_object_permission(self, request, view, obj):
         user = request.user
         if request.method == "DELETE":
@@ -83,7 +105,7 @@ class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
     lookup_field = "id"
     lookup_url_kwarg = "customer_id"
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsManagerOrMemberPermission]
     queryset = Customer.objects.multiple()
     serializer_class = CustomerSerializer
 
@@ -171,7 +193,7 @@ class CustomerUserListView(CustomerUserViewMixin, generics.ListCreateAPIView):
 
     permission_classes = [
         IsAuthenticated & (
-            IsAdminOrManager | UserRegistrationStagePermission(
+            IsManagerPermission | UserRegistrationStagePermission(
                 UserRegistrationStageType.CUSTOMER_USER
             )
         )
@@ -200,7 +222,9 @@ class CustomerUserDetailView(
     CustomerUserViewMixin, generics.RetrieveUpdateDestroyAPIView
 ):
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager, CannotDeleteSelf]
+    permission_classes = [
+        IsAuthenticated, IsManagerPermission, CannotDeleteSelfPermission
+    ]
     serializer_class = CustomerUserSerializer
 
     def perform_destroy(self, instance):
@@ -256,7 +280,7 @@ class CustomerUserInviteView(CustomerUserViewMixin, generics.GenericAPIView):
     A special view just for re-sending invitations.
     """
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsManagerPermission]
     serializer_class = CustomerUserSerializer
 
     def post(self, request, *args, **kwargs):
@@ -271,7 +295,7 @@ class CustomerUserOnboardView(CustomerUserViewMixin, generics.GenericAPIView):
     A special view just for onboarding Users.
     """
 
-    permission_classes = [IsAuthenticated, IsAdminOrManager]
+    permission_classes = [IsAuthenticated, IsManagerPermission]
     serializer_class = CustomerUserSerializer
 
     def post(self, request, *args, **kwargs):

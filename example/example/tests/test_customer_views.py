@@ -18,7 +18,7 @@ from astrosat_users.tests.utils import *
 from astrosat_users.models import User, Customer
 from astrosat_users.models.models_users import UserRegistrationStageType
 from astrosat_users.serializers import UserSerializerBasic, CustomerUserSerializer
-from astrosat_users.views.views_customers import IsAdminOrManager
+from astrosat_users.views.views_customers import IsManagerPermission
 
 from .factories import *
 
@@ -116,17 +116,21 @@ class TestCustomerViews:
         message = mail.outbox[0]
         assert "Update on your customer" in message.subject
 
-    def test_list_customer_users(self, admin, mock_storage):
+    def test_list_customer_users(self, mock_storage):
 
         N_CUSTOMER_USERS = 10
 
         customer = CustomerFactory(logo=None)
         for _ in range(N_CUSTOMER_USERS):
-            customer.add_user(
+            customer_user, _ =customer.add_user(
                 UserFactory(avatar=None), type="MEMBER", status="ACTIVE"
             )
 
-        _, key = create_auth_token(admin)
+        # the user making the request must be a manager
+        customer_user.customer_user_type = "MANAGER"
+        customer_user.save()
+
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customer-users-list", args=[customer.id])
@@ -137,7 +141,7 @@ class TestCustomerViews:
         assert status.is_success(response.status_code)
         assert len(content) == N_CUSTOMER_USERS
 
-    def test_get_customer_user(self, admin, mock_storage):
+    def test_get_customer_user(self, mock_storage):
 
         N_CUSTOMER_USERS = 10
 
@@ -148,9 +152,13 @@ class TestCustomerViews:
             )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
+        # the user making the request must be a manager
+        customer_users[0].customer_user_type = "MANAGER"
+        customer_users[0].save()
+
         test_user = customer_users[0].user
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(test_user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse(
@@ -163,7 +171,7 @@ class TestCustomerViews:
         assert status.is_success(response.status_code)
         assert content["user"]["email"] == test_user.email
 
-    def test_update_customer_user(self, admin, mock_storage):
+    def test_update_customer_user(self, mock_storage):
 
         N_CUSTOMER_USERS = 10
 
@@ -174,9 +182,13 @@ class TestCustomerViews:
             )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
+        # the user making the request must be a manager
+        customer_users[0].customer_user_type = "MANAGER"
+        customer_users[0].save()
+
         test_user = customer_users[0].user
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(test_user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse(
@@ -200,7 +212,7 @@ class TestCustomerViews:
         message = mail.outbox[0]
         assert "Update on your account" in message.subject
 
-    def test_delete_customer_user(self, admin, mock_storage):
+    def test_delete_customer_user(self, mock_storage):
 
         N_CUSTOMER_USERS = 10
 
@@ -211,9 +223,14 @@ class TestCustomerViews:
             )[0] for _ in range(N_CUSTOMER_USERS)
         ]
 
+        # the user making the request must be a manager
+        # and not the customer_user being deleted
+        customer_users[1].customer_user_type = "MANAGER"
+        customer_users[1].save()
+
         test_user = customer_users[0].user
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_users[1].user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse(
@@ -228,62 +245,100 @@ class TestCustomerViews:
         assert customer.customer_users.count() == N_CUSTOMER_USERS - 1
         assert test_user.customer_users.count() == 0
 
-    def test_member_cannot_access_customers(self, user, mock_storage):
-        # tests that a customer MEMBER (not MANAGER) cannot access the Customers nor CustomerUsers API
-
-        customer = CustomerFactory(logo=None)
-        (customer_user,
-         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
-
-        _, key = create_auth_token(user)
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-
-        customer_url = reverse("customers-detail", args=[customer.id])
-        customer_users_url = reverse("customer-users-list", args=[customer.id])
-
-        response = client.get(customer_url, format="json")
-        content = response.json()
-        assert status.is_client_error(response.status_code)
-        assert content["detail"] == IsAdminOrManager.message
-
-        response = client.get(customer_users_url, format="json")
-        content = response.json()
-        assert status.is_client_error(response.status_code)
-        # TODO: ERROR IN DRF CAUSING COMPOSED PERMISSIONS TO RETURN A GENERIC MESSAGE
-        # assert content["detail"] == IsAdminOrManager.message
-
-    def test_add_existing_customer_user(self, admin, mock_storage):
+    def test_customer_permissions(self, mock_storage):
+        # tests that a customer MEMBER can access "safe" methods
+        # but only a customer MANAGER can access "non-safe" methods
 
         customer = CustomerFactory(logo=None)
 
-        user = UserFactory(avatar=None)
+        customer_user_manager, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
+        customer_user_member, _ = customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
         client = APIClient()
+        _, manager_key = create_auth_token(customer_user_manager.user)
+        _, member_key = create_auth_token(customer_user_member.user)
+
+        url = reverse("customers-detail", args=[customer.id])
+
+        # manager can GET...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {manager_key}")
+        response = client.get(url)
+        assert status.is_success(response.status_code)
+
+        # member can GET...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {member_key}")
+        response = client.get(url)
+        assert status.is_success(response.status_code)
+
+        data = {k: v for k, v in response.json().items() if v is not None}
+
+        # manager can PUT...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {manager_key}")
+        response = client.put(url, data)
+        assert status.is_success(response.status_code)
+
+        # member cannot PUT...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {member_key}")
+        response = client.put(url, data)
+        assert status.is_client_error(response.status_code)
+
+    def test_customer_user_permissions(self, mock_storage):
+        # tests that only a customer MANAGER can access methods
+        # and a customer MEMBER cannot access methods
+
+        customer = CustomerFactory(logo=None)
+
+        customer_user_manager, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
+        customer_user_member, _ = customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")
+
+        client = APIClient()
+        _, manager_key = create_auth_token(customer_user_manager.user)
+        _, member_key = create_auth_token(customer_user_member.user)
+
+        url = reverse("customer-users-list", args=[customer.id])
+
+        # manager can GET...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {manager_key}")
+        response = client.get(url)
+        assert status.is_success(response.status_code)
+
+        # member cannot GET...
+        client.credentials(HTTP_AUTHORIZATION=f"Token {member_key}")
+        response = client.get(url)
+        assert status.is_client_error(response.status_code)
+
+    def test_add_existing_customer_user(self, mock_storage):
+
+        customer = CustomerFactory(logo=None)
+
+        # the user making the request must be a manager
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
+
+        client = APIClient()
+        _, key = create_auth_token(customer_user.user)
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+
+        test_user = UserFactory(avatar=None)
 
         url = reverse("customer-users-list", args=[customer.id])
 
         data = {
             # no need to specify type/status - they have default values
             "customer": customer.name,
-            "user": UserSerializerBasic(user).data,
+            "user": UserSerializerBasic(test_user).data,
         }
         response = client.post(url, data, format="json")
-        content = response.json()
-
         assert status.is_success(response.status_code)
 
         customer.refresh_from_db()
-        user.refresh_from_db()
+        test_user.refresh_from_db()
 
-        assert customer.customer_users.count() == user.customer_users.count(
-        ) == 1
-        assert set(customer.customer_users.values_list("id")) == set(
-            user.customer_users.values_list("id")
-        )
-        assert user.change_password is not True
+        assert customer.customer_users.count() == 2
+        assert test_user.customer_users.count() == 1
+        assert customer.customer_users.filter(
+            id__in=test_user.customer_users.all()
+        ).exists()
+        assert test_user.change_password is not True
 
     def test_add_new_customer_user_permissions(self, mock_storage):
 
@@ -306,7 +361,6 @@ class TestCustomerViews:
         # if registration_stage is not CUSTOMER_USER
         assert user.registration_stage != UserRegistrationStageType.CUSTOMER_USER
         response = client.post(url, data, format="json")
-        content = response.json()
 
         assert status.is_client_error(response.status_code)
         # TODO: ERROR IN DRF CAUSING COMPOSED PERMISSIONS TO RETURN A GENERIC MESSAGE
@@ -317,18 +371,18 @@ class TestCustomerViews:
         user.registration_stage = UserRegistrationStageType.CUSTOMER_USER
         user.save()
         response = client.post(url, data, format="json")
-        content = response.json()
         user.refresh_from_db()
 
         assert status.is_success(response.status_code)
         assert user.registration_stage == None
         assert customer.users.count() == 1
 
-    def test_add_new_customer_user(self, admin, user_data, mock_storage):
+    def test_add_new_customer_user(self, user_data, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
@@ -347,21 +401,21 @@ class TestCustomerViews:
         customer.refresh_from_db()
         user = User.objects.get(email=user_data["email"])
 
-        assert customer.customer_users.count() == 1
+        assert customer.customer_users.count() == 2
+        assert customer.customer_users.filter(id__in=user.customer_users.all()
+                                             ).exists()
         assert user.change_password is True
         assert user.accepted_terms is False
-        assert user.pk in customer.customer_users.values_list("user", flat=True)
         assert user.email == content["user"]["email"]
 
-    def test_add_new_invalid_customer_user(
-        self, admin, user_data, mock_storage
-    ):
+    def test_add_new_invalid_customer_user(self, user_data, mock_storage):
 
         user_data["email"] = "invalid_email_address"
 
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
@@ -380,14 +434,13 @@ class TestCustomerViews:
         assert status.is_client_error(response.status_code)
         assert content["user"] == {"email": ["Enter a valid email address."]}
 
-        assert customer.customer_users.count() == 0
+        assert customer.customer_users.count() != 2
 
-    def test_cannot_add_duplicate_customer_user(
-        self, admin, user_data, mock_storage
-    ):
+    def test_cannot_add_duplicate_customer_user(self, user_data, mock_storage):
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
@@ -406,15 +459,14 @@ class TestCustomerViews:
         assert content["non_field_errors"] == [
             "User is already a member of Customer."
         ]
-        assert customer.customer_users.count() == 1
+        assert customer.customer_users.count() == 2
 
-    def test_add_new_customer_user_sends_email(
-        self, admin, user_data, mock_storage
-    ):
+    def test_add_new_customer_user_sends_email(self, user_data, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
@@ -466,32 +518,33 @@ class TestCustomerViews:
         assert status.is_success(response.status_code)
         assert customer.customer_users.count() == 1
 
-    def test_delete_customer_user_sends_email(self, admin, user, mock_storage):
+    def test_delete_customer_user_sends_email(self, user, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        (customer_user,
-         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        customer.add_user(user, type="MEMBER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customer-users-detail", args=[customer.id, user.uuid])
 
         assert len(mail.outbox) == 0
+
         response = client.delete(url)
+        assert status.is_success(response.status_code)
 
         email = mail.outbox[0]
         assert len(mail.outbox) == 1
         assert user.email in email.to
 
-    def test_resend_invitation_new_customer_user(
-        self, admin, user_data, mock_storage
-    ):
+    def test_resend_invitation_new_customer_user(self, user_data, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MANAGER", status="ACTIVE")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(customer_user.user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
 
@@ -525,16 +578,14 @@ class TestCustomerViews:
         assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[0].body
         assert INVITATION_RESET_PASSWORD_TEXT in mail.outbox[1].body
 
-    def test_resend_invitation_existing_customer_user(
-        self, admin, user, mock_storage
-    ):
+    def test_resend_invitation_existing_customer_user(self, user, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer.add_user(user, type="MANAGER", status="ACTIVE")
 
-        (customer_user,
-         _) = customer.add_user(user, type="MEMBER", status="PENDING")
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MEMBER", status="PENDING")
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
         url = reverse("customer-users-invite", args=[customer.id, user.uuid])
@@ -560,8 +611,7 @@ class TestCustomerViews:
 
         customer = CustomerFactory(logo=None)
 
-        (customer_user,
-         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        customer.add_user(user, type="MANAGER", status="ACTIVE")
 
         _, key = create_auth_token(user)
         client = APIClient()
@@ -585,18 +635,22 @@ class TestCustomerViews:
         assert EXAMPLE_ONBOARDING_TEXT in message.body
         assert len(message.cc) == 0  # emails should not be cc'd
 
-    def test_customer_user_assign_manager(self, admin, user, mock_storage):
+    def test_customer_user_assign_manager(self, user, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer.add_user(user, type="MANAGER", status="ACTIVE")
 
-        (customer_user,
-         _) = customer.add_user(user, type="MEMBER", status="ACTIVE")
+        customer_user, _ = customer.add_user(UserFactory(avatar=None), type="MEMBER", status="ACTIVE")
+
         customer_user_data = CustomerUserSerializer(customer_user).data
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, user.uuid])
+        url = reverse(
+            "customer-users-detail",
+            args=[customer.id, customer_user.user.uuid]
+        )
 
         customer_user_data["type"] = "MANAGER"
         response = client.put(url, customer_user_data, format="json")
@@ -607,18 +661,21 @@ class TestCustomerViews:
         message = mail.outbox[0]
         assert "Admin right granted" in message.subject
 
-    def test_customer_user_revoke_manager(self, admin, user, mock_storage):
+    def test_customer_user_revoke_manager(self, user, mock_storage):
 
         customer = CustomerFactory(logo=None)
+        customer.add_user(user, type="MANAGER", status="ACTIVE")
 
-        (customer_user,
-         _) = customer.add_user(user, type="MANAGER", status="ACTIVE")
+        customer_user, _ = customer.add_user(user, type="MANAGER", status="ACTIVE")
         customer_user_data = CustomerUserSerializer(customer_user).data
 
-        _, key = create_auth_token(admin)
+        _, key = create_auth_token(user)
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
-        url = reverse("customer-users-detail", args=[customer.id, user.uuid])
+        url = reverse(
+            "customer-users-detail",
+            args=[customer.id, customer_user.user.uuid]
+        )
 
         customer_user_data["type"] = "MEMBER"
         response = client.put(url, customer_user_data, format="json")
