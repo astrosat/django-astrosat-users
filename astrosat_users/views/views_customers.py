@@ -130,7 +130,8 @@ class CustomerUpdateView(CustomerViewMixin, generics.RetrieveUpdateAPIView):
             adapter.send_mail(
                 "astrosat_users/email/update_customer",
                 managers_emails,
-                context
+                context,
+                fail_silently=True,
             )
 
         return updated_customer
@@ -256,7 +257,7 @@ class CustomerUserDetailView(
         if existing_customer_user_user_data != updated_customer_user_user_data:
             template_prefix = "astrosat_users/email/update_user"
             adapter.send_mail(
-                template_prefix, updated_customer_user.user.email, context
+                template_prefix, updated_customer_user.user.email, context, fail_silently=True,
             )
 
         if existing_customer_user.customer_user_type != updated_customer_user.customer_user_type:
@@ -269,7 +270,7 @@ class CustomerUserDetailView(
                 template_prefix = "astrosat_users/email/admin_revoke"
 
             adapter.send_mail(
-                template_prefix, updated_customer_user.user.email, context
+                template_prefix, updated_customer_user.user.email, context, fail_silently=True,
             )
 
         return updated_customer_user

@@ -341,7 +341,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
         msg = self.render_mail(template_prefix, email, context)
         msg.cc = [address for address in cc if address != email]
         msg.bcc = [address for address in bcc if address != email]
-        msg.send()
+        msg.send(fail_silently=kwargs.pop("fail_silently", False))
 
         if kwargs.pop("save_message", True):
             for address in itertools.chain(msg.to, msg.cc, msg.bcc):
