@@ -19,7 +19,7 @@ from astrosat_users.tests.utils import *
 
 FactoryFaker.add_provider(PrettyLoremProvider)
 
-fake = Faker()
+fake = Faker("en_GB")  # use UK-specific addresses, VAT numbers, etc.
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -146,6 +146,10 @@ class CustomerFactory(factory.django.DjangoModelFactory):
     )
     description = FactoryFaker("text")
     url = FactoryFaker("url")
+
+    @factory.lazy_attribute
+    def vat_number(self):
+        return fake.vat_id()
 
     @factory.lazy_attribute
     def logo(self):

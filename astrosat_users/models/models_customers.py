@@ -95,6 +95,7 @@ class Customer(models.Model):
     registered_id = models.CharField(
         unique=True, blank=True, null=True, max_length=128
     )
+    vat_number = models.CharField(blank=True, null=True, max_length=128)
     description = models.TextField(blank=True, null=True)
     logo = models.FileField(upload_to=customer_logo_path, blank=True, null=True)
     url = models.URLField(blank=True, null=True)

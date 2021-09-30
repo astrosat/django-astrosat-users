@@ -27,6 +27,7 @@ class CustomerAdmin(admin.ModelAdmin):
         "official_name",
         "company_type",
         "registered_id",
+        "vat_number",
         "description",
         "logo",
         "url",
