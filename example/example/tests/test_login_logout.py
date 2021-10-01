@@ -27,7 +27,7 @@ class TestAPILoginLogout:
     INVALID_TOKEN_MSG = "Invalid token."
     INACTIVE_USER_MSG = "Unable to log in with provided credentials."
     SUCCESSFUL_LOGOUT_MSG = "Successfully logged out."
-    UNACCEPTED_TERMS = "User {} has not yet accepted the terms & conditions."
+    UNACCEPTED_TERMS = "Please accept our latest Terms & Conditions and Privacy Policy."
     UNAPPROVED_MSG = "User {} has not been approved."
     UNAUTHENTICATED_MSG = "Authentication credentials were not provided."
     UNVERIFIED_MSG = "User {} is not verified."

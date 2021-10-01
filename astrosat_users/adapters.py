@@ -91,7 +91,7 @@ class AdapterMixin(object):
             app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and
             not user.accepted_terms
         ):
-            msg = f"User {user} has not yet accepted the terms & conditions."
+            msg = "Please accept our latest Terms & Conditions and Privacy Policy."
             if self.is_api:
                 raise APIException(msg)
             else:
@@ -127,7 +127,7 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 app_settings.ASTROSAT_USERS_REQUIRE_TERMS_ACCEPTANCE and
                 not user.accepted_terms
             ):
-                msg = f"User {user} has not yet accepted Terms & Conditions."
+                msg = "Please accept our latest Terms & Conditions and Privacy Policy."
                 raise forms.ValidationError(msg)
 
         return user
