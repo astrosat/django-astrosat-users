@@ -4,8 +4,6 @@ from django.urls import include, path, re_path
 from django.utils.decorators import method_decorator
 from django.urls.resolvers import RegexPattern, RoutePattern
 
-from rest_framework.routers import SimpleRouter
-
 from allauth.urls import urlpatterns as allauth_urlpatterns
 
 from astrosat.decorators import conditional_redirect
@@ -27,6 +25,7 @@ from .views import (
     VerifyEmailView,
     SendEmailVerificationView,
     UserViewSet,
+    UserProfileView,
     MessageViewSet,
     CustomerCreateView,
     CustomerUpdateView,
@@ -50,6 +49,11 @@ api_router.register(
 )
 api_urlpatterns = [
     path("", include(api_router.urls)),
+    path(
+        "users/<slug:user_id>/profiles/<str:profile_name>/",
+        UserProfileView.as_view(),
+        name="user-profiles"
+    ),
     path("customers/", CustomerCreateView.as_view(), name="customers-list"),
     path(
         "customers/<slug:customer_id>/",
