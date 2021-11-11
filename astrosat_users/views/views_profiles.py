@@ -11,7 +11,7 @@ from astrosat.decorators import swagger_fake
 
 class NoMatchingProfileException(APIException):
     status_code = 400
-    default_detail = "Unable to find a profile for the given user "
+    default_detail = "Unable to find a profile for the given user"
     default_code = "no_matching_profile"
 
 
@@ -23,9 +23,8 @@ class IsAdminOrSelf(BasePermission):
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     """
-    API to retrive/update a specific profile;
-    Even though all user profiles are output along w/ a user,
-    that is a readonly-field.
+    API to retrive/update a specific profile; Even though all profiles are output
+    as part of the UserView, this allows the client to access a profile directly.
     """
 
     permission_classes = [IsAuthenticated, IsAdminOrSelf]
@@ -50,7 +49,5 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
             profile_obj = getattr(self.user, profile_name)
         except Exception as e:
             raise NoMatchingProfileException()
-
-        # self.check_object_permissions(self.request, profile_obj)
 
         return profile_obj
