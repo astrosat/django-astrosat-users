@@ -8,7 +8,7 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     container:
-      image: python:3.7.7
+      image: python:3.8.6
     steps:
       - uses: actions/checkout@v2
 
@@ -16,7 +16,7 @@ jobs:
         run: |
           apt-get update && apt-get install -y postgresql-client python3-gdal
           pip3 install --upgrade --no-cache-dir pip
-          pip3 install --upgrade --no-cache-dir pipenv
+          pip3 install --upgrade --no-cache-dir pipenv==2021.5.29
 
       - name: Setup Environment
         working-directory: example
