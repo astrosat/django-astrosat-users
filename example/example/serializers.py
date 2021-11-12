@@ -10,10 +10,14 @@ class ExampleProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExampleProfile
         fields = (
-            "age", "height", "weight", "body_mass_index", "some_custom_field"
+            "age",
+            "height",
+            "weight",
+            "body_mass_index",
+            "some_custom_readonly_field",
         )
 
-    some_custom_field = serializers.SerializerMethodField()
+    some_custom_readonly_field = serializers.SerializerMethodField()
 
-    def get_some_custom_field(self, obj):
+    def get_some_custom_readonly_field(self, obj):
         return "I am proof that this is a custom rather than a generic serializer"
