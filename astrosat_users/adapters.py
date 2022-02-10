@@ -44,7 +44,7 @@ class AdapterMixin(object):
     def is_api(self):
         # yapf: disable
         return (
-            getattr(self, "force_api", False) or
+            getattr(self.request, "force_api", False) or
             re.match("^/api/", self.request.path) is not None
         )
 
