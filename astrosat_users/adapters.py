@@ -42,7 +42,11 @@ UserModel = get_user_model()
 class AdapterMixin(object):
     @property
     def is_api(self):
-        return re.match("^/api/", self.request.path) is not None
+        # yapf: disable
+        return (
+            getattr(self, "is_api", False) or
+            re.match("^/api/", self.request.path) is not None
+        )
 
     def is_open_for_signup(self, request: HttpRequest):
         return app_settings.ASTROSAT_USERS_ALLOW_REGISTRATION
@@ -280,7 +284,9 @@ class AccountAdapter(AdapterMixin, DefaultAccountAdapter):
                 setattr(saved_user, extra_field, form.cleaned_data[extra_field])
         if commit:
             saved_user.save()
-
+        # notifying signups in RegisterSerializer instead of here
+        # b/c sometimes forms/serializers have additional checks
+        # after this fn is run but before _actually_ saving the user
         # if commit and app_settings.ASTROSAT_USERS_NOTIFY_SIGNUPS:
         #     subject = super(
         #     ).format_email_subject(f"new user signup: {saved_user}")
