@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.signals import user_logged_out
+from django.contrib.sites.models import Site
 from django.db import models
 from django.template.exceptions import TemplateDoesNotExist
 from django.urls import reverse
@@ -174,6 +175,9 @@ class User(AbstractUser):
             "template_prefix", "astrosat_users/email/onboard"
         )
 
+        current_site = Site.objects.get_current()
+
+        context["domain"] = current_site.domain
         context["user"] = self
         context["customer"] = customer
 
