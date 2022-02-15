@@ -57,7 +57,7 @@ class UserAdmin(auth_admin.UserAdmin):
     list_filter = auth_admin.UserAdmin.list_filter + ("customers", )
     readonly_fields = auth_admin.UserAdmin.readonly_fields + ("uuid", )
     search_fields = ["username", "name", "email"]
-    filter_horizontal = (
+    filter_horizontal = auth_admin.UserAdmin.filter_horizontal + (
         "roles",
     )  # makes a pretty widget; the same one as used by "groups"
 

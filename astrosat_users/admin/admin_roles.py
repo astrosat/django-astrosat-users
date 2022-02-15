@@ -1,21 +1,21 @@
 from django import forms
 from django.conf import settings
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.contrib.auth.models import Group, Permission
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from astrosat_users.models import UserPermission, UserRole
 
-# don't let the built-in Django Roles system
-# get in-the-way-of the astrosat_users roles
+# Still using the built-in Django Groups/Permissions system for low-level model access;
+# The UserRoles/UserPermission system exposed below is used for passing information to the client.
 try:
-    admin.site.unregister(Group)
-except admin.sites.NotRegistered:
+    admin.site.register(Group)
+except admin.sites.AlreadyRegistered:
     pass
 try:
-    admin.site.unregister(Permission)
-except admin.sites.NotRegistered:
+    admin.site.register(Permission)
+except admin.sites.AlreadyRegistered:
     pass
 
 #################
