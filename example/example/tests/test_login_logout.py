@@ -349,7 +349,6 @@ class TestBackendLoginLogout:
         user.save()
 
         # an unapproved user can't login...
-
         response = self.login(user=user)
         request_user = response.wsgi_request.user
         assert request_user != user and not request_user.is_authenticated

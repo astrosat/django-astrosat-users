@@ -104,13 +104,15 @@ class TestApiPassword:
         invalid_email = shuffle_string(user.username
                                       ) + "@" + valid_email.split("@")[1]
 
-        # an invalid email doesn't work...
+        # an invalid email doesn't send email...
         response = client.post(url, {"email": invalid_email})
-        assert status.is_client_error(response.status_code)
+        assert status.is_success(response.status_code)
+        assert len(mail.outbox) == 0
 
-        # a valid email does work...
+        # a valid email does send email...
         response = client.post(url, {"email": valid_email})
         assert status.is_success(response.status_code)
+        assert len(mail.outbox) == 1
 
     def test_password_reset_sends_email(self, user):
 

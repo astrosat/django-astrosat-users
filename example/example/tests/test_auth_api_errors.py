@@ -1,3 +1,4 @@
+from django.core import mail
 from django.urls import reverse
 
 import pytest
@@ -418,17 +419,9 @@ class TestPasswordErrors:
 
         test_data = {"email": user_data["email"]}
 
-        UNKNOWN_USER_ERROR_RESPONSE = {
-            "errors": {
-                "email": [
-                    "The e-mail address is not assigned to any user account"
-                ]
-            }
-        }
-
         response = client.post(self.reset_url, test_data)
-        assert status.is_client_error(response.status_code)
-        assert response.json() == UNKNOWN_USER_ERROR_RESPONSE
+        assert status.is_success(response.status_code)
+        assert len(mail.outbox) == 0
 
     #######################
     # reset confirm views #
