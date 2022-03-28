@@ -13,8 +13,8 @@ version = __import__("astrosat_users").__version__
 
 dependencies = [
     "django~=3.0",  # django, duh
-    "django-allauth>=0.39",  # users
     "djangorestframework~=3.0",  # api
+    "django-allauth>=0.50",  # users
     "dj-rest-auth>=1.0",  # api-users
     "django-rest-knox",  # tokens
     "Pillow>=7.1.2",  # image manipulation

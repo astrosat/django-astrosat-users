@@ -26,7 +26,7 @@ django-filter = "*"  # richer api filters
 django-rest-framework = "*" # api
 djangorestframework-simplejwt = "*"
 django-rest-knox = "*"  # secure tokens
-dj-rest-auth = {extras = ["with_social"],version = "*"}  # user authentication via api
+dj-rest-auth = "*"  # user authentication via api
 drf-yasg2 = "*"  # api documentation
 pillow = "*"  # images
 zxcvbn = "*"  # secure passwords

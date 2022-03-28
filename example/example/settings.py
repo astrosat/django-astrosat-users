@@ -46,12 +46,12 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "dj_rest_auth",
     "dj_rest_auth.registration",
-    # astrosat...
+     # astrosat...
     "astrosat",
     "astrosat_users",
     # this app...
     "example",
-]
+]  # yapf: disable
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -66,41 +66,32 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "example.urls"
 
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS":
-            [
-                # I override some built-in templates (rest_framework, allauth, & rest_auth)
-                # in order for this to work, I need to make sure that the following directories are checked
-                # before their default locations (see the comment in "loaders" for more info)
-                os.path.join(BASE_DIR, "example/templates/"),
-                os.path.join(
-                    os.path.dirname(
-                        importlib.import_module("astrosat_users").__file__
-                    ),
-                    "templates",
-                ),
-            ],
-        # "APP_DIRS": True,
-        "OPTIONS":
-            {
-                "loaders":
-                    [
-                        # first look at files in DIR, then look in the standard place for each INSTALLED_APP
-                        "django.template.loaders.filesystem.Loader",
-                        "django.template.loaders.app_directories.Loader",
-                    ],
-                "context_processors":
-                    [
-                        "django.template.context_processors.debug",
-                        "django.template.context_processors.request",
-                        "django.contrib.auth.context_processors.auth",
-                        "django.contrib.messages.context_processors.messages",
-                    ],
-            },
-    }
-]
+TEMPLATES = [{
+    "BACKEND": "django.template.backends.django.DjangoTemplates",
+    "DIRS": [
+        # I override some built-in templates (rest_framework, allauth, & rest_auth)
+        # in order for this to work, I need to make sure that the following directories are checked
+        # before their default locations (see the comment in "loaders" for more info)
+        os.path.join(BASE_DIR, "example/templates/"),
+        os.path.join(
+            os.path.dirname(importlib.import_module("astrosat_users").__file__),
+            "templates",
+        ),
+    ],  # "APP_DIRS": True,
+    "OPTIONS": {
+        "loaders": [
+            # first look at files in DIR, then look in the standard place for each INSTALLED_APP
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+        "context_processors": [
+            "django.template.context_processors.debug",
+            "django.template.context_processors.request",
+            "django.contrib.auth.context_processors.auth",
+            "django.contrib.messages.context_processors.messages",
+        ],
+    },
+}]
 
 WSGI_APPLICATION = "example.wsgi.application"
 
@@ -115,40 +106,36 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Database
 
 DATABASES = {
-    "default":
-        {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-        }
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    }
 }
 
 # api
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES":
-        [
-            # "rest_framework.authentication.BasicAuthentication",  # insecure
-            # "rest_framework.authentication.SessionAuthentication",  # CSRF
-            # "rest_framework.authentication.TokenAuthentication",  # tokens
-            # "dj_rest_auth.utils.JWTCookieAuthentication",  # JWT tokens
-            "knox.auth.TokenAuthentication"  # secure tokens
-        ]
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        # "rest_framework.authentication.BasicAuthentication",  # insecure
+        # "rest_framework.authentication.SessionAuthentication",  # CSRF
+        # "rest_framework.authentication.TokenAuthentication",  # tokens
+        # "dj_rest_auth.utils.JWTCookieAuthentication",  # JWT tokens
+        "knox.auth.TokenAuthentication"  # secure tokens
+    ]
 }
 
 SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS":
-        {
-            "Token Authentication":
-                {
-                    "type": "apiKey",
-                    "name": "Authorization",
-                    "in": "header",
-                    "description": escape("Enter 'Token <token>'"),
-                },
-            "Basic": {
-                "type": "basic"
-            },
+    "SECURITY_DEFINITIONS": {
+        "Token Authentication": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": escape("Enter 'Token <token>'"),
         },
+        "Basic": {
+            "type": "basic"
+        },
+    },
     "DOC_EXPANSION": "none",
     "OPERATIONS_SORTER": None,
     "TAGS_SORTER": "alpha",
@@ -178,7 +165,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ACCOUNT_ADAPTER = "astrosat_users.adapters.AccountAdapter"
-SOCIALACCOUNT_ADAPTER = "astrosat_users.adapters.SocialAccountAdapter"
+# SOCIALACCOUNT_ADAPTER = "astrosat_users.adapters.SocialAccountAdapter"
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USERNAME_REQUIRED = False

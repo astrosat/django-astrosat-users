@@ -116,7 +116,6 @@ APPROVAL_REDIRECT_URL = getattr(settings, "APPROVAL_REDIRECT_URL", "/")
 
 ALLAUTH_SETTINGS = {
     "ACCOUNT_ADAPTER": f"{APP_NAME}.adapters.AccountAdapter",
-    "SOCIALACCOUNT_ADAPTER": f"{APP_NAME}.adapters.SocialAccountAdapter",
     "ACCOUNT_AUTHENTICATION_METHOD": "email",
     "ACCOUNT_USERNAME_REQUIRED": False,
     "ACCOUNT_EMAIL_REQUIRED": True,
