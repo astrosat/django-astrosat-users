@@ -57,6 +57,12 @@ class UserSettings(SingletonMixin, models.Model):
         )
     )
 
+    verify_email_timeout = models.FloatField(
+        default=3,
+        validators=[MinValueValidator(0)],
+        help_text=_("Timeout (in days) of email verification tokens.")
+    )
+
     def __str__(self):
         return "User Settings"
 

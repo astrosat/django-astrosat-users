@@ -31,6 +31,42 @@ class TestApiRegistration:
     registration_url = reverse("rest_register")
     verification_url = reverse("rest_verify_email")
 
+    def test_verify_email_timeout(self, user_settings, user_data):
+        """
+        Tests that the email verification timeout can be changed
+        """
+        client = APIClient()
+
+        test_data = {
+            "email": user_data["email"],
+            "password1": user_data["password"],
+            "password2": user_data["password"],
+        }
+
+        user_settings.verify_email_timeout = 0
+        user_settings.save()
+
+        response = client.post(self.registration_url, test_data)
+        assert status.is_success(response.status_code)
+        user = UserModel.objects.get(email=test_data["email"])
+
+        response = client.post(
+            self.verification_url, {"key": user.latest_confirmation_key}
+        )
+
+        assert status.is_client_error(response.status_code)
+        assert user.is_verified is False
+
+        user_settings.verify_email_timeout = 1
+        user_settings.save()
+
+        response = client.post(
+            self.verification_url, {"key": user.latest_confirmation_key}
+        )
+
+        assert status.is_success(response.status_code)
+        assert user.is_verified is True
+
     def test_disable_registration(self, user_settings):
         """
         Tests that you cannot register when registration is closed

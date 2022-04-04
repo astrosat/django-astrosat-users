@@ -12,6 +12,8 @@ from django.utils.html import escape
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from astrosat.utils import DynamicSetting
+
 env = environ.Env()
 
 PROJECT_NAME = "Example Project"
@@ -170,6 +172,9 @@ ACCOUNT_ADAPTER = "astrosat_users.adapters.AccountAdapter"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = DynamicSetting(
+    "astrosat_users.UserSettings.verify_email_timeout", 3
+)
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGOUT_ON_GET = False
 ACCOUNT_USERNAME_BLACKLIST = ["admin", "sentinel"]
