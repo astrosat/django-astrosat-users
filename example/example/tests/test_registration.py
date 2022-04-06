@@ -43,7 +43,7 @@ class TestApiRegistration:
             "password2": user_data["password"],
         }
 
-        user_settings.verify_email_timeout = 0
+        user_settings.email_token_timeout = 0
         user_settings.save()
 
         response = client.post(self.registration_url, test_data)
@@ -57,7 +57,7 @@ class TestApiRegistration:
         assert status.is_client_error(response.status_code)
         assert user.is_verified is False
 
-        user_settings.verify_email_timeout = 1
+        user_settings.email_token_timeout = 1
         user_settings.save()
 
         response = client.post(
