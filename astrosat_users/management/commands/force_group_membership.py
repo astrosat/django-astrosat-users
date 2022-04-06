@@ -23,7 +23,7 @@ class Command(BaseCommand):
             "--groups",
             required=True,
             dest="group_names",
-            nargs="*",
+            nargs="+",
             help="The names of groups to join."
         )
 
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             try:
                 groups.append(Group.objects.get(name__iexact=group_name))
             except Group.DoesNotExist:
-                msg = f"unable to find group '{group_name}'."
+                msg = f"Unable to find group '{group_name}'."
                 raise CommandError(msg)
 
         user.groups.add(*groups)
