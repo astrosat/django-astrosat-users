@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 from astrosat.mixins import SingletonMixin
 
+SECONDS_PER_DAY = 86400
+
 
 class UserSettings(SingletonMixin, models.Model):
     class Meta:
@@ -57,10 +59,16 @@ class UserSettings(SingletonMixin, models.Model):
         )
     )
 
-    verify_email_timeout = models.FloatField(
+    email_token_timeout = models.FloatField(
         default=3,
         validators=[MinValueValidator(0)],
-        help_text=_("Timeout (in days) of email verification tokens.")
+        help_text=_("Timeout (in days) of email verification token.")
+    )
+
+    password_token_timeout = models.FloatField(
+        default=3 * SECONDS_PER_DAY,
+        validators=[MinValueValidator(0)],
+        help_text=_("Timeout (in seconds) of password verification token.")
     )
 
     def __str__(self):
@@ -70,4 +78,9 @@ class UserSettings(SingletonMixin, models.Model):
         if self.password_max_length < self.password_min_length:
             raise ValidationError(
                 "password_max_length must be greater than or equal to password_min_length."
+            )
+
+        if self.password_token_timeout != self.email_token_timeout * SECONDS_PER_DAY:
+            raise ValidationError(
+                "password_token_timeout and email_token_timeout should evaluate to the same values"
             )

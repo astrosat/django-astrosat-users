@@ -173,7 +173,7 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = DynamicSetting(
-    "astrosat_users.UserSettings.verify_email_timeout", 3
+    "astrosat_users.UserSettings.email_token_timeout", 3
 )
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGOUT_ON_GET = False
@@ -231,6 +231,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "astrosat_users.validators.StrengthPasswordValidator"
     },
 ]
+
+PASSWORD_RESET_TIMEOUT = DynamicSetting(
+    "astrosat_users.UserSettings.password_token_timeout", 3 * 86400
+)
 
 # Emailing
 
