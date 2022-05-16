@@ -19,7 +19,7 @@ pytest-watch = "*"
 yapf = "*"
 
 [packages]
-django = "~=3.0"  # django, duh
+django = "~=3.2"  # django, duh
 django-allauth = "*"  # user authentication
 django-environ = "*"  # better env handling
 django-filter = "*"  # richer api filters
